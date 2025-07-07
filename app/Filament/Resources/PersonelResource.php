@@ -21,7 +21,7 @@ class PersonelResource extends Resource
 {
     protected static ?string $model = Personel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Personel';
     protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 4;
@@ -34,14 +34,18 @@ class PersonelResource extends Resource
                     ->relationship('project', 'nama_project')
                     ->label('Proyek')
                     ->required(),
-                TextInput::make('jenis_personel')
-                    ->label('Jenis Personel')
+                Select::make('pekerjaan_lapangan')
+                    ->options([
+                        'surveyor' => 'surveyor',
+                        'asisten surveyor' => 'asisten surveyor',
+                        'driver' => 'driver',
+                        'drafter' => 'drafter',
+                    ])
                     ->required()
-                    ->maxLength(50),
+                    ->native(false),
                 TextInput::make('nama_personel')
                     ->label('Nama Personel')
-                    ->required()
-                    ->maxLength(100),
+                    ->required(),
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->nullable(),

@@ -35,14 +35,21 @@ class PeralatanKerjaResource extends Resource
                     ->required(),
                 TextInput::make('nama_alat')
                     ->label('Nama Alat')
+                    ->required(),
+                Select::make('pekerjaan_lapangan')
+                    ->options([
+                        'GPS' => 'GPS',
+                        'Drone' => 'Drone',
+                        'OTS' => 'OTS',
+                    ])
                     ->required()
-                    ->maxLength(100),
-                TextInput::make('jenis_alat')
-                    ->label('Jenis Alat')
-                    ->required()
-                    ->maxLength(50),
+                    ->native(false),
                 TextInput::make('jumlah')
                     ->label('Jumlah')
+                    ->required()
+                    ->numeric(),
+                TextInput::make('keterangan')
+                    ->label('keterangan')
                     ->required()
                     ->numeric(),
                 Select::make('user_id')

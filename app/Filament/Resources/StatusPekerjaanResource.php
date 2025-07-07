@@ -19,7 +19,7 @@ class StatusPekerjaanResource extends Resource
 {
     protected static ?string $model = StatusPekerjaan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Status Pekerjaan';
     protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 3;
@@ -38,19 +38,26 @@ class StatusPekerjaanResource extends Resource
                     ->label('Nama Proyek'),
 
                 // Pilihan jenis pekerjaan berdasarkan ENUM di migrasi
-                Select::make('pekerjaan')
+                Select::make('pekerjaan_lapangan')
                     ->options([
-                        'Pekerjaan Lapangan' => 'Pekerjaan Lapangan',
-                        'Input Data' => 'Input Data',
-                        'Laporan' => 'Laporan',
+                        'selesai' => 'selesai',
+                        'tidak selesai' => 'tidak selesai',
                     ])
                     ->required()
                     ->native(false), // Menggunakan styling modern Filament
 
                 // Pilihan status berdasarkan ENUM di migrasi
-                Select::make('status')
+                Select::make('proses_data_dan_gambar')
                     ->options([
-                        'Belum Selesai' => 'Belum Selesai',
+                        'Tidak Selesai' => 'Tidak Selesai',
+                        'Selesai' => 'Selesai',
+                        'Tidak Perlu' => 'Tidak Perlu',
+                    ])
+                    ->required()
+                    ->native(false),
+
+                Select::make('laporan')
+                    ->options([
                         'Tidak Selesai' => 'Tidak Selesai',
                         'Selesai' => 'Selesai',
                         'Tidak Perlu' => 'Tidak Perlu',
@@ -78,16 +85,15 @@ class StatusPekerjaanResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('pekerjaan')
+                TextColumn::make('pekerjaan_lapangan')
                     ->searchable(),
 
                 // Menampilkan status dengan badge berwarna agar mudah dilihat
-                TextColumn::make('status')
+                TextColumn::make('proses_data_dan_gambar')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Selesai' => 'success',
-                        'Belum Selesai' => 'warning',
-                        'Tidak Selesai' => 'danger',
+                        'Tidak Selesai' => 'warning',
                         'Tidak Perlu' => 'gray',
                     }),
 
