@@ -27,9 +27,19 @@ class ProjectResource extends Resource
     {
         return $form->schema([
             Forms\Components\TextInput::make('nama_project')->required(),
-            Forms\Components\TextInput::make('kategori')->required(),
+            Forms\Components\Select::make('kategori_id')
+                ->relationship('Kategori', 'nama')
+                ->searchable()
+                ->preload()
+                ->label('Kategori Projek')
+                ->required(),
             Forms\Components\TextInput::make('sumber'),
-            Forms\Components\TextInput::make('sales'),
+            Forms\Components\Select::make('sales_id')
+                ->relationship('Sales', 'nama')
+                ->searchable()
+                ->preload()
+                ->label('Sales')
+                ->required(),
             Forms\Components\TextInput::make('nama_klien'),
             Forms\Components\TextInput::make('jenis_penjualan'),
             Forms\Components\TextInput::make('level_company'),

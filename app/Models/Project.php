@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 use App\Models\StatusPekerjaan;
 
@@ -13,6 +14,16 @@ class Project extends Model
 
     public $incrementing = false;      // Disable auto-incrementing
     protected $keyType = 'string';     // Key type is string, not integer
+
+    public function Kategori(): BelongsTo
+    {
+        return $this->belongsTo(Kategori::class, 'kategori_id', 'id');
+    }
+
+    public function Sales(): BelongsTo
+    {
+        return $this->belongsTo(Sales::class, 'sales_id', 'id');
+    }
 
     protected static function boot()
     {
