@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PersonelResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -60,15 +61,56 @@ class PersonelResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('project.nama_project')->label('Nama Projek'),
-                TextColumn::make('jenis_personel'),
-                TextColumn::make('nama_personel'),
-                TextColumn::make('keterangan'),
-                TextColumn::make('user.name')->label('Nama User'),
+                TextColumn::make('project.nama_project')
+                    ->label('Nama Proyek')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('jenis_personel')
+                    ->label('Jenis Personel')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('nama_personel')
+                    ->label('Nama Personel')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('keterangan')
+                    ->label('Keterangan')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('user.name')
+                    ->label('Nama User')
+                    ->sortable()
+                    ->searchable(),
             ])
+
             ->filters([
-                //
+                SelectFilter::make('project_id')
+                    ->label('Proyek')
+                    ->relationship('project', 'nama_project')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('jenis_personel')
+                    ->label('Jenis Personel')
+                    ->searchable()
+                    ->options(function () {
+                        return \App\Models\Personel::query()
+                            ->select('jenis_personel')
+                            ->distinct()
+                            ->pluck('jenis_personel', 'jenis_personel');
+                    }),
+
+                SelectFilter::make('user_id')
+                    ->label('User')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

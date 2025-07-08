@@ -8,12 +8,13 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\StatusPembayaran;
 use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StatusPembayaranResource\Pages;
 use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
-use Filament\Tables\Columns\TextColumn;
 
 class StatusPembayaranResource extends Resource
 {
@@ -38,13 +39,33 @@ class StatusPembayaranResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_pembayaran'),
-                TextColumn::make('jenis_pembayaran'),
-                TextColumn::make('nilai'),
+                TextColumn::make('nama_pembayaran')
+                    ->label('Nama Pembayaran')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('jenis_pembayaran')
+                    ->label('Jenis Pembayaran')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('nilai')
+                    ->label('Nilai')
+                    ->sortable(),
             ])
+
             ->filters([
-                //
+                SelectFilter::make('jenis_pembayaran')
+                    ->label('Jenis Pembayaran')
+                    ->options(function () {
+                        return \App\Models\StatusPembayaran::query()
+                            ->select('jenis_pembayaran')
+                            ->distinct()
+                            ->pluck('jenis_pembayaran', 'jenis_pembayaran');
+                    })
+                    ->searchable(),
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

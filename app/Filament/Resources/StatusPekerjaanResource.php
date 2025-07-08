@@ -10,8 +10,13 @@ use App\Models\StatusPekerjaan;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StatusPekerjaanResource\Pages;
 
@@ -109,15 +114,34 @@ class StatusPekerjaanResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('project_id')
+                    ->label('Proyek')
+                    ->relationship('project', 'nama_project'),
+            ])->filters([
+                SelectFilter::make('project_id')
+                    ->label('Proyek')
+                    ->relationship('project', 'nama_project'),
+
+                SelectFilter::make('proses_data_dan_gambar')
+                    ->label('Proses Data & Gambar')
+                    ->options([
+                        'Selesai' => 'Selesai',
+                        'Tidak Selesai' => 'Tidak Selesai',
+                        'Tidak Perlu' => 'Tidak Perlu',
+                    ]),
+
+                SelectFilter::make('user_id')
+                    ->label('User')
+                    ->relationship('user', 'name'),
             ])
+
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
