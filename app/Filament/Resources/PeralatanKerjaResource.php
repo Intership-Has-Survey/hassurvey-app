@@ -37,7 +37,7 @@ class PeralatanKerjaResource extends Resource
                 TextInput::make('nama_alat')
                     ->label('Nama Alat')
                     ->required(),
-                Select::make('pekerjaan_lapangan')
+                Select::make('jenis_alat')
                     ->options([
                         'GPS' => 'GPS',
                         'Drone' => 'Drone',
@@ -53,10 +53,6 @@ class PeralatanKerjaResource extends Resource
                     ->label('keterangan')
                     ->required()
                     ->numeric(),
-                Select::make('user_id')
-                    ->label('User')
-                    ->relationship('user', 'name')
-                    ->required()
             ]);
     }
 
@@ -121,6 +117,13 @@ class PeralatanKerjaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['user_id'] = auth()->id();
+
+        return $data;
     }
 
     public static function getRelations(): array

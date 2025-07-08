@@ -34,6 +34,10 @@ class KategoriResource extends Resource
                     ->label('Jenis Kategori')
                     ->required()
                     ->maxLength(50),
+                TextInput::make('keterangan')
+                    ->label('Keterangan')
+                    ->required()
+                    ->maxLength(300),
             ]);
     }
 
@@ -42,12 +46,14 @@ class KategoriResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama'),
+                TextColumn::make('keterangan'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
