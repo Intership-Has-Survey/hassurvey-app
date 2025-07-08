@@ -111,7 +111,7 @@ class ProjectResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama_project')->sortable()->searchable(),
-                TextColumn::make('kategori_id')->sortable()->searchable(),
+                TextColumn::make('kategori.nama')->sortable()->searchable(),
                 TextColumn::make('sumber')->sortable()->searchable(),
                 TextColumn::make('sales_id')->sortable()->searchable(),
                 TextColumn::make('nama_klien')->label('Klien')->sortable()->searchable(),

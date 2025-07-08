@@ -22,8 +22,8 @@ class StatusPembayaranResource extends Resource
     protected static ?string $model = StatusPembayaran::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationLabel = 'Status Pembayaran';
-    protected static ?string $navigationGroup = 'Jasa Pemetaan';
+    protected static ?string $navigationLabel = 'Daftar Pembayaran';
+    // protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
@@ -45,7 +45,7 @@ class StatusPembayaranResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama_pembayaran')
-                    ->label('Nama Pembayaran')
+                    ->label('Metode Pembayaran')
                     ->sortable()
                     ->searchable(),
 

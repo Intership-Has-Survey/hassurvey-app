@@ -20,7 +20,7 @@ class SalesResource extends Resource
     protected static ?string $model = Sales::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = 'Jasa Pemetaan';
+    protected static ?string $navigationGroup = 'Manajemen Data Master';
     protected static ?int $navigationSort = 7;
 
 
@@ -40,7 +40,14 @@ class SalesResource extends Resource
                     ->label('Telepon')
                     ->required()
                     ->maxLength(50),
-
+                TextInput::make('alamat')
+                    ->label('alamat')
+                    ->required()
+                    ->maxLength(50),
+                TextInput::make('no wa')
+                    ->label('no wa')
+                    ->required()
+                    ->maxLength(50),
             ]);
     }
 
@@ -51,6 +58,7 @@ class SalesResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('email'),
                 TextColumn::make('telepon'),
+
             ])
             ->filters([
                 //
