@@ -32,14 +32,34 @@ class ProjectResource extends Resource
                 ->searchable()
                 ->preload()
                 ->label('Kategori Projek')
-                ->required(),
+                ->required()
+                ->createOptionForm([
+                    Forms\Components\TextInput::make('nama')
+                        ->label('Jenis Kategori')
+                        ->required()
+                        ->maxLength(50),
+                ]),
             Forms\Components\TextInput::make('sumber'),
             Forms\Components\Select::make('sales_id')
                 ->relationship('Sales', 'nama')
                 ->searchable()
                 ->preload()
                 ->label('Sales')
-                ->required(),
+                ->required()
+                ->createOptionForm([
+                    Forms\Components\TextInput::make('nama')
+                        ->label('Nama Sales')
+                        ->required()
+                        ->maxLength(50),
+                    Forms\Components\TextInput::make('telepon')
+                        ->label('Telepon')
+                        ->required()
+                        ->maxLength(50),
+                    Forms\Components\TextInput::make('email')
+                        ->label('Email')
+                        ->required()
+                        ->maxLength(50),
+                ]),
             Forms\Components\TextInput::make('nama_klien'),
             Forms\Components\TextInput::make('jenis_penjualan'),
             Forms\Components\TextInput::make('level_company'),
