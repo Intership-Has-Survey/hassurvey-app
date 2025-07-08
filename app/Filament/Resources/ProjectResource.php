@@ -81,53 +81,22 @@ class ProjectResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama_project')->sortable()->searchable(),
-                TextColumn::make('kategori')->sortable()->searchable(),
+                TextColumn::make('kategori_id')->sortable()->searchable(),
                 TextColumn::make('sumber')->sortable()->searchable(),
-                TextColumn::make('sales')->sortable()->searchable(),
+                TextColumn::make('sales_id')->sortable()->searchable(),
                 TextColumn::make('nama_klien')->label('Klien')->sortable()->searchable(),
                 TextColumn::make('lokasi')->sortable()->searchable(),
                 TextColumn::make('alamat')->sortable()->searchable(),
                 TextColumn::make('status')->sortable()->badge(),
                 TextColumn::make('nilai_project')->label('Nilai')->sortable(),
                 TextColumn::make('tanggal_informasi_masuk')->label('Masuk')->date(),
-                TextColumn::make('nama_pic')->label('nama_pic')->date(),
-                TextColumn::make('wa_pic')->label('wa_pic')->date(),
-                TextColumn::make('status_pekerjaan_lapangan')->label('status_pekerjaan_lapangan')->date(),
-                TextColumn::make('status_pembayaran')->label('status_pembayaran')->date(),
+                TextColumn::make('nama_pic')->label('nama_pic'),
+                TextColumn::make('wa_pic')->label('wa_pic'),
+                TextColumn::make('status_pekerjaan_lapangan')->label('status_pekerjaan_lapangan'),
+                TextColumn::make('status_pembayaran')->label('status_pembayaran'),
                 TextColumn::make('created_at')->dateTime()->label('Dibuat'),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label('Status Proyek')
-                    ->options([
-                        'Prospek' => 'Prospek',
-                        'Berjalan' => 'Berjalan',
-                        'Selesai' => 'Selesai',
-                        'Batal' => 'Batal',
-                    ]),
-
-                SelectFilter::make('kategori')
-                    ->label('Kategori')
-                    ->searchable()
-                    ->preload(),
-
-                SelectFilter::make('sales')
-                    ->label('Sales')
-                    ->searchable()
-                    ->preload(),
-
-                SelectFilter::make('sumber')
-                    ->label('Sumber')
-                    ->searchable()
-                    ->preload(),
-
-                SelectFilter::make('status_pembayaran')
-                    ->label('Status Pembayaran')
-                    ->options([
-                        'Belum Dibayar' => 'Belum Dibayar',
-                        'Sebagian' => 'Sebagian',
-                        'Lunas' => 'Lunas',
-                    ]),
 
                 // DateRangeFilter::make('tanggal_informasi_masuk')
                 //     ->label('Tanggal Masuk'),

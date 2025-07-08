@@ -15,9 +15,9 @@ return new class extends Migration
             // $table->id();
             $table->uuid('id')->primary(); // UUID primary key
             $table->string('nama_project');
-            $table->string('kategori');
+            $table->uuid('kategori_id');
             $table->string('sumber');
-            $table->string('sales');
+            $table->uuid('sales_id');
             $table->string('nama_klien');
             $table->string('jenis_penjualan');
             $table->string('level_company');
@@ -31,6 +31,9 @@ return new class extends Migration
             $table->string('status_pekerjaan_lapangan');
             $table->string('status_pembayaran');
             $table->timestamps();
+
+            $table->foreign('kategori_id')->references('id')->on('kategoris')->onDelete('cascade');
+            $table->foreign('sales_id')->references('id')->on('sales')->onDelete('cascade');
         });
     }
 

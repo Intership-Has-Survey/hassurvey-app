@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('status_pembayarans', function (Blueprint $table) {
             $table->uuid('id');
+            $table->uuid('project_id');
             $table->string('nama_pembayaran');
             $table->string('jenis_pembayaran');
             $table->string('nilai');
             $table->timestamps();
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         });
     }
 

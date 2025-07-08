@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 use App\Models\StatusPembayaran;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
@@ -29,6 +30,10 @@ class StatusPembayaranResource extends Resource
     {
         return $form
             ->schema([
+                Select::make('project_id')
+                    ->relationship('project', 'nama_project')
+                    ->label('Proyek')
+                    ->required(),
                 TextInput::make('nama_pembayaran'),
                 TextInput::make('jenis_pembayaran'),
                 TextInput::make('nilai'),

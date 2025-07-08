@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 use App\Models\StatusPekerjaan;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Project extends Model
 {
     //
+    use HasUuids;
     protected $guarded = ['id'];
 
     public $incrementing = false;      // Disable auto-incrementing
