@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Project;
@@ -40,7 +41,13 @@ class ProjectResource extends Resource
                         ->required()
                         ->maxLength(50),
                 ]),
-            Forms\Components\TextInput::make('sumber'),
+            Forms\Components\Select::make('sumber')
+                ->options([
+                    'online' => 'online',
+                    'offline' => 'offline',
+                ])
+                ->required()
+                ->native(false),
             Forms\Components\Select::make('sales_id')
                 ->relationship('Sales', 'nama')
                 ->searchable()
@@ -62,17 +69,40 @@ class ProjectResource extends Resource
                         ->maxLength(50),
                 ]),
             Forms\Components\TextInput::make('nama_klien'),
-            Forms\Components\TextInput::make('jenis_penjualan'),
-            Forms\Components\TextInput::make('level_company'),
+            Forms\Components\Select::make('jenis_penjualan')
+                ->options([
+                    'bussiness' => 'Bussiness',
+                    'customer' => 'Customer',
+                ])
+                ->required()
+                ->native(false)
+                ->live(),
+            Forms\Components\Select::make('level_company')
+                ->options([
+                    'besar' => 'Besar',
+                    'kecil' => 'Kecil',
+                ])
+                ->native(false)
+                ->visible(fn(Forms\Get $get) => $get('jenis_penjualan') === 'bussiness'),
             Forms\Components\TextInput::make('lokasi'),
             Forms\Components\TextInput::make('alamat'),
-            Forms\Components\TextInput::make('status'),
+            Forms\Components\Select::make('status')
+                ->options([
+                    'prospect' => 'prospect',
+                    'follow up' => 'follow up',
+                    'closing' => 'closing',
+                ])
+                ->required()
+                ->native(false),
             Forms\Components\TextInput::make('nilai_project'),
             Forms\Components\DatePicker::make('tanggal_informasi_masuk'),
             Forms\Components\TextInput::make('nama_pic'),
             Forms\Components\TextInput::make('nomor_wa_pic'),
-            Forms\Components\TextInput::make('status_pekerjaan_lapangan'),
-            Forms\Components\TextInput::make('status_pembayaran'),
+            Forms\Components\TextInput::make('status_pekerjaan_lapangan')
+                ->disabled()
+                ->hint('Field ini tidak bisa diisi.')
+                ->hintColor('gray'),
+            Forms\Components\TextInput::make('status_pembayaran')->disabled()->hint('Field ini tidak bisa diisi.'),
         ]);
     }
 
