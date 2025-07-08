@@ -33,9 +33,8 @@ class PersonelResource extends Resource
             ->schema([
                 Select::make('project_id')
                     ->relationship('project', 'nama_project')
-                    ->label('Proyek')
-                    ->required(),
-                Select::make('pekerjaan_lapangan')
+                    ->label('Proyek'),
+                Select::make('jenis_personel')
                     ->options([
                         'surveyor' => 'surveyor',
                         'asisten surveyor' => 'asisten surveyor',

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use Closure;
+use App\Models\Personel;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Project;
@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProjectResource\RelationManagers;
+
 
 class ProjectResource extends Resource
 {
@@ -98,11 +99,25 @@ class ProjectResource extends Resource
             Forms\Components\DatePicker::make('tanggal_informasi_masuk'),
             Forms\Components\TextInput::make('nama_pic'),
             Forms\Components\TextInput::make('nomor_wa_pic'),
+            // Forms\Components\Repeater::make('personels')
+            //     ->relationship() // Otomatis pakai relasi hasMany
+            //     ->schema([
+            //         Forms\Components\Select::make('personel_id')
+            //             ->label('Pilih Personel')
+            //             ->options(Personel::all()->pluck('nama_personel', 'id')) // asumsikan ada kolom nama
+            //             ->searchable()
+            //             ->required(),
+            //     ])
+            //     ->label('Personel yang Terlibat')
+            //     ->minItems(1)
+            //     ->createItemButtonLabel('Tambah Personel'),
             Forms\Components\TextInput::make('status_pekerjaan_lapangan')
-                ->disabled()
+                // ->disabled()
                 ->hint('Field ini tidak bisa diisi.')
                 ->hintColor('gray'),
-            Forms\Components\TextInput::make('status_pembayaran')->disabled()->hint('Field ini tidak bisa diisi.'),
+            Forms\Components\TextInput::make('status_pembayaran')
+                // ->disabled()
+                ->hint('Field ini tidak bisa diisi.'),
         ]);
     }
 
@@ -146,6 +161,7 @@ class ProjectResource extends Resource
     {
         return [
             //
+            RelationManagers\PersonelsRelationManager::class,
         ];
     }
 

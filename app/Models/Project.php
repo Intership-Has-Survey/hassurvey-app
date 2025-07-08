@@ -43,4 +43,9 @@ class Project extends Model
     {
         return $this->hasMany(StatusPekerjaan::class);
     }
+
+    public function personels()
+    {
+        return $this->hasMany(Personel::class);
+    }
 }
