@@ -17,8 +17,12 @@ return new class extends Migration
             $table->string('nama_pembayaran');
             $table->string('jenis_pembayaran');
             $table->string('nilai');
-            $table->timestamps();
+
+            $table->foreignId('user_id')->constrained('users');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

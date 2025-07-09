@@ -24,7 +24,7 @@ class PersonelResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Personel';
-    protected static ?string $navigationGroup = 'Manajemen Data Master';
+    protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -88,7 +88,7 @@ class PersonelResource extends Resource
                     ->label('Jenis Personel')
                     ->searchable()
                     ->options(function () {
-                        return \App\Models\Personel::query()
+                        return Personel::query()
                             ->select('jenis_personel')
                             ->distinct()
                             ->pluck('jenis_personel', 'jenis_personel');
