@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('status_pekerjaan_lapangan');
             $table->string('status_pembayaran');
             $table->timestamps();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->foreign('kategori_id')->references('id')->on('kategoris')->onDelete('cascade');
             $table->foreign('sales_id')->references('id')->on('sales')->onDelete('cascade');

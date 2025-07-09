@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use App\Models\PeralatanKerja;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Filters\SelectFilter;
@@ -53,6 +54,12 @@ class PeralatanKerjaResource extends Resource
                     ->label('keterangan')
                     ->required()
                     ->numeric(),
+                TextInput::make('user_id')
+                    ->label('User')
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -78,11 +85,7 @@ class PeralatanKerjaResource extends Resource
                 TextColumn::make('jumlah')
                     ->label('Jumlah')
                     ->sortable(),
-
-                TextColumn::make('user.name')
-                    ->label('Nama User')
-                    ->sortable()
-                    ->searchable(),
+                TextColumn::make('user.name')->label('Editor'),
             ])
 
             ->filters([
@@ -121,7 +124,7 @@ class PeralatanKerjaResource extends Resource
 
     protected static function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = "aafaf";
 
         return $data;
     }

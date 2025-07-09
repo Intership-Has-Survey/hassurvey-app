@@ -37,6 +37,12 @@ class StatusPembayaranResource extends Resource
                 TextInput::make('nama_pembayaran'),
                 TextInput::make('jenis_pembayaran'),
                 TextInput::make('nilai'),
+                TextInput::make('user_id')
+                    ->label('User')
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -57,6 +63,8 @@ class StatusPembayaranResource extends Resource
                 TextColumn::make('nilai')
                     ->label('Nilai')
                     ->sortable(),
+
+                TextColumn::make('user.name')->label('Editor'),
             ])
 
             ->filters([

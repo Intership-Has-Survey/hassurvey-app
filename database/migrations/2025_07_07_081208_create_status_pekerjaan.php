@@ -18,12 +18,11 @@ return new class extends Migration
             $table->string('proses_data_dan_gambar');
             $table->string('laporan');
             $table->text('keterangan')->nullable();
+            $table->timestamps();
             $table->unsignedBigInteger('user_id');
 
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
-            $table->timestamps();
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         });
     }
 

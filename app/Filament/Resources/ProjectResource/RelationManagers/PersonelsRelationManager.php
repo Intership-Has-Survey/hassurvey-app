@@ -72,15 +72,21 @@ class PersonelsRelationManager extends RelationManager
                     ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         $action->getRecordSelect(),
+                        // Select::make('peran')
+                        //     ->options([
+                        //         'surveyor' => 'surveyor',
+                        //         'asisten surveyor' => 'asisten surveyor',
+                        //         'driver' => 'driver',
+                        //         'drafter' => 'drafter',
+                        //     ])
+                        //     ->required()
+                        //     ->native(false),
                         Select::make('peran')
-                            ->options([
-                                'surveyor' => 'surveyor',
-                                'asisten surveyor' => 'asisten surveyor',
-                                'driver' => 'driver',
-                                'drafter' => 'drafter',
-                            ])
+                            ->label('Jenis Pekerjaan')
+                            ->options(\App\Models\Kategori::pluck('nama', 'id'))
                             ->required()
-                            ->native(false)
+                            ->searchable()
+                            ->preload()
                     ])
             ])
             ->actions([

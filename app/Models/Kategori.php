@@ -9,4 +9,9 @@ class Kategori extends Model
 {
     use HasUuids;
     protected $guarded = [];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
+    }
 }

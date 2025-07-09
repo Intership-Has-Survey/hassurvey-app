@@ -11,6 +11,8 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -118,6 +120,12 @@ class ProjectResource extends Resource
             Forms\Components\TextInput::make('status_pembayaran')
                 // ->disabled()
                 ->hint('Field ini tidak bisa diisi.'),
+            TextInput::make('user_id')
+                ->label('User')
+                ->required()
+                ->readOnly()
+                ->hint('tidak perlu diisi')
+                ->default(auth()->user()->id),
         ]);
     }
 
@@ -139,6 +147,7 @@ class ProjectResource extends Resource
                 TextColumn::make('wa_pic')->label('wa_pic'),
                 TextColumn::make('status_pekerjaan_lapangan')->label('status_pekerjaan_lapangan'),
                 TextColumn::make('status_pembayaran')->label('status_pembayaran'),
+                TextColumn::make('user.name')->label('Editor'),
                 TextColumn::make('created_at')->dateTime()->label('Dibuat'),
             ])
             ->filters([

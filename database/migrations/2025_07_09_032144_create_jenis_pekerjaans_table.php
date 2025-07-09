@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('status_pembayarans', function (Blueprint $table) {
+        Schema::create('jenis_pekerjaans', function (Blueprint $table) {
             $table->uuid('id');
-            $table->uuid('project_id');
-            $table->string('nama_pembayaran');
-            $table->string('jenis_pembayaran');
-            $table->string('nilai');
+            $table->string('nama');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         });
     }
 
@@ -29,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('status_pembayarans');
+        Schema::dropIfExists('jenis_pekerjaans');
     }
 };

@@ -24,7 +24,7 @@ class PersonelResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Personel';
-    protected static ?string $navigationGroup = 'Manajemen Data Master';
+    protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -46,10 +46,12 @@ class PersonelResource extends Resource
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->nullable(),
-                Select::make('user_id')
-                    ->relationship('user', 'name')
+                TextInput::make('user_id')
                     ->label('User')
-                    ->required(),
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -77,7 +79,7 @@ class PersonelResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('user.name')
-                    ->label('Nama User')
+                    ->label('Editor')
                     ->sortable()
                     ->searchable(),
             ])
