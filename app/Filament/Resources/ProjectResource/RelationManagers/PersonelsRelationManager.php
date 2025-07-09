@@ -47,7 +47,7 @@ class PersonelsRelationManager extends RelationManager
                         Select::make('user_id')
                             ->relationship('user', 'name')
                             ->label('User')
-                            ->required(),
+                            ->required()
                     ]),
             ]);
     }
@@ -64,11 +64,15 @@ class PersonelsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                // Tables\Actions\CreateAction::make(),
+                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\AttachAction::make()
+                    ->label('Tambahkan Personel')
+                    ->modalHeading('Tambah Personel ke Proyek')
+                    ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         $action->getRecordSelect(),
-                        Select::make('jenis_personel')
+                        Select::make('peran')
                             ->options([
                                 'surveyor' => 'surveyor',
                                 'asisten surveyor' => 'asisten surveyor',
@@ -76,12 +80,12 @@ class PersonelsRelationManager extends RelationManager
                                 'drafter' => 'drafter',
                             ])
                             ->required()
-                            ->native(false),
+                            ->native(false)
                     ])
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
-                // Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

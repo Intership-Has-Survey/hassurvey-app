@@ -57,26 +57,25 @@ class PersonelResource extends Resource
     {
         return $table
             ->columns([
-                // TextColumn::make('project.nama_project')
-                //     ->label('Nama Proyek')
-                //     ->sortable()
-                //     ->searchable(),
-
                 TextColumn::make('jenis_personel')
                     ->label('Jenis Personel')
                     ->sortable()
                     ->searchable(),
-
                 TextColumn::make('nama_personel')
                     ->label('Nama Personel')
                     ->sortable()
                     ->searchable(),
-
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(
+                        fn(string $state): string =>
+                        str_contains($state, 'dalam project') ? 'warning' : 'success'
+                    ),
                 TextColumn::make('keterangan')
                     ->label('Keterangan')
                     ->sortable()
                     ->searchable(),
-
                 TextColumn::make('user.name')
                     ->label('Nama User')
                     ->sortable()
