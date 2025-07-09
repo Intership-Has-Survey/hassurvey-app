@@ -6,13 +6,14 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Select;
 use App\Models\StatusPembayaran;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StatusPembayaranResource\Pages;
 use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
@@ -23,20 +24,47 @@ class StatusPembayaranResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Daftar Pembayaran';
-    // protected static ?string $navigationGroup = 'Jasa Pemetaan';
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                // Field untuk memilih proyek terkait
                 Select::make('project_id')
                     ->relationship('project', 'nama_project')
+                    ->searchable()
+                    ->preload()
                     ->label('Proyek')
                     ->required(),
-                TextInput::make('nama_pembayaran'),
-                TextInput::make('jenis_pembayaran'),
-                TextInput::make('nilai'),
+
+                Select::make('nama_pembayaran')
+                    ->label('Metode Pembayaran')
+                    ->options([
+                        'Transfer Bank' => 'Transfer Bank',
+                        'Tunai' => 'Tunai',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->required()
+                    ->native(false),
+
+                Select::make('jenis_pembayaran')
+                    ->options([
+                        'DP' => 'DP',
+                        'Pelunasan' => 'Pelunasan',
+                        'Termin 1' => 'Termin 1',
+                        'Termin 2' => 'Termin 2',
+                    ])
+                    ->required()
+                    ->native(false),
+
+                TextInput::make('nilai')
+                    ->required()
+                    ->numeric()
+                    ->prefix('Rp'),
+
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
                 TextInput::make('user_id')
                     ->label('User')
                     ->required()
@@ -50,36 +78,31 @@ class StatusPembayaranResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('project.nama_project')
+                    ->label('Proyek')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('nama_pembayaran')
                     ->label('Metode Pembayaran')
-                    ->sortable()
                     ->searchable(),
 
                 TextColumn::make('jenis_pembayaran')
-                    ->label('Jenis Pembayaran')
-                    ->sortable()
+                    ->badge() // Badge agar lebih menarik
                     ->searchable(),
 
                 TextColumn::make('nilai')
-                    ->label('Nilai')
+                    ->money('IDR') // Format sebagai mata uang
                     ->sortable(),
 
                 TextColumn::make('user.name')->label('Editor'),
             ])
-
             ->filters([
-                SelectFilter::make('jenis_pembayaran')
-                    ->label('Jenis Pembayaran')
-                    ->options(function () {
-                        return \App\Models\StatusPembayaran::query()
-                            ->select('jenis_pembayaran')
-                            ->distinct()
-                            ->pluck('jenis_pembayaran', 'jenis_pembayaran');
-                    })
-                    ->searchable(),
+                TrashedFilter::make(),
             ])
-
             ->actions([
+                // --- TOMBOL BARU: VIEW ---
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -101,6 +124,7 @@ class StatusPembayaranResource extends Resource
         return [
             'index' => Pages\ListStatusPembayarans::route('/'),
             'create' => Pages\CreateStatusPembayaran::route('/create'),
+            // 'view' => Pages\ListStatusPembayaran::route('/{record}'),
             'edit' => Pages\EditStatusPembayaran::route('/{record}/edit'),
         ];
     }

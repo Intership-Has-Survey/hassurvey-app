@@ -90,7 +90,7 @@ class PersonelResource extends Resource
                     ->label('Jenis Personel')
                     ->searchable()
                     ->options(function () {
-                        return \App\Models\Personel::query()
+                        return Personel::query()
                             ->select('jenis_personel')
                             ->distinct()
                             ->pluck('jenis_personel', 'jenis_personel');

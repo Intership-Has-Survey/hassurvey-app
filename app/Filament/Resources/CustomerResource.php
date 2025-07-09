@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\CustomerResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -87,7 +88,29 @@ class CustomerResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+
+
+                // SelectFilter::make('jenis_personel')
+                //     ->label('Jenis Personel')
+                //     ->searchable()
+                //     ->options(function () {
+                //         return Personel::query()
+                //             ->select('jenis_personel')
+                //             ->distinct()
+                //             ->pluck('jenis_personel', 'jenis_personel');
+                //     }),
+
+                SelectFilter::make('tipe_customer')
+                    ->label('Tipe')
+                    // ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('nama_institusi')
+                    ->label('Nama Institusi')
+                    // ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

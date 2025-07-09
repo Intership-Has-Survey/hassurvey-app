@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('keterangan')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         });

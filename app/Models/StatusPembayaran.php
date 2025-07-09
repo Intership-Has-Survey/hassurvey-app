@@ -2,24 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StatusPembayaran extends Model
 {
+    use SoftDeletes, HasUuids;
     protected $guarded = [];
-    public $incrementing = false;
-    protected $keyType = 'string';
 
     protected static function boot()
     {
         parent::boot();
-
-        static::creating(function ($model) {
-            // Generate UUID automatically if not set
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
+    }
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }
