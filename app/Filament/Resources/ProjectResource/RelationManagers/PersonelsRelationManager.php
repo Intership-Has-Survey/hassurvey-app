@@ -22,33 +22,33 @@ class PersonelsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('personel_id')
-                    ->relationship('personel', 'nama_personel')
-                    ->searchable()
-                    ->preload()
-                    ->label('Personel')
-                    ->required()
-                    ->createOptionForm([
-                        Select::make('jenis_personel')
-                            ->options([
-                                'surveyor' => 'surveyor',
-                                'asisten surveyor' => 'asisten surveyor',
-                                'driver' => 'driver',
-                                'drafter' => 'drafter',
-                            ])
-                            ->required()
-                            ->native(false),
-                        TextInput::make('nama_personel')
-                            ->label('Nama Personel')
-                            ->required(),
-                        Textarea::make('keterangan')
-                            ->label('Keterangan')
-                            ->nullable(),
-                        Select::make('user_id')
-                            ->relationship('user', 'name')
-                            ->label('User')
-                            ->required()
-                    ]),
+                // Forms\Components\Select::make('personel_id')
+                //     ->relationship('personel', 'nama_personel')
+                //     ->searchable()
+                //     ->preload()
+                //     ->label('Personel')
+                //     ->required()
+                //     ->createOptionForm([
+                //         Select::make('jenis_personel')
+                //             ->options([
+                //                 'surveyor' => 'surveyor',
+                //                 'asisten surveyor' => 'asisten surveyor',
+                //                 'driver' => 'driver',
+                //                 'drafter' => 'drafter',
+                //             ])
+                //             ->required()
+                //             ->native(false),
+                //         TextInput::make('nama_personel')
+                //             ->label('Nama Personel')
+                //             ->required(),
+                //         Textarea::make('keterangan')
+                //             ->label('Keterangan')
+                //             ->nullable(),
+                //         Select::make('user_id')
+                //             ->relationship('user', 'name')
+                //             ->label('User')
+                //             ->required()
+                //     ]),
             ]);
     }
 
@@ -64,7 +64,7 @@ class PersonelsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                // Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make(),
                 // Tables\Actions\ViewAction::make(),
                 Tables\Actions\AttachAction::make()
                     ->label('Tambahkan Personel')
@@ -72,26 +72,32 @@ class PersonelsRelationManager extends RelationManager
                     ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         $action->getRecordSelect(),
-                        // Select::make('peran')
-                        //     ->options([
-                        //         'surveyor' => 'surveyor',
-                        //         'asisten surveyor' => 'asisten surveyor',
-                        //         'driver' => 'driver',
-                        //         'drafter' => 'drafter',
-                        //     ])
-                        //     ->required()
-                        //     ->native(false),
                         Select::make('peran')
-                            ->label('Jenis Pekerjaan')
-                            ->options(\App\Models\Kategori::pluck('nama', 'id'))
+                            ->options([
+                                'surveyor' => 'surveyor',
+                                'asisten surveyor' => 'asisten surveyor',
+                                'driver' => 'driver',
+                                'drafter' => 'drafter',
+                            ])
                             ->required()
-                            ->searchable()
-                            ->preload()
+                            ->native(false),
+                        TextInput::make('user_id')
+                            ->label('User')
+                            ->required()
+                            ->readOnly()
+                            ->hint('tidak perlu diisi')
+                            ->default(auth()->user()->id),
+                        // Select::make('peran')
+                        //     ->label('Jenis Pekerjaan')
+                        //     ->options(\App\Models\Kategori::pluck('nama', 'id'))
+                        //     ->required()
+                        //     ->searchable()
+                        //     ->preload(),
                     ])
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

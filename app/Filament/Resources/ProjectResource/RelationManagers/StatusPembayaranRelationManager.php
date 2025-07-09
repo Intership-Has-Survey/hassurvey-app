@@ -84,7 +84,7 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->filters([
-                TrashedFilter::make(),
+                // TrashedFilter::make(),
             ])
             ->headerActions([
                 CreateAction::make(),

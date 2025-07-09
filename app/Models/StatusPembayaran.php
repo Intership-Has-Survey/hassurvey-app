@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StatusPembayaran extends Model
 {
-    use SoftDeletes, HasUuids;
-    protected $guarded = [];
+    use  HasUuids;
+    protected $guarded = ['id'];
 
     protected static function boot()
     {
         parent::boot();
     }
+
     public function project()
     {
         return $this->belongsTo(Project::class);

@@ -25,7 +25,6 @@ use App\Filament\Resources\ProjectResource\Pages\EditProject;
 use App\Filament\Resources\ProjectResource\Pages\ViewProject;
 use App\Filament\Resources\ProjectResource\Pages\ListProjects;
 use App\Filament\Resources\ProjectResource\Pages\CreateProject;
-use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 
 class ProjectResource extends Resource
@@ -118,15 +117,23 @@ class ProjectResource extends Resource
                                 ->tel()
                                 ->required()
                                 ->maxLength(255),
-                            Textarea::make('alamat')
+                            Textinput::make('alamat')
                                 ->required()
                                 ->columnSpanFull(),
                         ])
                         ->columnSpanFull(),
+                    Select::make('jenis_penjualan')
+                        ->options([
+                            'corporate' => 'Corporate',
+                            'Perusahaan' => 'Perusahaan',
+                        ]),
 
                     Forms\Components\TextInput::make('lokasi')
                         ->label('Lokasi Proyek')
                         ->required(),
+                    Textinput::make('alamat')
+                        ->required()
+                        ->columnSpanFull(),
                 ]),
 
             // --- BAGIAN KEUANGAN & STATUS ---

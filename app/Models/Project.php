@@ -17,24 +17,15 @@ class Project extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'nama_project',
-        'kategori_id',
-        'sumber',
-        'sales_id',
-        'customer_id',
-        'lokasi',
-        'status',
-        'nilai_project',
-        'tanggal_informasi_masuk',
-        'status_pekerjaan_lapangan',
-        'status_pembayaran',
-        'user_id',
+    protected $guarded = [
+        'id'
     ];
 
     public function personels()
     {
-        return $this->belongsToMany(Personel::class)->withPivot('peran');
+        return $this->belongsToMany(Personel::class, 'personel_project') // <- ini penting
+            ->withPivot('peran', 'user_id')
+            ->withTimestamps();
     }
 
     public function kategori(): BelongsTo
@@ -55,5 +46,15 @@ class Project extends Model
     public function statusPekerjaan()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function StatusPembayaran()
+    {
+        return $this->hasMany(StatusPembayaran::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }
