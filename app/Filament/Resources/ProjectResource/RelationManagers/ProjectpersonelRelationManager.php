@@ -7,21 +7,27 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PersonelsRelationManager extends RelationManager
+class ProjectpersonelRelationManager extends RelationManager
 {
-    protected static string $relationship = 'personels';
+    protected static string $relationship = 'personel';
 
     public function form(Form $form): Form
     {
+        // dump($this->getOwnerRecord()); // akan tampilkan data Project saat ini
+        // dump($this->getRelationship()->getRelated()); // akan tampilkan instance model Personel
+        // dump($this->getOwnerRecord());
+        // dump($this->getModel());
         return $form
             ->schema([
+
+                // Forms\Components\TextInput::make('anjay')->required(),
                 Forms\Components\Select::make('personel_id')
                     ->relationship('personel', 'nama_personel')
                     ->searchable()
@@ -57,31 +63,23 @@ class PersonelsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nama_personel')
             ->columns([
-                Tables\Columns\TextColumn::make('nama_personel'),
-                Tables\Columns\TextColumn::make('jenis_personel'),
+                // Tables\Columns\TextColumn::make('nama_personel'),
+                // BadgeColumn::make('status')
+                //     ->label('Status')
+                //     ->colors([
+                //         'success' => 'tersedia',
+                //         'danger' => 'dalam projek',
+                //     ])->getStateUsing(fn($record) => $record->status),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
-                Tables\Actions\AttachAction::make()
-                    ->form(fn(Tables\Actions\AttachAction $action): array => [
-                        $action->getRecordSelect(),
-                        Select::make('jenis_personel')
-                            ->options([
-                                'surveyor' => 'surveyor',
-                                'asisten surveyor' => 'asisten surveyor',
-                                'driver' => 'driver',
-                                'drafter' => 'drafter',
-                            ])
-                            ->required()
-                            ->native(false),
-                    ])
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
-                // Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

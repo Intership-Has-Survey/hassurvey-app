@@ -11,20 +11,26 @@ class Personel extends Model
     protected $table = 'personel';
     use HasFactory, HasUuids;
     protected $fillable = [
-        'project_id',
         'jenis_personel',
         'nama_personel',
         'keterangan',
         'user_id',
     ];
 
-    public function project()
+    public function projects()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsToMany(Project::class);
     }
 
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class);
+    }
+
+    public function getStatusAttribute()
+    {
+        return $this->project()->where('status_pekerjaan_lapangan', 'selesai')->exist()
+            ? 'dalam project'
+            : 'tersedia';
     }
 }

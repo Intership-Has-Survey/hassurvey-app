@@ -12,13 +12,11 @@ return new class extends Migration {
     {
         Schema::create('personel', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('project_id')->nullable();
             $table->string('jenis_personel');
             $table->string('nama_personel');
             $table->string('keterangan')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

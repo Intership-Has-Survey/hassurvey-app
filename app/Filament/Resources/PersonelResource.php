@@ -31,9 +31,6 @@ class PersonelResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('project_id')
-                    ->relationship('project', 'nama_project')
-                    ->label('Proyek'),
                 Select::make('jenis_personel')
                     ->options([
                         'surveyor' => 'surveyor',
@@ -60,10 +57,10 @@ class PersonelResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('project.nama_project')
-                    ->label('Nama Proyek')
-                    ->sortable()
-                    ->searchable(),
+                // TextColumn::make('project.nama_project')
+                //     ->label('Nama Proyek')
+                //     ->sortable()
+                //     ->searchable(),
 
                 TextColumn::make('jenis_personel')
                     ->label('Jenis Personel')
@@ -87,11 +84,6 @@ class PersonelResource extends Resource
             ])
 
             ->filters([
-                SelectFilter::make('project_id')
-                    ->label('Proyek')
-                    ->relationship('project', 'nama_project')
-                    ->searchable()
-                    ->preload(),
 
                 SelectFilter::make('jenis_personel')
                     ->label('Jenis Personel')

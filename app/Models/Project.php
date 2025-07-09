@@ -13,9 +13,11 @@ class Project extends Model
     //
     use HasUuids;
     protected $guarded = ['id'];
-
-    public $incrementing = false;      // Disable auto-incrementing
-    protected $keyType = 'string';     // Key type is string, not integer
+    // Key type is string, not integer
+    public function personels()
+    {
+        return $this->belongsToMany(Personel::class)->withPivot('peran');
+    }
 
     public function Kategori(): BelongsTo
     {
@@ -27,25 +29,9 @@ class Project extends Model
         return $this->belongsTo(Sales::class, 'sales_id', 'id');
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            // Generate UUID automatically if not set
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     public function statusPekerjaan()
     {
         return $this->hasMany(StatusPekerjaan::class);
-    }
-
-    public function personels()
-    {
-        return $this->hasMany(Personel::class);
     }
 }
