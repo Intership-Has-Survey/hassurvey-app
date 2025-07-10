@@ -1,5 +1,9 @@
 <?php
 
+// ========================================================================
+// FILE 1: app/Filament/Resources/ProjectResource/RelationManagers/PersonelsRelationManager.php
+// Kode ini sudah benar dan diatur untuk relasi Many-to-Many.
+// ========================================================================
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
@@ -7,48 +11,28 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
 
 class PersonelsRelationManager extends RelationManager
 {
+    // Nama ini harus cocok dengan nama method relasi di Model Project
     protected static string $relationship = 'personels';
 
+    protected static ?string $title = 'Tim Personel Proyek';
+
+    // Form ini hanya digunakan untuk MENGEDIT data pivot (peran)
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Forms\Components\Select::make('personel_id')
-                //     ->relationship('personel', 'nama_personel')
-                //     ->searchable()
-                //     ->preload()
-                //     ->label('Personel')
-                //     ->required()
-                //     ->createOptionForm([
-                //         Select::make('jenis_personel')
-                //             ->options([
-                //                 'surveyor' => 'surveyor',
-                //                 'asisten surveyor' => 'asisten surveyor',
-                //                 'driver' => 'driver',
-                //                 'drafter' => 'drafter',
-                //             ])
-                //             ->required()
-                //             ->native(false),
-                //         TextInput::make('nama_personel')
-                //             ->label('Nama Personel')
-                //             ->required(),
-                //         Textarea::make('keterangan')
-                //             ->label('Keterangan')
-                //             ->nullable(),
-                //         Select::make('user_id')
-                //             ->relationship('user', 'name')
-                //             ->label('User')
-                //             ->required()
-                //     ]),
+                Forms\Components\Select::make('peran')
+                    ->label('Peran di Proyek')
+                    ->options([
+                        'surveyor' => 'Surveyor',
+                        'asisten surveyor' => 'Asisten Surveyor',
+                        'driver' => 'Driver',
+                        'drafter' => 'Drafter',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -58,7 +42,11 @@ class PersonelsRelationManager extends RelationManager
             ->recordTitleAttribute('nama_personel')
             ->columns([
                 Tables\Columns\TextColumn::make('nama_personel'),
-                Tables\Columns\TextColumn::make('jenis_personel'),
+                Tables\Columns\TextColumn::make('jenis_personel')->badge(),
+                // Menampilkan data 'peran' dari tabel pivot
+                Tables\Columns\TextColumn::make('pivot.peran')
+                    ->label('Peran di Proyek')
+                    ->badge(),
             ])
             ->filters([
                 //
@@ -67,21 +55,21 @@ class PersonelsRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
                 // Tables\Actions\ViewAction::make(),
                 Tables\Actions\AttachAction::make()
-                    ->label('Tambahkan Personel')
-                    ->modalHeading('Tambah Personel ke Proyek')
                     ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
+                        // Dropdown untuk memilih personel yang sudah ada
                         $action->getRecordSelect(),
-                        Select::make('peran')
-                            ->options([
-                                'surveyor' => 'surveyor',
-                                'asisten surveyor' => 'asisten surveyor',
-                                'driver' => 'driver',
-                                'drafter' => 'drafter',
-                            ])
-                            ->required()
-                            ->native(false),
-                        TextInput::make('user_id')
+                        // Field untuk mengisi data di tabel pivot
+                        // Forms\Components\Select::make('peran')
+                        //     ->options([
+                        //         'surveyor' => 'Surveyor',
+                        //         'asisten surveyor' => 'Asisten Surveyor',
+                        //         'driver' => 'Driver',
+                        //         'drafter' => 'Drafter',
+                        //     ])
+                        //     ->required()
+                        //     ->native(false),
+                        Forms\Components\TextInput::make('user_id')
                             ->label('User')
                             ->required()
                             ->readOnly()
@@ -96,12 +84,12 @@ class PersonelsRelationManager extends RelationManager
                     ])
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
                 // Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DetachBulkAction::make(),
                 ]),
             ]);
     }

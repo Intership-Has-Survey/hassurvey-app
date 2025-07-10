@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Project;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
+use App\Filament\Resources\StatusPembayaranResource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -17,10 +18,10 @@ class RingkasanPembayaran extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $navigationLabel = 'Ringkasan Pembayaran';
-    protected static ?string $title = 'Ringkasan Pembayaran per Proyek';
+    protected static ?string $navigationLabel = 'Daftar Pembayaran';
+    protected static ?string $title = 'Daftar Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
-    protected static ?int $navigationSort = 4; // Atur urutan di menu
+    protected static ?int $navigationSort = 4;
 
     /**
      * Mendefinisikan struktur tabel untuk halaman ini.
@@ -63,10 +64,12 @@ class RingkasanPembayaran extends Page implements HasTable
                     }),
             ])
             ->actions([
-                Action::make('view')
-                    ->label('Lihat Detail')
+                Action::make('view_payments')
+                    ->label('Lihat Riwayat Pembayaran')
                     ->icon('heroicon-o-eye')
-                    ->url(fn(Project $record): string => ProjectResource::getUrl('view', ['record' => $record])),
+                    ->url(fn(Project $record): string => StatusPembayaranResource::getUrl('index', [
+                        'project_id' => $record->id,
+                    ])),
             ]);
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SalesResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SalesResource\RelationManagers;
+use Filament\Forms\Components\Hidden;
 
 class SalesResource extends Resource
 {
@@ -48,12 +49,8 @@ class SalesResource extends Resource
                 //     ->label('no wa')
                 //     ->required()
                 //     ->maxLength(50),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -64,7 +61,10 @@ class SalesResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('email'),
                 TextColumn::make('telepon'),
-                TextColumn::make('user.name')->label('Editor'),
+                TextColumn::make('user.name')
+                    ->label('Editor')
+                    ->sortable()
+                    ->searchable(),
 
             ])
             ->filters([

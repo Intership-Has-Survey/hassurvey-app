@@ -24,8 +24,8 @@ class Project extends Model
 
     public function personels()
     {
-        return $this->belongsToMany(Personel::class, 'personel_project') // <- ini penting
-            ->withPivot('peran', 'user_id')
+        return $this->belongsToMany(Personel::class, 'personel_project')
+            ->withPivot('user_id')
             ->withTimestamps();
     }
 
@@ -44,18 +44,9 @@ class Project extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-    }
-
     public function statusPekerjaan()
     {
         return $this->belongsTo(StatusPekerjaan::class);
-    }
-    public function statusPembayaran()
-    {
-        return $this->hasMany(StatusPembayaran::class);
     }
 
     public function daftarAlat()
@@ -70,8 +61,8 @@ class Project extends Model
         return $this->hasMany(StatusPembayaran::class);
     }
 
-    public function customer()
+    public function user()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class);
     }
 }

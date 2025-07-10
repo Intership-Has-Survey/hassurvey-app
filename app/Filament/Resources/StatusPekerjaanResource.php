@@ -8,11 +8,12 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\StatusPekerjaan;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -73,11 +74,7 @@ class StatusPekerjaanResource extends Resource
 
                 Textarea::make('keterangan')
                     ->columnSpanFull(),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
+                Hidden::make('user_id')
                     ->default(auth()->user()->id),
             ]);
     }
@@ -104,9 +101,10 @@ class StatusPekerjaanResource extends Resource
                         'Tidak Perlu' => 'gray',
                     }),
 
-                // Menampilkan siapa yang terakhir mengupdate
-
-                TextColumn::make('user.name')->label('Editor'),
+                TextColumn::make('user.name')
+                    ->label('Editor')
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('updated_at')
                     ->label('Tanggal Update')

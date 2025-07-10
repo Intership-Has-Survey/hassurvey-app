@@ -20,7 +20,6 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
-// CATATAN: Ganti 'pembayarans' dengan nama relasi yang benar di Model Project Anda
 class StatusPembayaranRelationManager extends RelationManager
 {
 
@@ -87,7 +86,7 @@ class StatusPembayaranRelationManager extends RelationManager
                 // TrashedFilter::make(),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()->label('Buat Pembayaran Baru'),
             ])
             ->actions([
                 EditAction::make(),

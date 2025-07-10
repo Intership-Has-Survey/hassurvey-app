@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\JenisPekerjaanResource\Pages;
-use App\Filament\Resources\JenisPekerjaanResource\RelationManagers;
-use App\Models\JenisPekerjaan;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\JenisPekerjaan;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\JenisPekerjaanResource\Pages;
+use App\Filament\Resources\JenisPekerjaanResource\RelationManagers;
 
 class JenisPekerjaanResource extends Resource
 {
@@ -29,16 +30,12 @@ class JenisPekerjaanResource extends Resource
         return $form
             ->schema([
                 //
-                Forms\Components\TextInput::make('nama')->required()->label('Jenis Pekerjaan'),
-                Forms\Components\TextInput::make('keterangan')
+                TextInput::make('nama')->required()->label('Jenis Pekerjaan'),
+                TextInput::make('keterangan')
                     ->label('Keterangan')
                     ->maxLength(300),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -46,10 +43,12 @@ class JenisPekerjaanResource extends Resource
     {
         return $table
             ->columns([
-                // Forms\Components\TextInput::make('nama_project')->required(),
+                // TextInput::make('nama_project')->required(),
                 Tables\Columns\TextColumn::make('nama'),
                 Tables\Columns\TextColumn::make('keterangan'),
                 Tables\Columns\TextColumn::make('user.name')->label('Editor')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

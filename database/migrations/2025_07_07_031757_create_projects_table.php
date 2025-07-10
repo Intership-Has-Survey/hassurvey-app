@@ -12,31 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
-            // Primary Key
             $table->uuid('id')->primary();
+            // info utama
             $table->string('nama_project');
             $table->foreignUuid('kategori_id')->constrained('kategoris');
-            $table->string('sumber'); // Contoh: Online, Offline
             $table->uuid('sales_id')->constrained('sales');
+            $table->date('tanggal_informasi_masuk');
+            $table->string('sumber');
+            // customer 
             $table->uuid('customer_id')->constrained('customers');
             $table->string('jenis_penjualan');
-            $table->string('lokasi'); // Lokasi spesifik proyek
+            $table->string('nama_institusi')->nullable();
+            $table->string('level_company')->nullable();
+            $table->string('lokasi');
             $table->string('alamat');
-            $table->string('status'); // Status Prospek: Prospect, Follow up, Closing
-            $table->decimal('nilai_project', 15, 2)->default(0); // Menggunakan decimal untuk uang
-            $table->date('tanggal_informasi_masuk');
-            $table->string('status_pekerjaan_lapangan')->nullable()->default('Belum Dikerjakan');
+            // keuangan & status
+            $table->decimal('nilai_project', 15, 2)->default(0);
+            $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
+            $table->string('status_pekerjaan_lapangan')->nullable()->default('Belum Dikerjakan');
             $table->timestamps();
-            // Informasi Dasar Proyek
 
-            // Relasi (Foreign Keys)
-            $table->unsignedBigInteger('user_id')->constrained('users'); // Relasi ke pembuat/pengelola
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            // Status & Keuangan
-
-            // Kolom Status Otomatis (diisi oleh sistem/observer)
-
+            // Relasi
+            $table->foreignUuid('user_id')->constrained('users');
         });
     }
 

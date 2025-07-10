@@ -8,6 +8,7 @@ use App\Models\Kategori;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -39,12 +40,8 @@ class KategoriResource extends Resource
                     ->label('Keterangan')
                     ->required()
                     ->maxLength(300),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -54,7 +51,10 @@ class KategoriResource extends Resource
             ->columns([
                 TextColumn::make('nama'),
                 TextColumn::make('keterangan'),
-                TextColumn::make('user.name')->label('Editor'),
+                TextColumn::make('user.name')
+                    ->label('Editor')
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //

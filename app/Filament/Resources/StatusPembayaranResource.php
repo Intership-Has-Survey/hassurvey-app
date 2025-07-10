@@ -21,6 +21,7 @@ use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
 class StatusPembayaranResource extends Resource
 {
     protected static ?string $model = StatusPembayaran::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Daftar Pembayaran';
@@ -65,12 +66,6 @@ class StatusPembayaranResource extends Resource
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -98,11 +93,10 @@ class StatusPembayaranResource extends Resource
                 TextColumn::make('user.name')->label('Editor'),
             ])
             ->filters([
-                TrashedFilter::make(),
+                // TrashedFilter::make(),
             ])
             ->actions([
-                // --- TOMBOL BARU: VIEW ---
-                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

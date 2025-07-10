@@ -4,12 +4,15 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
 use App\Models\Customer;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,18 +37,6 @@ class CustomerResource extends Resource
                     ->label('Nama Customer')
                     ->required()
                     ->maxLength(255),
-                Select::make('tipe_customer')
-                    ->options([
-                        'Perorangan' => 'Perorangan',
-                        'Perusahaan' => 'Perusahaan',
-                        'Instansi Pemerintah' => 'Instansi Pemerintah',
-                    ])
-                    ->required()
-                    ->native(false),
-                TextInput::make('nama_institusi')
-                    ->label('Nama Perusahaan/Institusi')
-                    ->maxLength(255)
-                    ->placeholder('Kosongkan jika Perorangan'),
                 TextInput::make('email')
                     ->email()
                     ->maxLength(255),
@@ -56,12 +47,8 @@ class CustomerResource extends Resource
                 Textarea::make('alamat')
                     ->required()
                     ->columnSpanFull(),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -69,20 +56,20 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_pic')
+                TextColumn::make('nama_pic')
                     ->label('Nama')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tipe_customer')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('nama_institusi')
+
+                TextColumn::make('telepon')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('telepon')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('user.name')->label('Editor'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('user.name')
+                    ->label('Editor')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -100,17 +87,17 @@ class CustomerResource extends Resource
                 //             ->pluck('jenis_personel', 'jenis_personel');
                 //     }),
 
-                SelectFilter::make('tipe_customer')
-                    ->label('Tipe')
-                    // ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                // SelectFilter::make('tipe_customer')
+                //     ->label('Tipe')
+                //     // ->relationship('user', 'name')
+                //     ->searchable()
+                //     ->preload(),
 
-                SelectFilter::make('nama_institusi')
-                    ->label('Nama Institusi')
-                    // ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                // SelectFilter::make('nama_institusi')
+                //     ->label('Nama Institusi')
+                //     // ->relationship('user', 'name')
+                //     ->searchable()
+                //     ->preload(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

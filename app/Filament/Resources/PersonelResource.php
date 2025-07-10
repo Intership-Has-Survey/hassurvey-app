@@ -8,6 +8,7 @@ use App\Models\Personel;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
@@ -24,7 +25,7 @@ class PersonelResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Personel';
-    protected static ?string $navigationGroup = 'Jasa Pemetaan';
+    protected static ?string $navigationGroup = 'Manajemen Data Master';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -46,12 +47,8 @@ class PersonelResource extends Resource
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->nullable(),
-                TextInput::make('user_id')
-                    ->label('User')
-                    ->required()
-                    ->readOnly()
-                    ->hint('tidak perlu diisi')
-                    ->default(auth()->user()->id),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -90,7 +87,7 @@ class PersonelResource extends Resource
                     ->label('Jenis Personel')
                     ->searchable()
                     ->options(function () {
-                        return Personel::query()
+                        return \App\Models\Personel::query()
                             ->select('jenis_personel')
                             ->distinct()
                             ->pluck('jenis_personel', 'jenis_personel');

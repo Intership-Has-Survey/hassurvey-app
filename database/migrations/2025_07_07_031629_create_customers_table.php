@@ -17,14 +17,13 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama_pic');
-            $table->string('tipe_customer');
-            $table->string('nama_institusi')->nullable();
             $table->string('email')->unique();
             $table->string('telepon');
             $table->text('alamat');
+
             $table->timestamps();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->foreignUuid('user_id')->constrained('users');
         });
     }
 

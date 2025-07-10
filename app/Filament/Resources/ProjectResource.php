@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Project;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
@@ -40,54 +41,59 @@ class ProjectResource extends Resource
     {
         return $form->schema([
             // --- BAGIAN INFORMASI UTAMA ---
-            Forms\Components\Section::make('Informasi Proyek')
+            Section::make('Informasi Proyek')
                 ->schema([
-                    Forms\Components\TextInput::make('nama_project')
+                    TextInput::make('nama_project')
                         ->required()
                         ->columnSpanFull(),
 
-                    // PERBAIKAN: Nama relasi menggunakan camelCase (kategori, bukan Kategori)
-                    Forms\Components\Select::make('kategori_id')
+                    Select::make('kategori_id')
                         ->relationship('kategori', 'nama')
                         ->searchable()
                         ->preload()
                         ->label('Kategori Proyek')
                         ->required()
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('nama')
+                            TextInput::make('nama')
                                 ->label('Jenis Kategori')
                                 ->required()
                                 ->maxLength(50),
+                            TextInput::make('keterangan')
+                                ->label('Keterangan')
+                                ->required()
+                                ->maxLength(300),
+                            Hidden::make('user_id')
+                                ->default(auth()->id()),
                         ]),
 
-                    // PERBAIKAN: Nama relasi menggunakan camelCase (sales, bukan Sales)
-                    Forms\Components\Select::make('sales_id')
+                    Select::make('sales_id')
                         ->relationship('sales', 'nama')
                         ->searchable()
                         ->preload()
                         ->label('Sales')
                         ->required()
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('nama')->label('Nama Sales')->required(),
-                            Forms\Components\TextInput::make('telepon')->tel()->required(),
-                            Forms\Components\TextInput::make('email')->email()->required(),
+                            TextInput::make('nama')->label('Nama Sales')->required(),
+                            TextInput::make('telepon')->tel()->required(),
+                            TextInput::make('email')->email()->required(),
+                            Hidden::make('user_id')
+                                ->default(auth()->id()),
                         ]),
 
-                    Forms\Components\DatePicker::make('tanggal_informasi_masuk')
+                    DatePicker::make('tanggal_informasi_masuk')
                         ->required()
                         ->native(false),
 
-                    Forms\Components\Select::make('sumber')
+                    Select::make('sumber')
                         ->options(['Online' => 'Online', 'Offline' => 'Offline'])
                         ->required()
                         ->native(false),
                 ])->columns(2),
 
             // --- BAGIAN CUSTOMER (MENGGUNAKAN RELASI) ---
-            Forms\Components\Section::make('Informasi Customer')
+            Section::make('Informasi Customer')
                 ->schema([
-                    // PERBAIKAN: Menggunakan relasi ke tabel Customer, bukan input manual
-                    Forms\Components\Select::make('customer_id')
+                    Select::make('customer_id')
                         ->relationship('customer', 'nama_pic')
                         ->searchable()
                         ->preload()
@@ -98,18 +104,7 @@ class ProjectResource extends Resource
                                 ->label('Nama Customer')
                                 ->required()
                                 ->maxLength(255),
-                            Select::make('tipe_customer')
-                                ->options([
-                                    'Perorangan' => 'Perorangan',
-                                    'Perusahaan' => 'Perusahaan',
-                                    'Instansi Pemerintah' => 'Instansi Pemerintah',
-                                ])
-                                ->required()
-                                ->native(false),
-                            TextInput::make('nama_institusi')
-                                ->label('Nama Perusahaan/Institusi')
-                                ->maxLength(255)
-                                ->placeholder('Kosongkan jika Perorangan'),
+
                             TextInput::make('email')
                                 ->email()
                                 ->maxLength(255),
@@ -120,15 +115,27 @@ class ProjectResource extends Resource
                             Textinput::make('alamat')
                                 ->required()
                                 ->columnSpanFull(),
+                            Hidden::make('user_id')
+                                ->default(auth()->id()),
                         ])
                         ->columnSpanFull(),
                     Select::make('jenis_penjualan')
                         ->options([
-                            'corporate' => 'Corporate',
-                            'Perusahaan' => 'Perusahaan',
-                        ]),
-
-                    Forms\Components\TextInput::make('lokasi')
+                            'Perseorangan' => 'Perseorangan',
+                            'Corporate' => 'Corporate',
+                        ])
+                        ->required()
+                        ->native(false)
+                        ->live(),
+                    TextInput::make('nama_institusi')
+                        ->label('Nama Perusahaan/Institusi')
+                        ->visible(fn(Get $get) => $get('jenis_penjualan') === 'Corporate'),
+                    Select::make('level_company')
+                        ->label('Level Perusahaan')
+                        ->options(['Besar' => 'Besar', 'Kecil' => 'Kecil'])
+                        ->visible(fn(Get $get) => $get('jenis_penjualan') === 'Corporate')
+                        ->native(false),
+                    TextInput::make('lokasi')
                         ->label('Lokasi Proyek')
                         ->required(),
                     Textinput::make('alamat')
@@ -137,24 +144,23 @@ class ProjectResource extends Resource
                 ]),
 
             // --- BAGIAN KEUANGAN & STATUS ---
-            Forms\Components\Section::make('Keuangan & Status')
+            Section::make('Keuangan & Status')
                 ->schema([
-                    Forms\Components\TextInput::make('nilai_project')
+                    TextInput::make('nilai_project')
                         ->label('Nilai Project')
                         ->numeric()
                         ->prefix('Rp')
                         ->required(),
 
-                    Forms\Components\Select::make('status')
+                    Select::make('status')
                         ->label('Status Prospek')
                         ->options(['Prospect' => 'Prospect', 'Follow up' => 'Follow up', 'Closing' => 'Closing'])
                         ->required()
                         ->native(false),
 
-                    // PERBAIKAN: Dibuat non-aktif karena diisi otomatis oleh Observer
-                    Forms\Components\TextInput::make('status_pembayaran')
+                    TextInput::make('status_pembayaran')
                         ->disabled()
-                        ->dehydrated(false), // Jangan simpan input dari field ini
+                        ->dehydrated(false),
 
                     Forms\Components\Select::make('status_pekerjaan_lapangan')
                         ->options([
@@ -164,8 +170,9 @@ class ProjectResource extends Resource
                         ])
                 ])->columns(2),
 
-            // Mengisi user_id secara otomatis
-            Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+            Hidden::make('user_id')
+                ->default(auth()->id()),
+
         ]);
     }
 
@@ -173,19 +180,17 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_project')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('kategori.nama')->sortable()->searchable(),
+                TextColumn::make('nama_project')->sortable()->searchable(),
+                TextColumn::make('kategori.nama')->sortable()->searchable(),
 
-                // PERBAIKAN: Menampilkan nama customer, bukan kolom lama
-                Tables\Columns\TextColumn::make('customer.nama_pic')
+                TextColumn::make('customer.nama_pic')
                     ->label('Customer (PIC)')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('status')->sortable()->badge(),
+                TextColumn::make('status')->sortable()->badge(),
 
-                // PERBAIKAN: Menggunakan logika Lunas/Belum Lunas dari Observer
-                Tables\Columns\TextColumn::make('status_pembayaran')
+                TextColumn::make('status_pembayaran')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Lunas' => 'success',
@@ -207,6 +212,7 @@ class ProjectResource extends Resource
                 //
             ])
             ->actions([
+                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -219,7 +225,6 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-                // Pastikan nama Relation Manager dan relasinya sudah benar
             RelationManagers\PersonelsRelationManager::class,
             RelationManagers\StatusPembayaranRelationManager::class,
             RelationManagers\DaftarAlatProjectRelationManager::class,

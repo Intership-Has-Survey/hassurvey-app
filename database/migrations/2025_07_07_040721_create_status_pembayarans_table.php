@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('status_pembayarans', function (Blueprint $table) {
             $table->uuid('id');
-            $table->uuid('project_id');
             $table->string('nama_pembayaran');
             $table->string('jenis_pembayaran');
-            $table->string('nilai');
+            $table->decimal('nilai', 15, 2)->default(0);
 
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
 
             $table->timestamps();
         });

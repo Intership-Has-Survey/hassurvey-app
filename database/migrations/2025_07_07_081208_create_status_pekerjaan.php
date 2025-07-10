@@ -13,16 +13,14 @@ return new class extends Migration
     {
         Schema::create('status_pekerjaans', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('project_id');
             $table->string('pekerjaan_lapangan');
             $table->string('proses_data_dan_gambar');
             $table->string('laporan');
             $table->text('keterangan')->nullable();
             $table->timestamps();
-            $table->unsignedBigInteger('user_id');
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
         });
     }
 

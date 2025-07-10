@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('daftar_alat', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('user_id')->constrained('users');
             $table->string('nama_alat');
             $table->string('jenis_alat');
             $table->string('merk');
@@ -20,6 +19,9 @@ return new class extends Migration {
             $table->string('status');
             $table->text('keterangan')->nullable();
             $table->timestamps();
+
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
         });
     }
 
