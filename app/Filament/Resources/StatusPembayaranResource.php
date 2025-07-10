@@ -65,6 +65,12 @@ class StatusPembayaranResource extends Resource
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+                TextInput::make('user_id')
+                    ->label('User')
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -89,9 +95,7 @@ class StatusPembayaranResource extends Resource
                     ->money('IDR') // Format sebagai mata uang
                     ->sortable(),
 
-                // TextColumn::make('user.name')
-                //     ->label('Diinput oleh')
-                //     ->sortable(),
+                TextColumn::make('user.name')->label('Editor'),
             ])
             ->filters([
                 TrashedFilter::make(),

@@ -40,14 +40,20 @@ class SalesResource extends Resource
                     ->label('Telepon')
                     ->required()
                     ->maxLength(50),
-                TextInput::make('alamat')
-                    ->label('alamat')
+                // TextInput::make('alamat')
+                //     ->label('alamat')
+                //     ->required()
+                //     ->maxLength(50),
+                // TextInput::make('no wa')
+                //     ->label('no wa')
+                //     ->required()
+                //     ->maxLength(50),
+                TextInput::make('user_id')
+                    ->label('User')
                     ->required()
-                    ->maxLength(50),
-                TextInput::make('no wa')
-                    ->label('no wa')
-                    ->required()
-                    ->maxLength(50),
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -58,6 +64,7 @@ class SalesResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('email'),
                 TextColumn::make('telepon'),
+                TextColumn::make('user.name')->label('Editor'),
 
             ])
             ->filters([

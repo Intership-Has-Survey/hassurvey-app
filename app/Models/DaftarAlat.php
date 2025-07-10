@@ -10,7 +10,7 @@ class DaftarAlat extends Model
 {
     use HasUuids, HasFactory;
 
-    protected $primaryKey = 'uuid';
+    protected $primaryKey = 'id';
 
     protected $table = 'daftar_alat';
 
@@ -28,4 +28,21 @@ class DaftarAlat extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function scopeTersedia($query)
+    {
+        return $query->whereDoesntHave('projects', function ($q) {
+            $q->wherePivot('status', 'Terpakai');
+        });
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'daftar_alat_project', 'daftar_alat_id', 'project_id')
+            ->withPivot(['status', 'user_id'])
+            ->withTimestamps();
+    }
+
+
+
 }

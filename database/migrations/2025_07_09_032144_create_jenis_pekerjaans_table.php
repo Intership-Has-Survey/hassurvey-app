@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('jenis_pekerjaans', function (Blueprint $table) {
+            $table->uuid('id');
             $table->string('nama');
-            $table->string('email')->unique();
-            $table->string('telepon');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales');
+        Schema::dropIfExists('jenis_pekerjaans');
     }
 };

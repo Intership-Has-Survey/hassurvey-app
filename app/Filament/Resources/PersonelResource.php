@@ -46,10 +46,12 @@ class PersonelResource extends Resource
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->nullable(),
-                Select::make('user_id')
-                    ->relationship('user', 'name')
+                TextInput::make('user_id')
                     ->label('User')
-                    ->required(),
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -77,7 +79,7 @@ class PersonelResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('user.name')
-                    ->label('Nama User')
+                    ->label('Editor')
                     ->sortable()
                     ->searchable(),
             ])

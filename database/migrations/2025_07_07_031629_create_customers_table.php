@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('telepon');
             $table->text('alamat');
             $table->timestamps();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

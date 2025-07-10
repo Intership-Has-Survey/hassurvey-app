@@ -7,34 +7,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'nama_project',
-        'kategori_id',
-        'sumber',
-        'sales_id',
-        'customer_id',
-        'lokasi',
-        'status',
-        'nilai_project',
-        'tanggal_informasi_masuk',
-        'status_pekerjaan_lapangan',
-        'status_pembayaran',
-        'user_id',
+    protected $guarded = [
+        'id'
     ];
 
     public function personels()
     {
-        return $this->belongsToMany(Personel::class)->withPivot('peran');
+        return $this->belongsToMany(Personel::class, 'personel_project') // <- ini penting
+            ->withPivot('peran', 'user_id')
+            ->withTimestamps();
     }
 
     public function kategori(): BelongsTo
@@ -47,6 +39,11 @@ class Project extends Model
         return $this->belongsTo(Sales::class);
     }
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -54,6 +51,27 @@ class Project extends Model
 
     public function statusPekerjaan()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(StatusPekerjaan::class);
+    }
+    public function statusPembayaran()
+    {
+        return $this->hasMany(StatusPembayaran::class);
+    }
+
+    public function daftarAlat()
+    {
+        return $this->belongsToMany(DaftarAlat::class, 'daftar_alat_project', 'project_id', 'daftar_alat_id')
+            ->withPivot(['status', 'user_id'])
+            ->withTimestamps();
+    }
+
+    public function StatusPembayaran()
+    {
+        return $this->hasMany(StatusPembayaran::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

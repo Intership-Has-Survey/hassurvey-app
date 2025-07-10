@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class StatusPekerjaan extends Model
 {
-    protected $guarded = [];
+    protected $guarded = ['id'];
     public $incrementing = false;
     protected $keyType = 'string';
 

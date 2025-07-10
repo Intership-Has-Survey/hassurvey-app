@@ -25,7 +25,6 @@ use App\Filament\Resources\ProjectResource\Pages\EditProject;
 use App\Filament\Resources\ProjectResource\Pages\ViewProject;
 use App\Filament\Resources\ProjectResource\Pages\ListProjects;
 use App\Filament\Resources\ProjectResource\Pages\CreateProject;
-use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 
 class ProjectResource extends Resource
@@ -118,15 +117,23 @@ class ProjectResource extends Resource
                                 ->tel()
                                 ->required()
                                 ->maxLength(255),
-                            Textarea::make('alamat')
+                            Textinput::make('alamat')
                                 ->required()
                                 ->columnSpanFull(),
                         ])
                         ->columnSpanFull(),
+                    Select::make('jenis_penjualan')
+                        ->options([
+                            'corporate' => 'Corporate',
+                            'Perusahaan' => 'Perusahaan',
+                        ]),
 
                     Forms\Components\TextInput::make('lokasi')
                         ->label('Lokasi Proyek')
                         ->required(),
+                    Textinput::make('alamat')
+                        ->required()
+                        ->columnSpanFull(),
                 ]),
 
             // --- BAGIAN KEUANGAN & STATUS ---
@@ -149,9 +156,12 @@ class ProjectResource extends Resource
                         ->disabled()
                         ->dehydrated(false), // Jangan simpan input dari field ini
 
-                    Forms\Components\TextInput::make('status_pekerjaan_lapangan')
-                        ->disabled()
-                        ->dehydrated(false),
+                    Forms\Components\Select::make('status_pekerjaan_lapangan')
+                        ->options([
+                            'Selesai' => 'Selesai',
+                            'Dalam Proses' => 'Dalam Proses',
+                            'Belum Dikerjakan' => 'Belum Dikerjakan',
+                        ])
                 ])->columns(2),
 
             // Mengisi user_id secara otomatis
@@ -183,13 +193,20 @@ class ProjectResource extends Resource
                         default => 'warning',
                     }),
 
+                Tables\Columns\TextColumn::make('status_pekerjaan_lapangan')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Selesai' => 'success',
+                        'Dalam Proses' => 'warning',
+                        'Belum Dikerjakan' => 'danger',
+                    }),
+
                 Tables\Columns\TextColumn::make('tanggal_informasi_masuk')->label('Masuk')->date()->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -202,9 +219,10 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Pastikan nama Relation Manager dan relasinya sudah benar
+                // Pastikan nama Relation Manager dan relasinya sudah benar
             RelationManagers\PersonelsRelationManager::class,
             RelationManagers\StatusPembayaranRelationManager::class,
+            RelationManagers\DaftarAlatProjectRelationManager::class,
         ];
     }
 

@@ -17,6 +17,13 @@ class ProjectObserver
         if ($project->isDirty('nilai_project')) {
             $this->updatePaymentStatus($project);
         }
+
+        if ($project->status === 'Selesai') {
+            $project->daftarAlat()->updateExistingPivot(
+                $project->daftarAlat->pluck('id'),
+                ['status' => 'Tersedia']
+            );
+        }
     }
 
     /**
@@ -34,7 +41,7 @@ class ProjectObserver
         $totalDibayar = $project->statuspembayaran()->sum('nilai');
 
         $statusBaru = '';
-        if ((float)$totalDibayar >= (float)$project->nilai_project) {
+        if ((float) $totalDibayar >= (float) $project->nilai_project) {
             $statusBaru = 'Lunas';
         } else {
             $statusBaru = 'Belum Lunas';
@@ -43,4 +50,6 @@ class ProjectObserver
         $project->status_pembayaran = $statusBaru;
         $project->saveQuietly();
     }
+
+
 }

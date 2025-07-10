@@ -10,10 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        
-
         Schema::create('daftar_alat', function (Blueprint $table) {
-            $table->uuid()->primary();
+            $table->uuid('id')->primary();
             $table->foreignId('user_id')->constrained('users');
             $table->string('nama_alat');
             $table->string('jenis_alat');

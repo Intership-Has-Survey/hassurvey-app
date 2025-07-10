@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use App\Models\StatusPekerjaan;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -72,11 +73,12 @@ class StatusPekerjaanResource extends Resource
 
                 Textarea::make('keterangan')
                     ->columnSpanFull(),
-
-                Select::make('user_id')
-                    ->relationship('user', 'name')
+                TextInput::make('user_id')
                     ->label('User')
-                    ->required(),
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -103,9 +105,8 @@ class StatusPekerjaanResource extends Resource
                     }),
 
                 // Menampilkan siapa yang terakhir mengupdate
-                TextColumn::make('user.name')
-                    ->label('Diupdate oleh')
-                    ->sortable(),
+
+                TextColumn::make('user.name')->label('Editor'),
 
                 TextColumn::make('updated_at')
                     ->label('Tanggal Update')
@@ -151,6 +152,12 @@ class StatusPekerjaanResource extends Resource
         return [
             //
         ];
+    }
+
+    protected static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['user_id'] = auth()->id(); // aman, otomatis ambil user yang sedang login
+        return $data;
     }
 
     public static function getPages(): array

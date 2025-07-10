@@ -2,42 +2,36 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\JenisPekerjaanResource\Pages;
+use App\Filament\Resources\JenisPekerjaanResource\RelationManagers;
+use App\Models\JenisPekerjaan;
 use Filament\Forms;
-use Filament\Tables;
-use App\Models\Kategori;
 use Filament\Forms\Form;
-use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Forms\Components\Select;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\KategoriResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\KategoriResource\RelationManagers;
 
+use Filament\Forms\Components\TextInput;
 
-class KategoriResource extends Resource
+class JenisPekerjaanResource extends Resource
 {
-    protected static ?string $model = Kategori::class;
+    protected static ?string $model = JenisPekerjaan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationLabel = 'Kategori';
+    protected static ?string $navigationIcon = 'heroicon-o-bug-ant';
+    protected static ?string $navigationLabel = 'Jenis Pekerjaan';
     protected static ?string $navigationGroup = 'Jasa Pemetaan';
-    protected static ?int $navigationSort = 6;
-
+    protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('nama')
-                    ->label('Jenis Kategori')
-                    ->required()
-                    ->maxLength(50),
-                TextInput::make('keterangan')
+                //
+                Forms\Components\TextInput::make('nama')->required()->label('Jenis Pekerjaan'),
+                Forms\Components\TextInput::make('keterangan')
                     ->label('Keterangan')
-                    ->required()
                     ->maxLength(300),
                 TextInput::make('user_id')
                     ->label('User')
@@ -52,16 +46,16 @@ class KategoriResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama'),
-                TextColumn::make('keterangan'),
-                TextColumn::make('user.name')->label('Editor'),
+                // Forms\Components\TextInput::make('nama_project')->required(),
+                Tables\Columns\TextColumn::make('nama'),
+                Tables\Columns\TextColumn::make('keterangan'),
+                Tables\Columns\TextColumn::make('user.name')->label('Editor')
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -77,19 +71,12 @@ class KategoriResource extends Resource
         ];
     }
 
-    protected static function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id();
-
-        return $data;
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListKategoris::route('/'),
-            'create' => Pages\CreateKategori::route('/create'),
-            'edit' => Pages\EditKategori::route('/{record}/edit'),
+            'index' => Pages\ListJenisPekerjaans::route('/'),
+            'create' => Pages\CreateJenisPekerjaan::route('/create'),
+            'edit' => Pages\EditJenisPekerjaan::route('/{record}/edit'),
         ];
     }
 }

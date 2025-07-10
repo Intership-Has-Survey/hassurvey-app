@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Hidden;
+use Filament\Tables\Filters\SelectFilter;
+
+
 
 
 class DaftarAlatResource extends Resource
@@ -49,16 +52,9 @@ class DaftarAlatResource extends Resource
                 Forms\Components\Select::make('kondisi')
                     ->options([
                         'Baik' => 'Baik',
-                        'Rusak' => 'Rusak',
+                        'Bermalasah' => 'Bermasalah',
                     ])
                     ->default('Baik')
-                    ->required(),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'Tersedia' => 'Tersedia',
-                        'Tidak Tersedia' => 'Tidak Tersedia',
-                    ])
-                    ->default('Tersedia')
                     ->required(),
                 Forms\Components\Textarea::make('keterangan')
                     ->nullable()
@@ -85,6 +81,11 @@ class DaftarAlatResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'Tersedia' => 'success',
+                        'Tidak Tersedia' => 'danger',
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -92,7 +93,23 @@ class DaftarAlatResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('jenis_alat')
+                    ->label('Jenis Alat')
+                    ->options([
+                        'GPS' => 'GPS',
+                        'Drone' => 'Drone',
+                        'OTS' => 'OTS',
+                    ])
+                    ->multiple(), // Opsional: Hapus ini jika hanya ingin memilih satu jenis
+
+                // Filter untuk Status Ketersediaan
+                SelectFilter::make('status')
+                    ->label('Status Ketersediaan')
+                    ->options([
+                        'Tersedia' => 'Tersedia',
+                        'Tidak Tersedia' => 'Tidak Tersedia',
+                    ])
+                    ->multiple(), // Opsional: Hapus ini jika hanya ingin memilih satu status
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -108,6 +125,7 @@ class DaftarAlatResource extends Resource
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['user_id'] = auth()->id(); // atau Auth::id()
+        $data['status'] = 'Tersedia'; // Set default status saat membuat alat baru
         return $data;
     }
     public static function getRelations(): array

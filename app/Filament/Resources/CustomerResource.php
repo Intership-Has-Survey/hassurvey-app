@@ -56,6 +56,12 @@ class CustomerResource extends Resource
                 Textarea::make('alamat')
                     ->required()
                     ->columnSpanFull(),
+                TextInput::make('user_id')
+                    ->label('User')
+                    ->required()
+                    ->readOnly()
+                    ->hint('tidak perlu diisi')
+                    ->default(auth()->user()->id),
             ]);
     }
 
@@ -75,6 +81,7 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('user.name')->label('Editor'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

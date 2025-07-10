@@ -20,6 +20,8 @@ return new class extends Migration
 
             $table->foreign('personel_id')->references('id')->on('personel')->onDelete('cascade');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

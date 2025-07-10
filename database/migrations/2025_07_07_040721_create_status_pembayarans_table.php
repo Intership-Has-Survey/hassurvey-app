@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('jenis_pembayaran');
             $table->string('nilai');
 
-            $table->foreignId('user_id')->constrained('users');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
 
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
