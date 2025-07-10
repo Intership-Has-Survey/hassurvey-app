@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Sales;
+use App\Models\User;
 
 class SalesSeeder extends Seeder
 {
@@ -13,34 +14,45 @@ class SalesSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::first();
+
+
+        if (!$user) {
+            $user = User::factory()->create();
+        }
         Sales::create([
-            'name' => 'Syahrial',
+            'nama' => 'Syahrial',
             'email' => 'syahrial@gmail.com',
-            'telephone' => '085161648713',
+            'telepon' => '085161648713',
+            'user_id' => $user->id,
         ]);
 
         Sales::create([
-            'name' => 'Hipdi',
+            'nama' => 'Hipdi',
             'email' => 'hipdi@gmail.com',
-            'telephone' => '085161648714',
+            'telepon' => '085161648714',
+            'user_id' => $user->id,
         ]);
 
         Sales::create([
-            'name' => 'Ahmad',
+            'nama' => 'Ahmad',
             'email' => 'ahmad@gmail.com',
-            'telephone' => '085161648715',
+            'telepon' => '085161648715',
+            'user_id' => $user->id,
         ]);
 
         Sales::create([
-            'name' => 'Diaz',
+            'nama' => 'Diaz',
             'email' => 'diaz@gmail.com',
-            'telephone' => '085161648716',
+            'telepon' => '085161648716',
+            'user_id' => $user->id,
         ]);
 
         Sales::create([
-            'name' => 'Karel',
+            'nama' => 'Karel',
             'email' => 'karel@gmail.com',
-            'telephone' => '085161648717',
+            'telepon' => '085161648717',
+            'user_id' => $user->id,
         ]);
     }
 }

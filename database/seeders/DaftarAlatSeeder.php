@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\DaftarAlat;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Kategori;
 use App\Models\User;
 
-class KategoriSeeder extends Seeder
+class DaftarAlatSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,32 +20,38 @@ class KategoriSeeder extends Seeder
             $user = User::factory()->create();
         }
 
-        Kategori::create([
-            'nama' => 'Bathimetri',
+        DaftarAlat::create([
+            'nama_alat' => 'Total Station',
+            'jenis_alat' => 'GPS',
+            'merk' => 'Topcon',
             'keterangan' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, nostrum!',
             'user_id' => $user->id,
         ]);
-
-        Kategori::create([
-            'nama' => 'Topographi',
+        DaftarAlat::create([
+            'nama_alat' => 'Jetpack',
+            'jenis_alat' => 'Drone',
+            'merk' => 'Trimble',
             'keterangan' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, nostrum!',
             'user_id' => $user->id,
         ]);
-
-        Kategori::create([
-            'nama' => 'Geodetik',
+        DaftarAlat::create([
+            'nama_alat' => 'Busan',
+            'jenis_alat' => 'Drone',
+            'merk' => 'Trimble',
             'keterangan' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, nostrum!',
             'user_id' => $user->id,
         ]);
-
-        Kategori::create([
-            'nama' => 'Cadastral',
+        DaftarAlat::create([
+            'nama_alat' => 'GPS',
+            'jenis_alat' => 'GPS',
+            'merk' => 'Garmin',
             'keterangan' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, nostrum!',
             'user_id' => $user->id,
         ]);
-
-        Kategori::create([
-            'nama' => 'Hidrografi',
+        DaftarAlat::create([
+            'nama_alat' => 'Kompas',
+            'jenis_alat' => 'GPS',
+            'merk' => 'Suunto',
             'keterangan' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, nostrum!',
             'user_id' => $user->id,
         ]);

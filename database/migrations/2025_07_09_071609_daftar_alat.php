@@ -15,13 +15,10 @@ return new class extends Migration {
             $table->string('nama_alat');
             $table->string('jenis_alat');
             $table->string('merk');
-            $table->string('kondisi');
-            $table->string('status');
+            $table->string('kondisi')->default('Baik'); // default kondisi alat
+            $table->string('status')->default('Tersedia'); // default status alat
             $table->text('keterangan')->nullable();
-            $table->timestamps();
-
-            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
+            $table->timestamps(); 
         });
     }
 
