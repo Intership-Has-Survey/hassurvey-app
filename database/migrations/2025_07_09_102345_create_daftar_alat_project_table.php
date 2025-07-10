@@ -8,18 +8,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('daftar_alat_project', function (Blueprint $table) {
-            $table->uuid('daftar_alat_id');
-            $table->uuid('project_id');
-            $table->unsignedBigInteger('user_id')->nullable(); // karena users.id = integer
-
-            $table->string('status')->default('Terpakai'); // default saat alat dipakai project
+            $table->string('status')->default('Terpakai');
             $table->timestamps();
 
             $table->primary(['daftar_alat_id', 'project_id']);
 
-            $table->foreign('daftar_alat_id')->references('id')->on('daftar_alat')->onDelete('cascade');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreignUuid('daftar_alat_id')->constrained('daftar_alat')->onDelete('cascade');
+            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
         });
     }
 

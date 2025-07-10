@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->text('keterangan')->nullable();
             $table->timestamps();
 
-            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
         });
     }
