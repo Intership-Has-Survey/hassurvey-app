@@ -75,18 +75,6 @@ class CustomerResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-
-
-                // SelectFilter::make('jenis_personel')
-                //     ->label('Jenis Personel')
-                //     ->searchable()
-                //     ->options(function () {
-                //         return Personel::query()
-                //             ->select('jenis_personel')
-                //             ->distinct()
-                //             ->pluck('jenis_personel', 'jenis_personel');
-                //     }),
-
                 // SelectFilter::make('tipe_customer')
                 //     ->label('Tipe')
                 //     // ->relationship('user', 'name')
@@ -101,7 +89,7 @@ class CustomerResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -113,9 +101,7 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Jika Anda ingin menampilkan daftar proyek milik customer di halaman detail,
-            // buat Relation Manager untuk Project.
-            // RelationManagers\ProjectsRelationManager::class,
+            //
         ];
     }
 

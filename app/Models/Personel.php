@@ -31,7 +31,7 @@ class Personel extends Model
     public function getStatusAttribute()
     {
         $project = $this->projects()
-            ->where('status_pekerjaan_lapangan', '!=', 'selesai')
+            ->where('status_pekerjaan', '!=', 'selesai')
             ->first();
 
         return $project

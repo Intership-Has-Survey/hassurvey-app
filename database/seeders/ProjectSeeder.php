@@ -67,7 +67,7 @@ class ProjectSeeder extends Seeder
             'nilai_project' => 100000000, // Ganti dengan nilai proyek yang sesuai
             'status_pembayaran' => 'Belum Lunas',
             'tanggal_informasi_masuk' => now(),
-            'status_pekerjaan_lapangan' => 'Belum Dikerjakan',
+            'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
         Project::create([
@@ -83,7 +83,7 @@ class ProjectSeeder extends Seeder
             'nilai_project' => 200000000, // Ganti dengan nilai proyek yang sesuai
             'status_pembayaran' => 'Belum Lunas',
             'tanggal_informasi_masuk' => now(),
-            'status_pekerjaan_lapangan' => 'Belum Dikerjakan',
+            'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
         Project::create([
@@ -99,7 +99,7 @@ class ProjectSeeder extends Seeder
             'nilai_project' => 300000000, // Ganti dengan nilai proyek yang
             'status_pembayaran' => 'Belum Lunas',
             'tanggal_informasi_masuk' => now(),
-            'status_pekerjaan_lapangan' => 'Belum Dikerjakan',
+            'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
         Project::create([
@@ -115,7 +115,7 @@ class ProjectSeeder extends Seeder
             'nilai_project' => 150000000, // Ganti dengan nilai proyek yang sesuai
             'status_pembayaran' => 'Belum Lunas',
             'tanggal_informasi_masuk' => now(),
-            'status_pekerjaan_lapangan' => 'Belum Dikerjakan',
+            'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
         Project::create([
@@ -131,7 +131,7 @@ class ProjectSeeder extends Seeder
             'nilai_project' => 250000000, // Ganti dengan nilai proyek yang sesuai
             'status_pembayaran' => 'Belum Lunas',
             'tanggal_informasi_masuk' => now(),
-            'status_pekerjaan_lapangan' => 'Belum Dikerjakan',
+            'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
     }

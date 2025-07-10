@@ -68,7 +68,7 @@ class DaftarAlatProjectRelationManager extends RelationManager
                     ->after(function (Model $record) {
                         // Cek apakah alat ini masih terikat pada proyek aktif lainnya.
                         $isStillInUse = $record->projects()
-                            ->where('status_pekerjaan_lapangan', '!=', 'Selesai')
+                            ->where('status_pekerjaan', '!=', 'Selesai')
                             ->exists();
                         // Jika SUDAH TIDAK dipakai di mana pun, baru set statusnya jadi Tersedia.
                         if (!$isStillInUse) {
@@ -83,7 +83,7 @@ class DaftarAlatProjectRelationManager extends RelationManager
                             foreach ($records as $record) {
                                 // Logika yang sama dengan DetachAction tunggal
                                 $isStillInUse = $record->projects()
-                                    ->where('status_pekerjaan_lapangan', '!=', 'Selesai')
+                                    ->where('status_pekerjaan', '!=', 'Selesai')
                                     ->exists();
                                 if (!$isStillInUse) {
                                     $record->update(['status' => 'Tersedia']);

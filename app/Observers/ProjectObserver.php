@@ -12,8 +12,6 @@ class ProjectObserver
      */
     public function updated(Project $project): void
     {
-        // Kita hanya menjalankan logika jika kolom 'nilai_project' baru saja diubah.
-        // Ini untuk efisiensi, agar tidak selalu menghitung ulang jika field lain yang diubah.
         if ($project->isDirty('nilai_project')) {
             $this->updatePaymentStatus($project);
         }
@@ -50,6 +48,4 @@ class ProjectObserver
         $project->status_pembayaran = $statusBaru;
         $project->saveQuietly();
     }
-
-
 }

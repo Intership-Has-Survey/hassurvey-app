@@ -7,10 +7,12 @@
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class PersonelsRelationManager extends RelationManager
 {
@@ -60,21 +62,17 @@ class PersonelsRelationManager extends RelationManager
                         // Dropdown untuk memilih personel yang sudah ada
                         $action->getRecordSelect(),
                         // Field untuk mengisi data di tabel pivot
-                        // Forms\Components\Select::make('peran')
-                        //     ->options([
-                        //         'surveyor' => 'Surveyor',
-                        //         'asisten surveyor' => 'Asisten Surveyor',
-                        //         'driver' => 'Driver',
-                        //         'drafter' => 'Drafter',
-                        //     ])
-                        //     ->required()
-                        //     ->native(false),
-                        Forms\Components\TextInput::make('user_id')
-                            ->label('User')
+                        Forms\Components\Select::make('peran')
+                            ->options([
+                                'surveyor' => 'Surveyor',
+                                'asisten surveyor' => 'Asisten Surveyor',
+                                'driver' => 'Driver',
+                                'drafter' => 'Drafter',
+                            ])
                             ->required()
-                            ->readOnly()
-                            ->hint('tidak perlu diisi')
-                            ->default(auth()->user()->id),
+                            ->native(false),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
                         // Select::make('peran')
                         //     ->label('Jenis Pekerjaan')
                         //     ->options(\App\Models\Kategori::pluck('nama', 'id'))
