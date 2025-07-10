@@ -19,6 +19,9 @@ return new class extends Migration {
             $table->string('status')->default('Tersedia'); // default status alat
             $table->text('keterangan')->nullable();
             $table->timestamps(); 
+
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->softDeletes();
         });
     }
 
