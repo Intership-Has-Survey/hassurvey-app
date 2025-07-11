@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Resources;
 
 use Filament\Forms;
@@ -25,7 +26,8 @@ class CustomerResource extends Resource
             Forms\Components\TextInput::make('nama')->required(),
             Forms\Components\TextInput::make('telepon')->tel(),
             Forms\Components\TextInput::make('email')->email(),
-            // ... field lainnya
+            Forms\Components\TextInput::make('alamat'),
+
         ]);
     }
 
