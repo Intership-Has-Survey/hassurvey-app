@@ -7,6 +7,9 @@ use App\Models\StatusPembayaran;
 use App\Observers\ProjectObserver;
 use App\Observers\PembayaranObserver;
 use Illuminate\Support\ServiceProvider;
+use App\Models\StatusPekerjaan;
+use App\Observers\StatusPekerjaanObserver;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
     {
         StatusPembayaran::observe(PembayaranObserver::class);
         Project::observe(ProjectObserver::class);
+        StatusPekerjaan::observe(StatusPekerjaanObserver::class);
     }
 }

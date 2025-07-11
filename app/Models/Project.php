@@ -25,7 +25,7 @@ class Project extends Model
     public function personels()
     {
         return $this->belongsToMany(Personel::class, 'personel_project')
-            ->withPivot('user_id')
+            ->withPivot('user_id', 'peran')
             ->withTimestamps();
     }
 

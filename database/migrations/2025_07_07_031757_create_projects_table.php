@@ -29,7 +29,7 @@ return new class extends Migration {
             $table->decimal('nilai_project', 15, 2)->default(0);
             $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
-            $table->string('status_pekerjaan_lapangan')->nullable()->default('Belum Dikerjakan');
+            $table->string('status_pekerjaan')->nullable()->default('Belum Selesai');
             $table->timestamps();
 
             // Relasi

@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('status_pekerjaans', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('project_id')->constrained('projects')->cascadeOnDelete();
+
             $table->string('pekerjaan_lapangan');
             $table->string('proses_data_dan_gambar');
             $table->string('laporan');
-            $table->text('keterangan')->nullable();
-            $table->timestamps();
 
+            $table->text('keterangan')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
-            $table->foreignUuid('project_id')->constrained('projects')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

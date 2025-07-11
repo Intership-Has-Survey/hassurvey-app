@@ -161,12 +161,10 @@ class ProjectResource extends Resource
                         ->disabled()
                         ->dehydrated(false),
 
-                    Forms\Components\Select::make('status_pekerjaan_lapangan')
-                        ->options([
-                            'Selesai' => 'Selesai',
-                            'Dalam Proses' => 'Dalam Proses',
-                            'Belum Dikerjakan' => 'Belum Dikerjakan',
-                        ])
+                    TextInput::make('status_pekerjaan')
+                        ->disabled()
+                        ->dehydrated(false),
+
                 ])->columns(2),
 
             Hidden::make('user_id')
@@ -197,15 +195,14 @@ class ProjectResource extends Resource
                         default => 'warning',
                     }),
 
-                Tables\Columns\TextColumn::make('status_pekerjaan_lapangan')
+                TextColumn::make('status_pekerjaan')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Selesai' => 'success',
-                        'Dalam Proses' => 'warning',
-                        'Belum Dikerjakan' => 'danger',
+                        'Belum Selesai' => 'warning',
                     }),
 
-                Tables\Columns\TextColumn::make('tanggal_informasi_masuk')->label('Masuk')->date()->sortable(),
+                TextColumn::make('tanggal_informasi_masuk')->label('Masuk')->date()->sortable(),
             ])
             ->filters([
                 //
