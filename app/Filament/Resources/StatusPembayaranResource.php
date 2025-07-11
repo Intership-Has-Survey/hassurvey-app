@@ -24,7 +24,7 @@ class StatusPembayaranResource extends Resource
     protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationLabel = 'Daftar Pembayaran';
+    protected static ?string $navigationLabel = 'Tertutup';
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form

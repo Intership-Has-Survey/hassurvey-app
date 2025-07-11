@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,7 +21,7 @@ return new class extends Migration
             // customer 
             $table->uuid('customer_id')->constrained('customers');
             $table->string('jenis_penjualan');
-            $table->string('nama_institusi')->nullable();
+            $table->string('nama_pic')->nullable();
             $table->string('level_company')->nullable();
             $table->string('lokasi');
             $table->string('alamat');
