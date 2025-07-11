@@ -3,14 +3,15 @@
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
 use App\Models\DaftarAlat;
-use Illuminate\Database\Eloquent\Model;
+use Filament\Tables\Table;
 use Illuminate\Support\Collection;
-use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Hidden;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DaftarAlatProjectRelationManager extends RelationManager
 {
@@ -58,6 +59,8 @@ class DaftarAlatProjectRelationManager extends RelationManager
                                     ->pluck('nama_alat', 'id');
                             })
                             ->getOptionLabelUsing(fn($value): ?string => DaftarAlat::find($value)?->nama_alat),
+                        Hidden::make('user_id')
+                            ->default(auth()->id())
                     ]),
             ])
             ->actions([

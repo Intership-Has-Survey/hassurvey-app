@@ -19,8 +19,8 @@ class StatusPekerjaanObserver
             return;
         }
 
-        $isSelesai = $statusPekerjaan->pekerjaan_lapangan === 'Selesai' &&
-            $statusPekerjaan->proses_data_dan_gambar === 'Selesai' &&
+        $isSelesai = $statusPekerjaan->pekerjaan_lapangan === 'Selesai' || 'Tidak Perlu' &&
+            $statusPekerjaan->proses_data_dan_gambar === 'Selesai' || 'Tidak Perlu' &&
             $statusPekerjaan->laporan === 'Selesai';
 
         $statusBaru = $isSelesai ? 'Selesai' : 'Belum Selesai';
