@@ -19,48 +19,48 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ambil satu user secara acak dari database
-        $user = User::inRandomOrder()->first();
+        $user = User::first();
 
-        // Jika tidak ada user sama sekali di database, buat satu user baru
-        // Logika ini tetap berguna jika seeder ini dijalankan pada database kosong
         if (!$user) {
             $user = User::factory()->create();
         }
 
-        $customer = customer::inRandomOrder()->first();
+        // 1. Ambil SEMUA ID user dari database, HANYA SEKALI.
+        // pluck() sangat efisien karena hanya mengambil kolom 'id'.
+        $customerIds = customer::pluck('id');
 
-        // Jika tidak ada customer sama sekali di database, buat satu customer baru
-        // Logika ini tetap berguna jika seeder ini dijalankan pada database kosong
-        if (!$customer) {
-            $customer = customer::factory()->create();
+        // Jika tidak ada customer sama sekali, buat satu sebagai fallback.
+        if ($customerIds->isEmpty()) {
+            // Sebaiknya jalankan customerSeeder dulu, tapi ini untuk pengaman.
+            $customerIds->push(customer::factory()->create()->id);
+        }
+        // 1. Ambil SEMUA ID user dari database, HANYA SEKALI.
+        // pluck() sangat efisien karena hanya mengambil kolom 'id'.
+        $salesIds = sales::pluck('id');
+
+        // Jika tidak ada sales sama sekali, buat satu sebagai fallback.
+        if ($salesIds->isEmpty()) {
+            // Sebaiknya jalankan salesSeeder dulu, tapi ini untuk pengaman.
+            $salesIds->push(sales::factory()->create()->id);
         }
 
-        // Ambil satu user secara acak dari database
-        $sales = Sales::inRandomOrder()->first();
+        // 1. Ambil SEMUA ID user dari database, HANYA SEKALI.
+        // pluck() sangat efisien karena hanya mengambil kolom 'id'.
+        $kategoriIds = kategori::pluck('id');
 
-        // Jika tidak ada sales sama sekali di database, buat satu sales baru
-        // Logika ini tetap berguna jika seeder ini dijalankan pada database kosong
-        if (!$sales) {
-            $sales = Sales::factory()->create();
-        }
-
-        // Ambil satu user secara acak dari database
-        $kategori = Kategori::inRandomOrder()->first();
-
-        // Jika tidak ada kategori sama sekali di database, buat satu kategori baru
-        // Logika ini tetap berguna jika seeder ini dijalankan pada database kosong
-        if (!$kategori) {
-            $kategori = Kategori::factory()->create();
+        // Jika tidak ada kategori sama sekali, buat satu sebagai fallback.
+        if ($kategoriIds->isEmpty()) {
+            // Sebaiknya jalankan kategoriSeeder dulu, tapi ini untuk pengaman.
+            $kategoriIds->push(kategori::factory()->create()->id);
         }
 
         Project::create([
             'nama_project' => 'Proyek A',
-            'kategori_id' => $kategori->id, // Ganti dengan ID kategori yang sesua
-            'sales_id' => $sales->id, // Ganti dengan ID sales yang sesuai,
+            'kategori_id' => $kategoriIds->random(), // Ganti dengan ID kategori yang sesua
+            'sales_id' => $salesIds->random(), // Ganti dengan ID sales yang sesuai,
             'sumber' => 'Online', // Ganti dengan ID customer yang sesuai
-            'customer_id' => $customer->id, // Ganti dengan ID customer yang sesuai
-            'jenis_penjualan' => 'B2B',
+            'customer_id' => $customerIds->random(), // Ganti dengan ID customer yang sesuai
+            'jenis_penjualan' => 'Corporate',
             'lokasi' => 'Jakarta',
             'alamat' => 'Jl. Merdeka No. 1, Jakarta',
             'status' => 'Prospect',
@@ -72,11 +72,11 @@ class ProjectSeeder extends Seeder
         ]);
         Project::create([
             'nama_project' => 'Proyek B',
-            'kategori_id' => $kategori->id, // Ganti dengan ID kategori yang sesuai
-            'sales_id' => $sales->id, // Ganti dengan ID sales yang sesuai
+            'kategori_id' => $kategoriIds->random(), // Ganti dengan ID kategori yang sesuai
+            'sales_id' => $salesIds->random(), // Ganti dengan ID sales yang sesuai
             'sumber' => 'Offline', // Ganti dengan ID customer yang sesuai
-            'customer_id' => $customer->id, // Ganti dengan ID customer yang sesuai
-            'jenis_penjualan' => 'B2C',
+            'customer_id' => $customerIds->random(), // Ganti dengan ID customer yang sesuai
+            'jenis_penjualan' => 'Perseorangan',
             'lokasi' => 'Bandung',
             'alamat' => 'Jl. Merdeka No. 2, Bandung',
             'status' => 'Follow up',
@@ -88,11 +88,11 @@ class ProjectSeeder extends Seeder
         ]);
         Project::create([
             'nama_project' => 'Proyek C',
-            'kategori_id' => $kategori->id, // Ganti dengan ID kategori yang sesuai
-            'sales_id' => $sales->id, // Ganti dengan ID sales yang sesuai
+            'kategori_id' => $kategoriIds->random(), // Ganti dengan ID kategori yang sesuai
+            'sales_id' => $salesIds->random(), // Ganti dengan ID sales yang sesuai
             'sumber' => 'Online', // Ganti dengan ID customer yang sesuai                       
-            'customer_id' => $customer->id, // Ganti dengan ID customer yang sesuai
-            'jenis_penjualan' => 'B2B',
+            'customer_id' => $customerIds->random(), // Ganti dengan ID customer yang sesuai
+            'jenis_penjualan' => 'Corporate',
             'lokasi' => 'Surabaya',
             'alamat' => 'Jl. Merdeka No. 3, Surabaya',
             'status' => 'Closing',
@@ -104,11 +104,11 @@ class ProjectSeeder extends Seeder
         ]);
         Project::create([
             'nama_project' => 'Proyek D',
-            'kategori_id' => $kategori->id, // Ganti dengan ID kategori yang sesuai
-            'sales_id' => $sales->id, // Ganti dengan ID sales yang sesuai
+            'kategori_id' => $kategoriIds->random(), // Ganti dengan ID kategori yang sesuai
+            'sales_id' => $salesIds->random(), // Ganti dengan ID sales yang sesuai
             'sumber' => 'Offline', // Ganti dengan ID customer yang sesuai
-            'customer_id' => $customer->id, // Ganti dengan ID customer yang sesuai
-            'jenis_penjualan' => 'B2C',
+            'customer_id' => $customerIds->random(), // Ganti dengan ID customer yang sesuai
+            'jenis_penjualan' => 'Perseorangan',
             'lokasi' => 'Yogyakarta',
             'alamat' => 'Jl. Merdeka No. 4, Yogyakarta',
             'status' => 'Prospect',
@@ -120,11 +120,11 @@ class ProjectSeeder extends Seeder
         ]);
         Project::create([
             'nama_project' => 'Proyek E',
-            'kategori_id' => $kategori->id, // Ganti dengan ID kategori yang sesuai
-            'sales_id' => $sales->id, // Ganti dengan ID sales yang sesuai
+            'kategori_id' => $kategoriIds->random(), // Ganti dengan ID kategori yang sesuai
+            'sales_id' => $salesIds->random(), // Ganti dengan ID sales yang sesuai
             'sumber' => 'Online', // Ganti dengan ID customer yang sesuai
-            'customer_id' => $customer->id, // Ganti dengan ID customer yang sesuai
-            'jenis_penjualan' => 'B2B',
+            'customer_id' => $customerIds->random(), // Ganti dengan ID customer yang sesuai
+            'jenis_penjualan' => 'Corporate',
             'lokasi' => 'Medan',
             'alamat' => 'Jl. Merdeka No. 5, Medan',
             'status' => 'Follow up',

@@ -94,17 +94,16 @@ class ProjectResource extends Resource
             Section::make('Informasi Customer')
                 ->schema([
                     Select::make('customer_id')
-                        ->relationship('customer', 'nama_pic')
+                        ->relationship('customer', 'nama')
                         ->searchable()
                         ->preload()
-                        ->label('Customer (PIC)')
+                        ->label('Nama Klien/Perusahaan')
                         ->required()
                         ->createOptionForm([
-                            TextInput::make('nama_pic')
-                                ->label('Nama Customer')
+                            TextInput::make('nama')
+                                ->label('Nama Klien/Perusahaan')
                                 ->required()
                                 ->maxLength(255),
-
                             TextInput::make('email')
                                 ->email()
                                 ->maxLength(255),
@@ -127,8 +126,8 @@ class ProjectResource extends Resource
                         ->required()
                         ->native(false)
                         ->live(),
-                    TextInput::make('nama_institusi')
-                        ->label('Nama Perusahaan/Institusi')
+                    TextInput::make('nama_pic')
+                        ->label('Nama PIC')
                         ->visible(fn(Get $get) => $get('jenis_penjualan') === 'Corporate'),
                     Select::make('level_company')
                         ->label('Level Perusahaan')
@@ -181,8 +180,8 @@ class ProjectResource extends Resource
                 TextColumn::make('nama_project')->sortable()->searchable(),
                 TextColumn::make('kategori.nama')->sortable()->searchable(),
 
-                TextColumn::make('customer.nama_pic')
-                    ->label('Customer (PIC)')
+                TextColumn::make('customer.nama')
+                    ->label('Nama Klien/Perusahaan')
                     ->sortable()
                     ->searchable(),
 
