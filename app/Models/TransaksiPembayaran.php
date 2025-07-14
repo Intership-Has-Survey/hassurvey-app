@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DetailPengajuan extends Model
+class TransaksiPembayaran extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = [];
@@ -15,5 +15,10 @@ class DetailPengajuan extends Model
     public function pengajuanDana(): BelongsTo
     {
         return $this->belongsTo(PengajuanDana::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -65,4 +65,9 @@ class Project extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function pengajuanDanas(): HasMany
+    {
+        return $this->hasMany(PengajuanDana::class);
+    }
 }
