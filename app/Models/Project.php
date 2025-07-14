@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
 class Project extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
@@ -49,13 +50,6 @@ class Project extends Model
         return $this->belongsTo(StatusPekerjaan::class);
     }
 
-    public function daftarAlat()
-    {
-        return $this->belongsToMany(DaftarAlat::class, 'daftar_alat_project', 'project_id', 'daftar_alat_id')
-            ->withPivot(['status', 'user_id'])
-            ->withTimestamps();
-    }
-
     public function StatusPembayaran()
     {
         return $this->hasMany(StatusPembayaran::class);
@@ -64,5 +58,9 @@ class Project extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function Sewa(){
+        return $this->belongsTo(Sewa::class);
     }
 }

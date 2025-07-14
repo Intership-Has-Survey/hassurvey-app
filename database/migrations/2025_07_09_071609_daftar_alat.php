@@ -12,15 +12,23 @@ return new class extends Migration {
     {
         Schema::create('daftar_alat', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('nama_alat');
+            $table->string('nomor_seri')->unique();
             $table->string('jenis_alat');
             $table->string('merk');
-            $table->string('kondisi')->default('Baik'); // default kondisi alat
-            $table->string('status')->default('Tersedia'); // default status alat
+
+            // Mengubah kolom 'kondisi' menjadi boolean
+            // true: Baik, false: Bermasalah
+            $table->boolean('kondisi')->default(true);
+
+            // Mengubah kolom 'status' menjadi boolean
+            // true: Tersedia, false: Tidak Tersedia
+            $table->boolean('status')->default(true);
+
             $table->text('keterangan')->nullable();
-            $table->timestamps(); 
+            $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('pemilik_id')->constrained('pemilik')->onDelete('cascade');
             $table->softDeletes();
         });
     }

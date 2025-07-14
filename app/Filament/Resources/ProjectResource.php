@@ -223,7 +223,6 @@ class ProjectResource extends Resource
         return [
             RelationManagers\PersonelsRelationManager::class,
             RelationManagers\StatusPembayaranRelationManager::class,
-            RelationManagers\DaftarAlatProjectRelationManager::class,
         ];
     }
 
