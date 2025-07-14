@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Iluminate\Database\Eloquent\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Sewa extends Model
+{
+    use HasFactory, HasUuids, SoftDeletes;
+    protected $table = 'sewa';
+    protected $fillable = [
+        'customer_id',
+        'user_id',
+        'tgl_mulai',
+        'tgl_selesai',
+        'jenis',
+        'lokasi',
+        'alamat',
+        'total_biaya',
+    ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function daftarAlat()
+    {
+        return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
+            ->using(RiwayatSewa::class)
+            // SOLUSI: Mengganti 'biaya_sewa' menjadi 'biaya_sewa_alat' agar sesuai dengan migrasi
+            ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
+            ->withTimestamps();
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+}

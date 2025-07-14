@@ -3,21 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DaftarAlatResource\Pages;
-use App\Filament\Resources\DaftarAlatResource\RelationManagers;
 use App\Models\DaftarAlat;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Hidden;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
-
-
-
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 
 class DaftarAlatResource extends Resource
 {
@@ -33,34 +29,60 @@ class DaftarAlatResource extends Resource
 
     public static function form(Form $form): Form
     {
-
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama_alat')
-                    ->required()
-                    ->maxLength(255),
                 Forms\Components\Select::make('jenis_alat')
                     ->options([
                         'GPS' => 'GPS',
                         'Drone' => 'Drone',
                         'OTS' => 'OTS',
-                    ])
+                    ]),
+                Forms\Components\TextInput::make('nomor_seri')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255)
                     ->required(),
                 Forms\Components\TextInput::make('merk')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('kondisi')
-                    ->options([
-                        'Baik' => 'Baik',
-                        'Bermalasah' => 'Bermasalah',
+                Forms\Components\Select::make('pemilik_id')
+                    ->relationship('pemilik', 'nama')
+                    ->searchable()
+                    // Menambahkan form modal untuk membuat pemilik baru
+                    ->createOptionForm([
+                        TextInput::make('nama')
+                            ->label('Nama Pemilik')
+                            ->required(),
+                        TextInput::make('NIK')
+                            ->minLength(16)
+                            ->maxLength(16)
+                            ->required(),
+                        TextInput::make('email')
+                            ->required()
+                            ->email(),
+                        TextInput::make('telepon')
+                            ->required()
+                            ->label('No. Telp'),
+                        TextInput::make('alamat')
+                            ->required()
+                            ->label('Alamat'),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
                     ])
-                    ->default('Baik')
+                    ->preload()
                     ->required(),
                 Forms\Components\Textarea::make('keterangan')
                     ->nullable()
-                    ->maxLength(65535),
-                Hidden::make('user_id')
-                    ->default(auth()->id())
+                    ->columnSpanFull(),
+
+                Forms\Components\Select::make('kondisi')
+                    ->label('Kondisi Alat')
+                    ->required()
+                    ->options([
+                        true => 'Baik',
+                        false => 'Bermasalah',
+                    ])
+                    ->visibleOn('edit'),
             ]);
     }
 
@@ -68,48 +90,48 @@ class DaftarAlatResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_alat')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('jenis_alat')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('merk')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('kondisi')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'Tersedia' => 'success',
-                        'Tidak Tersedia' => 'danger',
-                    })
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('nomor_seri')->searchable(),
+                Tables\Columns\TextColumn::make('jenis_alat')->searchable(),
+                Tables\Columns\TextColumn::make('merk')->searchable(),
+                Tables\Columns\TextColumn::make('pemilik.nama')->searchable()->sortable(),
+
+                BadgeColumn::make('kondisi')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
+                    ->color(fn(bool $state): string => match ($state) {
+                        true => 'success',
+                        false => 'danger',
+                    }),
+
+                BadgeColumn::make('status')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Tidak Tersedia')
+                    ->color(fn(bool $state): string => match ($state) {
+                        true => 'success',
+                        false => 'warning',
+                    }),
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->dateTime('d-m-Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('jenis_alat')
-                    ->label('Jenis Alat')
                     ->options([
                         'GPS' => 'GPS',
                         'Drone' => 'Drone',
                         'OTS' => 'OTS',
-                    ])
-                    ->multiple(), // Opsional: Hapus ini jika hanya ingin memilih satu jenis
+                    ]),
+                TernaryFilter::make('kondisi')
+                    ->label('Kondisi')
+                    ->placeholder('Semua Kondisi')
+                    ->trueLabel('Baik')
+                    ->falseLabel('Bermasalah'),
 
-                // Filter untuk Status Ketersediaan
-                SelectFilter::make('status')
-                    ->label('Status Ketersediaan')
-                    ->options([
-                        'Tersedia' => 'Tersedia',
-                        'Tidak Tersedia' => 'Tidak Tersedia',
-                    ])
-                    ->multiple(), // Opsional: Hapus ini jika hanya ingin memilih satu status
+                TernaryFilter::make('status')
+                    ->label('Ketersediaan')
+                    ->placeholder('Semua Status')
+                    ->trueLabel('Tersedia')
+                    ->falseLabel('Tidak Tersedia'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -122,16 +144,10 @@ class DaftarAlatResource extends Resource
             ]);
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id(); // atau Auth::id()
-        $data['status'] = 'Tersedia'; // Set default status saat membuat alat baru
-        return $data;
-    }
     public static function getRelations(): array
     {
         return [
-
+            //
         ];
     }
 
