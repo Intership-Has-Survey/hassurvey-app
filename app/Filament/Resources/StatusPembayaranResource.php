@@ -83,11 +83,11 @@ class StatusPembayaranResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('jenis_pembayaran')
-                    ->badge() // Badge agar lebih menarik
+                    ->badge()
                     ->searchable(),
 
                 TextColumn::make('nilai')
-                    ->money('IDR') // Format sebagai mata uang
+                    ->money('IDR')
                     ->sortable(),
 
                 TextColumn::make('user.name')->label('Editor'),

@@ -91,10 +91,8 @@ class PengajuanDanaResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'Baru', 'Menunggu Persetujuan DO', 'Menunggu Persetujuan DK', 'Menunggu Persetujuan DU' => 'warning',
                         'Ditolak' => 'danger',
                         'Disetujui' => 'success',
-                        'Lunas' => 'primary',
                         default => 'gray',
                     }),
 

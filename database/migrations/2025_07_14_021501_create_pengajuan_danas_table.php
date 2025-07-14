@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('judul_pengajuan');
             // $table->string('tipe_pengajuan');
             $table->text('deskripsi_pengajuan')->nullable();
-            $table->string('status')->default('Baru');
+            $table->string('status')->default('proses');
             $table->string('nama_bank')->nullable();
             $table->string('nomor_rekening')->nullable();
             $table->string('nama_pemilik_rekening')->nullable();
