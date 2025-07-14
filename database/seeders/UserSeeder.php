@@ -11,32 +11,48 @@ class UserSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    
+
     public function run(): void
     {
         User::create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
+            'role' => 'admin',
             'password' => bcrypt('12345'),
         ]);
+
         User::create([
-            'name' => 'Karel',
-            'email' => 'karelriyan@gmail.com',
+            'name' => 'Syahrial Hipdi',
+            'email' => 'syahrial@gmail.com',
+            'role' => 'operasional',
             'password' => bcrypt('12345'),
         ]);
+
         User::create([
             'name' => 'Diaz',
             'email' => 'diaz@gmail.com',
+            'role' => 'operasional',
             'password' => bcrypt('12345'),
         ]);
+
         User::create([
-            'name' => 'Syahrial',
-            'email' => 'syahrial@gmail.com',
+            'name' => 'Direktur Operasional',
+            'email' => 'dirops@gmail.com',
+            'role' => 'dirops',
             'password' => bcrypt('12345'),
         ]);
+
         User::create([
-            'name' => 'Syaiful',
-            'email' => 'syaiful@gmail.com',
+            'name' => 'Keuangan',
+            'email' => 'keuangan@gmail.com',
+            'role' => 'keuangan',
+            'password' => bcrypt('12345'),
+        ]);
+
+        User::create([
+            'name' => 'Direktur Utama',
+            'email' => 'direktur@gmail.com',
+            'role' => 'direktur',
             'password' => bcrypt('12345'),
         ]);
     }

@@ -12,8 +12,12 @@ use Filament\Tables\Table;
 use App\Models\PengajuanDana;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\Action;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Illuminate\Database\Eloquent\Model;
 
 class PengajuanDanaResource extends Resource
 {
@@ -75,7 +79,7 @@ class PengajuanDanaResource extends Resource
                     ->searchable()
                     ->description(function (PengajuanDana $record): string {
                         if ($record->project) {
-                            return 'Untuk Proyek: ' . $record->project->nama_project;
+                            return $record->project->nama_project;
                         }
                         return 'Untuk: In-House (Internal)';
                     }),
@@ -88,22 +92,93 @@ class PengajuanDanaResource extends Resource
                     })
                     ->money('IDR'),
 
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\TextColumn::make('dalam_review')
                     ->badge()
+                    ->label('Dalam Review')
                     ->color(fn(string $state): string => match ($state) {
                         'Baru', 'Menunggu Persetujuan DO', 'Menunggu Persetujuan DK', 'Menunggu Persetujuan DU' => 'warning',
-                        'Ditolak' => 'danger',
-                        'Disetujui' => 'success',
-                        'Lunas' => 'primary',
+                        'operasional' => 'gray',
+                        'dirops' => 'primary',
+                        'keuangan' => 'warning',
+                        'direktur' => 'info',
+                        'approved' => 'success',
                         default => 'gray',
                     }),
 
+                Tables\Columns\TextColumn::make('disetujui')->label('Disetujui'),
+                Tables\Columns\TextColumn::make('ditolak')->label('Ditolak'),
                 Tables\Columns\TextColumn::make('user.name')->label('Dibuat oleh'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime('d M Y')->sortable(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Action::make('approve')
+                    ->label('Approve')
+                    ->color('primary')
+                    ->button()
+                    ->requiresConfirmation()
+                    ->visible(fn() => auth()->user()->role !== 'operasional')
+                    ->disabled(function (Model $record) {
+                        return auth()->user()->role !== $record->dalam_review;
+                    })
+                    // ->visible(fn(Model $record) => $record->status !== 'gold') // hanya tampil jika belum gold
+                    ->action(function (Model $record) {
+                        $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+                        $currentIndex = array_search($record->dalam_review, $review);
+
+                        if ($currentIndex !== false && $currentIndex < count($review) - 1) {
+                            $record->update([
+                                'dalam_review' => $review[$currentIndex + 1],
+                                'disetujui' => auth()->user()->role,
+                                'ditolak' => null,
+                                'alasan' => null,
+                            ]);
+                        }
+                    }),
+                Action::make('Tolak')
+                    ->label('Tolak')
+                    ->color('danger')
+                    ->visible(fn() => auth()->user()->role !== 'operasional')
+                    ->form([
+                        Forms\Components\Textarea::make('alasan')
+                            ->label('Alasan Penolakan')
+                            ->required(),
+                    ])
+                    ->requiresConfirmation()
+                    ->disabled(function (Model $record) {
+                        return auth()->user()->role !== $record->dalam_review;
+                    })
+                    ->action(function (Model $record, array $data) {
+                        $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+                        $currentIndex = array_search($record->dalam_review, $review);
+
+                        if ($currentIndex !== false) {
+                            // Turunkan level jika bisa (misal dari gold → silver)
+                            $newStatus = $record->dalam_review;
+                            if ($currentIndex > 0) {
+                                $newStatus = $review[$currentIndex - 1];
+                            }
+
+                            // Simpan status baru + alasan
+                            $record->update([
+                                'dalam_review' => $newStatus,
+                                'ditolak' => auth()->user()->role,
+                                'disetujui' => null,
+                                'alasan' => $data['alasan'], // pastikan kolom ini ada di tabel
+                            ]);
+                        }
+                    }),
+                // ->disabled(function (Model $record) {
+                //     $role = auth()->user()->role;
+                //     return !(
+                //         ($role === 'keuangan' && $record->status === 'bronze') ||
+                //         ($role === 'direktur' && $record->status === 'silver')
+                //     );
+                // }),
+
+
+                ActivityLogTimelineTableAction::make('Log'),
             ]);
     }
 
@@ -113,6 +188,7 @@ class PengajuanDanaResource extends Resource
             RelationManagers\DetailPengajuansRelationManager::class,
             RelationManagers\TransaksiPembayaransRelationManager::class,
             // \Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager::class,
+            ActivitylogRelationManager::class,
         ];
     }
 
@@ -124,5 +200,27 @@ class PengajuanDanaResource extends Resource
             // 'view' => Pages\ViewPengajuanDana::route('/{record}'),
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return in_array(auth()->user()?->role, ['operasional', 'admin']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        $userRole = auth()->user()?->role;
+
+        return match ($userRole) {
+            'admin'     => true,
+            'operasional'  => $record->dalam_review === 'dirops',
+            'dirops'  => $record->dalam_review === 'dirops',
+            'keuangan'  => $record->dalam_review === 'keuangan',
+            'direktur'  => $record->dalam_review === 'direktur',
+
+            // 'keuangan'  => $record->dalam_review === 'bronze',
+            // 'direktur'  => $record->dalam_review === 'silver',
+            default     => false, // selain itu tidak boleh edit
+        };
     }
 }
