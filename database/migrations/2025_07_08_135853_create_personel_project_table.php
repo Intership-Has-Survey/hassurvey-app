@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('peran');
             $table->timestamps();
             $table->foreignUuid('user_id')->constrained('users');
+            $table->softDeletes();
         });
     }
 
