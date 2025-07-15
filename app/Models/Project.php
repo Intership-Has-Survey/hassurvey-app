@@ -46,7 +46,7 @@ class Project extends Model
 
     public function statusPekerjaan()
     {
-        return $this->belongsTo(StatusPekerjaan::class);
+        return $this->hasMany(StatusPekerjaan::class);
     }
 
     public function daftarAlat()
