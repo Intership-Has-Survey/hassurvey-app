@@ -18,20 +18,20 @@ return new class extends Migration
             }
 
             // Tambahkan kolom baru, periksa dulu jika sudah ada
-            if (!Schema::hasColumn('customers', 'province_code')) {
-                $table->string('province_code', 2)->nullable()->after('telepon');
+            if (!Schema::hasColumn('customers', 'provinsi')) {
+                $table->string('provinsi', 2)->nullable()->after('telepon');
             }
-            if (!Schema::hasColumn('customers', 'regency_code')) {
-                $table->string('regency_code', 5)->nullable()->after('province_code');
+            if (!Schema::hasColumn('customers', 'kota')) {
+                $table->string('kota', 5)->nullable()->after('provinsi');
             }
-            if (!Schema::hasColumn('customers', 'district_code')) {
-                $table->string('district_code', 8)->nullable()->after('regency_code');
+            if (!Schema::hasColumn('customers', 'kecamatan')) {
+                $table->string('kecamatan', 8)->nullable()->after('kota');
             }
-            if (!Schema::hasColumn('customers', 'village_code')) {
-                $table->string('village_code', 13)->nullable()->after('district_code');
+            if (!Schema::hasColumn('customers', 'desa')) {
+                $table->string('desa', 13)->nullable()->after('kecamatan');
             }
             if (!Schema::hasColumn('customers', 'detail_alamat')) {
-                $table->text('detail_alamat')->nullable()->after('village_code');
+                $table->text('detail_alamat')->nullable()->after('desa');
             }
         });
     }
