@@ -4,15 +4,21 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use App\Models\Personel;
 use Filament\Forms\Form;
+use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PersonelResource\Pages;
@@ -32,45 +38,104 @@ class PersonelResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nama')
-                    ->label('Nama Lengkap')
-                    ->required(),
-                TextInput::make('nik')
-                    ->label('Nomor Induk Kependudukan (NIK)')
-                    ->required(),
-                Select::make('jabatan')
-                    ->options([
-                        'surveyor' => 'surveyor',
-                        'asisten surveyor' => 'asisten surveyor',
-                        'driver' => 'driver',
-                        'drafter' => 'drafter',
-                    ])
-                    ->required()
-                    ->native(false),
-                Textarea::make('nomor_wa')
-                    ->label('Nomor Whatsapps')
-                    ->nullable(),
-                Textarea::make('tanggal_lahir')
-                    ->label('Tanggal Lahir')
-                    ->nullable(),
-                Textarea::make('provinsi')
-                    ->label('Provinsi')
-                    ->nullable(),
-                Textarea::make('kota')
-                    ->label('Kota/Kabupaten')
-                    ->nullable(),
-                Textarea::make('kecamatan')
-                    ->label('Kecamatan')
-                    ->nullable(),
-                Textarea::make('desa')
-                    ->label('Desa')
-                    ->nullable(),
-                Textarea::make('alamat')
-                    ->label('Detail Alamat')
-                    ->nullable(),
-                Textarea::make('keterangan')
-                    ->label('Keterangan')
-                    ->nullable(),
+                Section::make()
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Nama Lengkap')
+                            ->required(),
+                        TextInput::make('nik')
+                            ->label('Nomor Induk Kependudukan (NIK)')
+                            ->required(),
+                        Select::make('jabatan')
+                            ->options([
+                                'surveyor' => 'surveyor',
+                                'asisten surveyor' => 'asisten surveyor',
+                                'driver' => 'driver',
+                                'drafter' => 'drafter',
+                            ])
+                            ->required()
+                            ->native(false),
+                        TextInput::make('nomor_wa')
+                            ->label('Nomor Whatsapps')
+                            ->nullable(),
+                        DatePicker::make('tanggal_lahir')
+                            ->label('Tanggal Lahir')
+                            ->nullable(),
+                        Textarea::make('keterangan')
+                            ->label('Keterangan')
+                            ->nullable(),
+                    ])->columns(2),
+                Forms\Components\Section::make('Alamat')
+                    ->schema([
+                        Select::make('provinsi')
+                            ->label('Provinsi')
+                            ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
+                            ->live()
+                            ->searchable()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kota', null);
+                                $set('kecamatan', null);
+                                $set('desa', null);
+                            }),
+
+                        Select::make('kota')
+                            ->label('Kota/Kabupaten')
+                            ->options(function (Get $get) {
+                                $provinsi = $get('provinsi');
+                                if (!$provinsi) {
+                                    return [];
+                                }
+                                return TrefRegion::query()
+                                    ->where('code', 'like', $provinsi . '.%')
+                                    ->where(DB::raw('LENGTH(code)'), 5)
+                                    ->pluck('name', 'code');
+                            })
+                            ->live()
+                            ->searchable()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kecamatan', null);
+                                $set('desa', null);
+                            }),
+
+                        Select::make('kecamatan')
+                            ->label('Kecamatan')
+                            ->options(function (Get $get) {
+                                $kota = $get('kota');
+                                if (!$kota) {
+                                    return [];
+                                }
+                                return TrefRegion::query()
+                                    ->where('code', 'like', $kota . '.%')
+                                    ->where(DB::raw('LENGTH(code)'), 8)
+                                    ->pluck('name', 'code');
+                            })
+                            ->live()
+                            ->searchable()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('desa', null);
+                            }),
+
+                        Select::make('desa')
+                            ->label('Desa/Kelurahan')
+                            ->options(function (Get $get) {
+                                $kecamatan = $get('kecamatan');
+                                if (!$kecamatan) {
+                                    return [];
+                                }
+                                return TrefRegion::query()
+                                    ->where('code', 'like', $kecamatan . '.%')
+                                    ->where(DB::raw('LENGTH(code)'), 13)
+                                    ->pluck('name', 'code');
+                            })
+                            ->live()
+                            ->searchable(),
+
+                        Textarea::make('detail_alamat')
+                            ->label('Detail Alamat')
+                            ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
+                            ->columnSpanFull(),
+                    ])->columns(2),
+
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
@@ -80,8 +145,8 @@ class PersonelResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('jenis_personel')
-                    ->label('Jenis Personel')
+                TextColumn::make('jabatan')
+                    ->label('Jabatan')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('nama_personel')
@@ -107,14 +172,14 @@ class PersonelResource extends Resource
 
             ->filters([
 
-                SelectFilter::make('jenis_personel')
-                    ->label('Jenis Personel')
+                SelectFilter::make('jabatan')
+                    ->label('Jabatan')
                     ->searchable()
                     ->options(function () {
                         return \App\Models\Personel::query()
-                            ->select('jenis_personel')
+                            ->select('jabatan')
                             ->distinct()
-                            ->pluck('jenis_personel', 'jenis_personel');
+                            ->pluck('jabatan', 'jabatan');
                     }),
 
                 SelectFilter::make('user_id')

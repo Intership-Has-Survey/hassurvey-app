@@ -48,12 +48,12 @@ class CustomerResource extends Resource
                     Select::make('kota')
                         ->label('Kota/Kabupaten')
                         ->options(function (Get $get) {
-                            $provinceCode = $get('province_code');
-                            if (!$provinceCode) {
+                            $provinsi = $get('provinsi');
+                            if (!$provinsi) {
                                 return [];
                             }
                             return TrefRegion::query()
-                                ->where('code', 'like', $provinceCode . '.%')
+                                ->where('code', 'like', $provinsi . '.%')
                                 ->where(DB::raw('LENGTH(code)'), 5)
                                 ->pluck('name', 'code');
                         })
@@ -67,12 +67,12 @@ class CustomerResource extends Resource
                     Select::make('kecamatan')
                         ->label('Kecamatan')
                         ->options(function (Get $get) {
-                            $regencyCode = $get('kota');
-                            if (!$regencyCode) {
+                            $kota = $get('kota');
+                            if (!$kota) {
                                 return [];
                             }
                             return TrefRegion::query()
-                                ->where('code', 'like', $regencyCode . '.%')
+                                ->where('code', 'like', $kota . '.%')
                                 ->where(DB::raw('LENGTH(code)'), 8)
                                 ->pluck('name', 'code');
                         })
@@ -85,12 +85,12 @@ class CustomerResource extends Resource
                     Select::make('desa')
                         ->label('Desa/Kelurahan')
                         ->options(function (Get $get) {
-                            $districtCode = $get('kecamatan');
-                            if (!$districtCode) {
+                            $kecamatan = $get('kecamatan');
+                            if (!$kecamatan) {
                                 return [];
                             }
                             return TrefRegion::query()
-                                ->where('code', 'like', $districtCode . '.%')
+                                ->where('code', 'like', $kecamatan . '.%')
                                 ->where(DB::raw('LENGTH(code)'), 13)
                                 ->pluck('name', 'code');
                         })

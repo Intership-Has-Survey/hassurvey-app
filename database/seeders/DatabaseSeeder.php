@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             DaftarAlatSeeder::class,
             CustomerSeeder::class,
             ProjectSeeder::class,
+            TrefRegionSeeder::class,
         ]);
     }
 }

@@ -17,10 +17,11 @@ return new class extends Migration {
             $table->string('jabatan');
             $table->string('nomor_wa');
             $table->string('tanggal_lahir');
-            $table->string('provinsi');
-            $table->string('kota');
-            $table->string('kecamatan');
-            $table->string('desa');
+            $table->string('provinsi', 2);
+            $table->string('kota', 5);
+            $table->string('kecamatan', 8);
+            $table->string('desa', 13);
+            $table->text('detail_alamat');
             $table->string('keterangan')->nullable();
             $table->timestamps();
 

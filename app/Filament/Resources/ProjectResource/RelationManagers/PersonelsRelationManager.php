@@ -41,10 +41,10 @@ class PersonelsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('nama_personel')
+            ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama_personel'),
-                Tables\Columns\TextColumn::make('jenis_personel')->badge(),
+                Tables\Columns\TextColumn::make('nama'),
+                Tables\Columns\TextColumn::make('jabatan')->badge(),
                 // Menampilkan data 'peran' dari tabel pivot
                 Tables\Columns\TextColumn::make('pivot.peran')
                     ->label('Peran di Proyek')
