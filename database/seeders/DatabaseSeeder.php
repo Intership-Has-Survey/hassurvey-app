@@ -28,7 +28,6 @@ class DatabaseSeeder extends Seeder
             PersonelSeeder::class,
             SalesSeeder::class,
             DaftarAlatSeeder::class,
-            ProjectSeeder::class,
         ]);
     }
 }

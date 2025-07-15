@@ -140,6 +140,16 @@ class ProjectResource extends Resource
                     Textinput::make('alamat')
                         ->required()
                         ->columnSpanFull(),
+                    Section::make('Penyewaan Alat')
+                        ->schema([
+                            Select::make('sewa_id')
+                                ->label('Pilih Kontrak Sewa Alat')
+                                ->relationship('sewa', 'judul') // tetap relasi ke Sewa
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                        ]),
+
                 ]),
 
             // --- BAGIAN KEUANGAN & STATUS ---

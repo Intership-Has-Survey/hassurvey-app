@@ -16,6 +16,7 @@ class Sewa extends Model
     protected $table = 'sewa';
     protected $fillable = [
         'customer_id',
+        'judul',
         'user_id',
         'tgl_mulai',
         'tgl_selesai',

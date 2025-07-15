@@ -28,6 +28,14 @@ class SewaResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('jenis')
+                    ->options([
+                        'sewa keluar' => 'Sewa Keluar',
+                        'sewa untuk proyek' => 'Sewa untuk Proyek',
+                    ]),
+                Forms\Components\TextInput::make('judul')
+                    ->required()
+                    ->label('Judul Penyewaan'),
                 Forms\Components\Select::make('customer_id')
                     ->relationship('customer', 'nama')
                     ->required()
@@ -56,12 +64,6 @@ class SewaResource extends Resource
                     ->required(),
                 Forms\Components\DatePicker::make('tgl_selesai')
                     ->required(),
-                Forms\Components\Select::make('jenis')
-                    ->options([
-                        'corporate' => 'Corporate (B2B)',
-                        'perorangan' => 'Perorangan (B2C)',
-                    ])
-                    ->required(),
                 Forms\Components\TextInput::make('lokasi')
                     ->required(),
                 Forms\Components\TextInput::make('alamat')
@@ -80,6 +82,17 @@ class SewaResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('jenis')
+                    ->label('Jenis Sewa')
+                    ->searchable()
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'sewa keluar' => 'warning',
+                        'sewa untuk proyek' => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('judul')
+                    ->label('Judul Penyewaan')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('customer.nama')
                     ->label('Customer')
                     ->searchable(),

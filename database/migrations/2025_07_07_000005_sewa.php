@@ -12,9 +12,10 @@ return new class extends Migration {
     {
         Schema::create('sewa', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->text('judul');
+            $table->string('jenis');
             $table->date('tgl_mulai');
             $table->date('tgl_selesai');
-            $table->string('jenis'); //B2B atau B2C
             $table->text('lokasi');
             $table->text('alamat');
             $table->decimal('total_biaya', 15, 2)->nullable();
