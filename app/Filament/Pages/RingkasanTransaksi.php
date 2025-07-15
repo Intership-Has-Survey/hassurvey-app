@@ -72,8 +72,7 @@ class RingkasanTransaksi extends Page implements HasTable
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Lunas' => 'success',
-                        'Dibayar Sebagian' => 'warning',
-                        'Belum Dibayar' => 'danger',
+                        'Belum Lunas' => 'warning',
                     }),
             ])
             ->actions([
