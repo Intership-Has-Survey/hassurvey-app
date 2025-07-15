@@ -12,8 +12,15 @@ return new class extends Migration {
     {
         Schema::create('personel', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('jenis_personel');
-            $table->string('nama_personel');
+            $table->string('nama');
+            $table->string('nik');
+            $table->string('jabatan');
+            $table->string('nomor_wa');
+            $table->string('tanggal_lahir');
+            $table->string('provinsi');
+            $table->string('kota');
+            $table->string('kecamatan');
+            $table->string('desa');
             $table->string('keterangan')->nullable();
             $table->timestamps();
 

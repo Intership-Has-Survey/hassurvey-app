@@ -32,7 +32,13 @@ class PersonelResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('jenis_personel')
+                TextInput::make('nama')
+                    ->label('Nama Lengkap')
+                    ->required(),
+                TextInput::make('nik')
+                    ->label('Nomor Induk Kependudukan (NIK)')
+                    ->required(),
+                Select::make('jabatan')
                     ->options([
                         'surveyor' => 'surveyor',
                         'asisten surveyor' => 'asisten surveyor',
@@ -41,9 +47,27 @@ class PersonelResource extends Resource
                     ])
                     ->required()
                     ->native(false),
-                TextInput::make('nama_personel')
-                    ->label('Nama Personel')
-                    ->required(),
+                Textarea::make('nomor_wa')
+                    ->label('Nomor Whatsapps')
+                    ->nullable(),
+                Textarea::make('tanggal_lahir')
+                    ->label('Tanggal Lahir')
+                    ->nullable(),
+                Textarea::make('provinsi')
+                    ->label('Provinsi')
+                    ->nullable(),
+                Textarea::make('kota')
+                    ->label('Kota/Kabupaten')
+                    ->nullable(),
+                Textarea::make('kecamatan')
+                    ->label('Kecamatan')
+                    ->nullable(),
+                Textarea::make('desa')
+                    ->label('Desa')
+                    ->nullable(),
+                Textarea::make('alamat')
+                    ->label('Detail Alamat')
+                    ->nullable(),
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->nullable(),
