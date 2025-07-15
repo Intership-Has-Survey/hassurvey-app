@@ -188,18 +188,13 @@ class ProjectResource extends Resource
                         ->label('Nilai Project')
                         ->numeric()
                         ->prefix('Rp')
-                        ->required(),
+                        ->required()
+                        ->disabled(fn(callable $get) => $get('status') === 'Closing'),
                     Select::make('status')
                         ->label('Status Prospek')
                         ->options(['Prospect' => 'Prospect', 'Follow up' => 'Follow up', 'Closing' => 'Closing'])
                         ->required()
                         ->native(false),
-                    TextInput::make('status_pembayaran')
-                        ->disabled()
-                        ->dehydrated(false),
-                    TextInput::make('status_pekerjaan')
-                        ->disabled()
-                        ->dehydrated(false),
                 ])->columns(2),
 
             Hidden::make('user_id')
