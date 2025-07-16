@@ -60,13 +60,22 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function pengajuanDanas(): HasMany
+    {
+        return $this->hasMany(PengajuanDana::class);
+    }
     public function Sewa()
     {
         return $this->belongsTo(Sewa::class);
     }
 
-    public function pengajuanDanas(): HasMany
+
+    public function daftarAlat()
     {
-        return $this->hasMany(PengajuanDana::class);
+        return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
+            ->using(RiwayatSewa::class)
+            // SOLUSI: Mengganti 'biaya_sewa' menjadi 'biaya_sewa_alat' agar sesuai dengan migrasi
+            ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
+            ->withTimestamps();
     }
 }

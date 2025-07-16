@@ -74,8 +74,7 @@ class SewaResource extends Resource
                     ->nullable(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
-            ])->columns(2);
-        ;
+            ])->columns(2);;
     }
 
     public static function table(Table $table): Table
@@ -88,7 +87,7 @@ class SewaResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'sewa keluar' => 'warning',
-                        'sewa untuk proyek' => 'gray',
+                        'untuk project' => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('judul')
                     ->label('Judul Penyewaan')
@@ -109,16 +108,16 @@ class SewaResource extends Resource
                     ->prefix('Rp')
                     ->sortable(),
             ])->filters([
-                    //
-                ])->actions([
-                    Tables\Actions\ViewAction::make(),
-                ])->bulkActions([
-                    Tables\Actions\BulkActionGroup::make([
-                        Tables\Actions\DeleteBulkAction::make(),
-                    ])
-                ])->headerActions([
-                    //
+                //
+            ])->actions([
+                Tables\Actions\ViewAction::make(),
+            ])->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ])
+            ])->headerActions([
+                //
+            ])
             ->filters([
                 TrashedFilter::make(),
             ])

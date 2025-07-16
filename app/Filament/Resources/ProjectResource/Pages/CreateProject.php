@@ -9,4 +9,59 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
+
+    // protected function afterCreate(): void
+    // {
+    //     $project = $this->record;
+
+    //     if (!$project->sewa_id) {
+    //         $sewa = \App\Models\Sewa::create([
+    //             'judul' => 'Kontrak Sewa untuk ' . $project->nama, // sesuaikan field
+    //             'jenis' => 'untuk project', // sesuaikan field
+    //             'tgl_mulai' => now(),
+    //             'tgl_selesai' => now()->addDays(7), // contoh default 7 hari
+    //             'lokasi' => 'Bogor', // contoh default 7 hari
+    //             'alamat' => 'ciampea', // contoh default 7 hari
+    //             'customer_id' => $project->customer_id, // contoh default 7 hari
+    //             'user_id' => $project->user_id, // contoh default 7 hari
+    //         ]);
+
+    //         $project->update([
+    //             'sewa_id' => $sewa->id,
+    //         ]);
+    //     }
+    // }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (empty($data['sewa_id'])) {
+            $sewa = \App\Models\Sewa::create([
+                'judul' => 'Kontrak Sewa Otomatis untuk ' . $data['nama_project'], // sesuaikan field
+                'jenis' => 'untuk project', // sesuaikan field
+                'tgl_mulai' => now(),
+                'tgl_selesai' => now()->addDays(7),
+                'lokasi' => 'Bogor',
+                'alamat' => 'ciampea',
+                'customer_id' => $data['customer_id'],
+                'user_id' => $data['user_id'],
+            ]);
+
+            $data['sewa_id'] = $sewa->id;
+        }
+
+        return $data;
+    }
 }
+
+// $table->uuid('id')->primary();
+// $table->text('judul');
+// $table->string('jenis');
+// $table->date('tgl_mulai');
+// $table->date('tgl_selesai');
+// $table->text('lokasi');
+// $table->text('alamat');
+// $table->decimal('total_biaya', 15, 2)->nullable();
+// $table->timestamps();
+
+// $table->foreignUuid('customer_id')->constrained('customers')->onDelete('cascade');
+// $table->foreignUuid('user_id')->constrained('users');

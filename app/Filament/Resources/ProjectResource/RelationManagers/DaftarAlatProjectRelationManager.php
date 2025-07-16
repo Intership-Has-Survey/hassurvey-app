@@ -10,8 +10,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Database\Eloquent\Model;
+
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Forms\Get;
 
 class DaftarAlatProjectRelationManager extends RelationManager
 {
@@ -20,80 +24,127 @@ class DaftarAlatProjectRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('nama_alat')
+            ->recordTitleAttribute('nomor_seri')
             ->columns([
-                Tables\Columns\TextColumn::make('nama_alat')->searchable(),
-                Tables\Columns\TextColumn::make('jenis_alat')->label('Jenis Alat'),
-                Tables\Columns\TextColumn::make('merk'),
-                Tables\Columns\TextColumn::make('kondisi'),
-                // Kolom status ini sekarang akan selalu sinkron karena logika baru kita
-                Tables\Columns\TextColumn::make('status')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Tersedia' => 'success',
-                        'Tidak Tersedia' => 'danger',
-                        default => 'gray',
-                    }),
+                TextColumn::make('jenis_alat')->label('Nomor Seri')->searchable(),
+                TextColumn::make('nomor_seri')->label('Nomor Seri')->searchable(),
+                TextColumn::make('daftar_alat_id')->label('Nomor Seri')->searchable(),
+                TextColumn::make('sewa_id')->label('Nomor Seri')->searchable(),
+
+                BadgeColumn::make('kondisi')
+                    ->label('Kondisi Master')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
+                    ->color(fn(bool $state) => $state ? 'success' : 'danger'),
+
+                TextColumn::make('pivot.tgl_keluar') // ambil dari pivot
+                    ->label('Tanggal Keluar')
+                    ->date('d-m-Y'),
+
+                TextColumn::make('pivot.tgl_masuk') // ambil dari pivot
+                    ->label('Tanggal Masuk')
+                    ->date('d-m-Y')
+                    ->placeholder('Belum Kembali'),
+
+                TextColumn::make('pivot.harga_perhari') // ambil dari pivot
+                    ->label('Harga / Hari')
+                    ->money('IDR')
+                    ->sortable(),
+
+                TextColumn::make('pivot.biaya_sewa_alat') // ambil dari pivot
+                    ->label('Total Biaya')
+                    ->money('IDR')
+                    ->sortable(),
             ])
-            ->filters([
-                SelectFilter::make('jenis_alat')->options(['GPS' => 'GPS', 'Drone' => 'Drone', 'OTS' => 'OTS'])->multiple(),
-                SelectFilter::make('status')->options(['Tersedia' => 'Tersedia', 'Tidak Tersedia' => 'Tidak Tersedia']),
-            ])
+            ->filters([])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
                     ->label('Tambah Alat')
                     ->modalHeading('Tambah Alat ke Proyek')
                     ->preloadRecordSelect()
-                    // Logika setelah alat berhasil ditambahkan
-                    ->after(fn(Model $record) => $record->update(['status' => 'Tidak Tersedia']))
+                    ->using(function (RelationManager $livewire, Model $record, array $data): void {
+                        $project = $livewire->ownerRecord;
+                        $pivotData = collect($data)->only([
+                            'tgl_keluar',
+                            'harga_perhari',
+                            'user_id',
+                        ])->toArray();
+                        $pivotData['sewa_id'] = $project->sewa_id;
+                        $livewire->getRelationship()->attach($record, $pivotData);
+                        $record->update(['status' => false]);
+                    })
+                    ->after(fn(Model $record) => $record->update(['status' => false]))
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
-                        $action->getRecordSelect()
-                            ->label('Pilih Alat')
-                            ->required()
-                            // LOGIKA PALING PENTING: Menampilkan alat yang BENAR-BENAR tersedia.
-                            ->getSearchResultsUsing(function (string $search) {
-                                // Tampilkan alat yang statusnya 'Tersedia' DAN namanya cocok dengan pencarian
-                                return DaftarAlat::where('status', 'Tersedia')
-                                    ->where('nama_alat', 'like', "%{$search}%")
-                                    ->limit(50)
-                                    ->pluck('nama_alat', 'id');
+                        Forms\Components\Select::make('jenis_alat_filter')
+                            ->label('Pilih Jenis Alat')
+                            ->options(DaftarAlat::pluck('jenis_alat', 'jenis_alat')->unique())
+                            ->live()
+                            ->required(),
+                        Forms\Components\Select::make('recordId')
+                            ->label('Pilih Nomor Seri')
+                            ->options(function (Get $get): array {
+                                $jenisAlat = $get('jenis_alat_filter');
+                                if (!$jenisAlat)
+                                    return [];
+                                $alreadyAttachedAlatIds = $this->getOwnerRecord()->daftarAlat()->pluck('daftar_alat.id');
+                                return DaftarAlat::query()
+                                    ->where('jenis_alat', $jenisAlat)
+                                    ->where('status', true)
+                                    ->where('kondisi', true)
+                                    ->whereNotIn('id', $alreadyAttachedAlatIds)
+                                    ->pluck('nomor_seri', 'id')
+                                    ->all();
                             })
-                            ->getOptionLabelUsing(fn($value): ?string => DaftarAlat::find($value)?->nama_alat),
+                            ->searchable()
+                            ->required()
+                            ->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
+                        Forms\Components\DatePicker::make('tgl_keluar')
+                            ->label('Tanggal Keluar')
+                            ->default(now())
+                            ->required()
+                            ->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
+                        Forms\Components\TextInput::make('harga_perhari')
+                            ->label('Harga Sewa Per Hari')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->required()
+                            ->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
+                        Hidden::make('sewa_id')->default(fn(RelationManager $livewire) => $livewire->ownerRecord->sewa_id),
                         Hidden::make('user_id')
                             ->default(auth()->id())
-                    ]),
+
+                    ])
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DetachAction::make()
-                    // LOGIKA PINTAR SETELAH DETACH
-                    ->after(function (Model $record) {
-                        // Cek apakah alat ini masih terikat pada proyek aktif lainnya.
-                        $isStillInUse = $record->projects()
-                            ->where('status_pekerjaan', '!=', 'Selesai')
-                            ->exists();
-                        // Jika SUDAH TIDAK dipakai di mana pun, baru set statusnya jadi Tersedia.
-                        if (!$isStillInUse) {
-                            $record->update(['status' => 'Tersedia']);
-                        }
-                    }),
+                // Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DetachAction::make()
+                //     // LOGIKA PINTAR SETELAH DETACH
+                //     ->after(function (Model $record) {
+                //         // Cek apakah alat ini masih terikat pada proyek aktif lainnya.
+                //         $isStillInUse = $record->projects()
+                //             ->where('status_pekerjaan', '!=', 'Selesai')
+                //             ->exists();
+                //         // Jika SUDAH TIDAK dipakai di mana pun, baru set statusnya jadi Tersedia.
+                //         if (!$isStillInUse) {
+                //             $record->update(['status' => 'Tersedia']);
+                //         }
+                //     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make()
-                        ->after(function (Collection $records) {
-                            foreach ($records as $record) {
-                                // Logika yang sama dengan DetachAction tunggal
-                                $isStillInUse = $record->projects()
-                                    ->where('status_pekerjaan', '!=', 'Selesai')
-                                    ->exists();
-                                if (!$isStillInUse) {
-                                    $record->update(['status' => 'Tersedia']);
-                                }
-                            }
-                        }),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DetachBulkAction::make()
+                //         ->after(function (Collection $records) {
+                //             foreach ($records as $record) {
+                //                 // Logika yang sama dengan DetachAction tunggal
+                //                 $isStillInUse = $record->projects()
+                //                     ->where('status_pekerjaan', '!=', 'Selesai')
+                //                     ->exists();
+                //                 if (!$isStillInUse) {
+                //                     $record->update(['status' => 'Tersedia']);
+                //                 }
+                //             }
+                //         }),
+                // ]),
             ]);
     }
 }

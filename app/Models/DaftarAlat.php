@@ -76,4 +76,13 @@ class DaftarAlat extends Model
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa', 'user_id']) // Pastikan semua kolom pivot ada
             ->withTimestamps();
     }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'riwayat_sewa', 'daftar_alat_id', 'sewa_id')
+            // SOLUSI: Memberitahu Eloquent untuk menggunakan model pivot kustom kita
+            ->using(RiwayatSewa::class)
+            ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa', 'user_id']) // Pastikan semua kolom pivot ada
+            ->withTimestamps();
+    }
 }
