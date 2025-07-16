@@ -2,16 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TransaksiPembayaranResource\Pages;
-use App\Filament\Resources\TransaksiPembayaranResource\RelationManagers;
-use App\Models\TransaksiPembayaran;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Resources\Resource;
+use App\Models\TransaksiPembayaran;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\TransaksiPembayaranResource\Pages;
+use App\Filament\Resources\TransaksiPembayaranResource\RelationManagers;
 
 class TransaksiPembayaranResource extends Resource
 {
@@ -32,10 +34,12 @@ class TransaksiPembayaranResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\TextInput::make('nilai')
-                    ->required()
+                TextInput::make('nilai')
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(',')
                     ->numeric()
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->maxlength(20),
                 Forms\Components\DatePicker::make('tanggal_transaksi')
                     ->required()
                     ->native(false),
