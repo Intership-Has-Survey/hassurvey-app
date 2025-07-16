@@ -11,12 +11,7 @@ class Personel extends Model
 {
     protected $table = 'personel';
     use HasFactory, HasUuids, SoftDeletes;
-    protected $fillable = [
-        'jabatan',
-        'nama',
-        'keterangan',
-        'user_id',
-    ];
+    protected $guarded = [];
 
     public function projects()
     {

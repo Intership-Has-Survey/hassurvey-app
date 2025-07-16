@@ -23,10 +23,10 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             KategoriSeeder::class,
             // PersonelSeeder::class,
-            SalesSeeder::class,
+            // SalesSeeder::class,
             DaftarAlatSeeder::class,
             CustomerSeeder::class,
-            ProjectSeeder::class,
+            // ProjectSeeder::class,
             TrefRegionSeeder::class,
         ]);
     }

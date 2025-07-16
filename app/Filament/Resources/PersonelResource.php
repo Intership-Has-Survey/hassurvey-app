@@ -38,32 +38,51 @@ class PersonelResource extends Resource
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make('Informasi Pribadi')
                     ->schema([
                         TextInput::make('nama')
                             ->label('Nama Lengkap')
                             ->required(),
                         TextInput::make('nik')
                             ->label('Nomor Induk Kependudukan (NIK)')
+                            ->numeric()
+                            ->length(16)
                             ->required(),
-                        Select::make('jabatan')
+                        DatePicker::make('tanggal_lahir')
+                            ->label('Tanggal Lahir')
+                            ->native(false),
+                        TextInput::make('nomor_wa')
+                            ->label('Nomor WhatsApp')
+                            ->required()
+                            ->tel(),
+                    ])->columns(2),
+
+                Section::make('Informasi Pekerjaan')
+                    ->schema([
+                        Select::make('tipe_personel')
+                            ->label('Tipe Personel')
                             ->options([
-                                'surveyor' => 'surveyor',
-                                'asisten surveyor' => 'asisten surveyor',
-                                'driver' => 'driver',
-                                'drafter' => 'drafter',
+                                'internal' => 'Internal',
+                                'freelance' => 'Freelance',
                             ])
                             ->required()
                             ->native(false),
-                        TextInput::make('nomor_wa')
-                            ->label('Nomor Whatsapps')
-                            ->nullable(),
-                        DatePicker::make('tanggal_lahir')
-                            ->label('Tanggal Lahir')
-                            ->nullable(),
+
+                        Select::make('jabatan')
+                            ->options([
+                                'surveyor' => 'Surveyor',
+                                'asisten surveyor' => 'Asisten Surveyor',
+                                'driver' => 'Driver',
+                                'drafter' => 'Drafter',
+                            ])
+                            ->required()
+                            ->native(false),
+
                         Textarea::make('keterangan')
                             ->label('Keterangan')
-                            ->nullable(),
+                            ->nullable()
+                            ->placeholder('Kosongkan jika tidak ada keterangan khusus')
+                            ->columnSpanFull(),
                     ])->columns(2),
                 Forms\Components\Section::make('Alamat')
                     ->schema([
@@ -72,6 +91,7 @@ class PersonelResource extends Resource
                             ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
                             ->live()
                             ->searchable()
+                            ->required()
                             ->afterStateUpdated(function (Set $set) {
                                 $set('kota', null);
                                 $set('kecamatan', null);
@@ -80,6 +100,7 @@ class PersonelResource extends Resource
 
                         Select::make('kota')
                             ->label('Kota/Kabupaten')
+                            ->required()
                             ->options(function (Get $get) {
                                 $provinsi = $get('provinsi');
                                 if (!$provinsi) {
@@ -99,6 +120,7 @@ class PersonelResource extends Resource
 
                         Select::make('kecamatan')
                             ->label('Kecamatan')
+                            ->required()
                             ->options(function (Get $get) {
                                 $kota = $get('kota');
                                 if (!$kota) {
@@ -117,6 +139,7 @@ class PersonelResource extends Resource
 
                         Select::make('desa')
                             ->label('Desa/Kelurahan')
+                            ->required()
                             ->options(function (Get $get) {
                                 $kecamatan = $get('kecamatan');
                                 if (!$kecamatan) {
@@ -132,6 +155,7 @@ class PersonelResource extends Resource
 
                         Textarea::make('detail_alamat')
                             ->label('Detail Alamat')
+                            ->required()
                             ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
                             ->columnSpanFull(),
                     ])->columns(2),
@@ -145,12 +169,21 @@ class PersonelResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('tipe_personel')
+                    ->label('Tipe Personel')
+                    ->badge()
+                    ->color(
+                        fn(string $state): string =>
+                        str_contains($state, 'internal') ? 'primary' : 'info'
+                    )
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('jabatan')
                     ->label('Jabatan')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('nama_personel')
-                    ->label('Nama Personel')
+                TextColumn::make('nama')
+                    ->label('Nama')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('status')
