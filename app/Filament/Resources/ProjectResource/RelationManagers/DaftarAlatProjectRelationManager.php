@@ -23,38 +23,29 @@ class DaftarAlatProjectRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $sewa = $this->ownerRecord->sewa;
         return $table
+            ->query(function () use ($sewa) {
+                if (!$sewa) {
+                    return DaftarAlat::query()->whereNull('id'); // kosong
+                }
+
+                return $sewa->daftarAlat()
+                    ->select('daftar_alat.*', 'riwayat_sewa.sewa_id', 'riwayat_sewa.daftar_alat_id', 'riwayat_sewa.tgl_keluar', 'riwayat_sewa.tgl_masuk', 'riwayat_sewa.harga_perhari', 'riwayat_sewa.biaya_sewa_alat');
+            })
             ->recordTitleAttribute('nomor_seri')
             ->columns([
-                TextColumn::make('jenis_alat')->label('Nomor Seri')->searchable(),
-                TextColumn::make('nomor_seri')->label('Nomor Seri')->searchable(),
-                TextColumn::make('daftar_alat_id')->label('Nomor Seri')->searchable(),
-                TextColumn::make('sewa_id')->label('Nomor Seri')->searchable(),
-
+                TextColumn::make('nomor_seri')->searchable(),
                 BadgeColumn::make('kondisi')
                     ->label('Kondisi Master')
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
                     ->color(fn(bool $state) => $state ? 'success' : 'danger'),
-
-                TextColumn::make('pivot.tgl_keluar') // ambil dari pivot
-                    ->label('Tanggal Keluar')
-                    ->date('d-m-Y'),
-
-                TextColumn::make('pivot.tgl_masuk') // ambil dari pivot
-                    ->label('Tanggal Masuk')
-                    ->date('d-m-Y')
-                    ->placeholder('Belum Kembali'),
-
-                TextColumn::make('pivot.harga_perhari') // ambil dari pivot
-                    ->label('Harga / Hari')
-                    ->money('IDR')
-                    ->sortable(),
-
-                TextColumn::make('pivot.biaya_sewa_alat') // ambil dari pivot
-                    ->label('Total Biaya')
-                    ->money('IDR')
-                    ->sortable(),
+                TextColumn::make('tgl_keluar')->date('d-m-Y'),
+                TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
+                TextColumn::make('harga_perhari')->money('IDR')->sortable(),
+                TextColumn::make('biaya_sewa_alat')->money('IDR')->sortable()->label('Total Biaya'),
             ])
+            ->recordTitleAttribute('nomor_seri')
             ->filters([])
             ->headerActions([
                 Tables\Actions\AttachAction::make()

@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->string('gender');
             $table->string('email')->unique();
             $table->string('telepon')->tel();
+            // $table->string('alamat');
 
             $table->string('provinsi', 2);
             $table->string('kota', 5);
@@ -52,6 +53,8 @@ return new class extends Migration {
             $table->string('level');
             $table->string('email')->unique();
             $table->string('telepon')->tel();
+            // $table->string('alamat');
+
             $table->string('provinsi', 2);
             $table->string('kota', 5);
             $table->string('kecamatan', 8);

@@ -17,6 +17,7 @@ class StatusPekerjaanResource extends Resource
     protected static ?string $navigationLabel = 'Status Pekerjaan';
     protected static ?string $navigationGroup = 'Jasa Pemetaan';
 
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {

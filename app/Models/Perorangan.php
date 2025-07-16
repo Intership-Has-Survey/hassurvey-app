@@ -21,19 +21,7 @@ class Perorangan extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'nama',
-        'gender',
-        'email',
-        'telepon',
-        'alamat',
-        'foto_ktp',
-        'foto_kk',
-        'nik',
-        'user_id',
-        'customer_type',
-        'customer_id',
-    ];
+    protected $guarded = [];
 
     /**
      * Get the user that owns the record.

@@ -26,9 +26,9 @@ class DatabaseSeeder extends Seeder
             // PersonelSeeder::class,
             // SalesSeeder::class,
             DaftarAlatSeeder::class,
-            CustomerSeeder::class,
+            // CustomerSeeder::class,
             // ProjectSeeder::class,
-            // TrefRegionSeeder::class,
+            TrefRegionSeeder::class,
         ]);
     }
 }

@@ -22,6 +22,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Support\RawJs;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Resources\ProjectResource\Pages\EditProject;
@@ -75,74 +76,83 @@ class ProjectResource extends Resource
                         ->label('Sales')
                         ->required()
                         ->createOptionForm([
-                            Section::make('informasi Sales')
+                            // The address fields were incorrectly here.
+                            // They are now moved to the main project section.
+                            Section::make('Informasi Sales')
                                 ->schema([
                                     TextInput::make('nama')->label('Nama Sales')->required(),
                                     TextInput::make('telepon')->tel()->required(),
                                     TextInput::make('email')->email()->required(),
                                 ])->columns(2),
-                            Section::make('Alamat')
-                                ->schema([
-                                    Select::make('provinsi')
-                                        ->label('Provinsi')
-                                        ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('kota', null);
-                                            $set('kecamatan', null);
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('kota')
-                                        ->label('Kota/Kabupaten')
-                                        ->options(function (Get $get) {
-                                            $provinceCode = $get('provinsi');
-                                            if (!$provinceCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $provinceCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 5)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('kecamatan', null);
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('kecamatan')
-                                        ->label('Kecamatan')
-                                        ->options(function (Get $get) {
-                                            $regencyCode = $get('kota');
-                                            if (!$regencyCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $regencyCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 8)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('desa')
-                                        ->label('Desa/Kelurahan')
-                                        ->options(function (Get $get) {
-                                            $districtCode = $get('kecamatan');
-                                            if (!$districtCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $districtCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 13)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable(),
-                                    Textarea::make('detail_alamat')
-                                        ->label('Detail Alamat')
-                                        ->columnSpanFull(),
-                                ])->columns(2),
                             Hidden::make('user_id')
                                 ->default(auth()->id()),
                         ]),
+
+                    // --- ADDRESS FIELDS MOVED HERE ---
+                    // These fields now correctly belong to the Project Information.
+                    Section::make('Alamat Proyek')
+                        ->schema([
+                            Select::make('provinsi')
+                                ->label('Provinsi')
+                                ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
+                                ->live()
+                                ->searchable()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kota', null);
+                                    $set('kecamatan', null);
+                                    $set('desa', null);
+                                }),
+                            Select::make('kota')
+                                ->label('Kota/Kabupaten')
+                                ->options(function (Get $get) {
+                                    $provinceCode = $get('provinsi');
+                                    if (!$provinceCode)
+                                        return [];
+                                    return TrefRegion::query()
+                                        ->where('code', 'like', $provinceCode . '.%')
+                                        ->where(DB::raw('LENGTH(code)'), 5)
+                                        ->pluck('name', 'code');
+                                })
+                                ->live()
+                                ->searchable()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kecamatan', null);
+                                    $set('desa', null);
+                                }),
+                            Select::make('kecamatan')
+                                ->label('Kecamatan')
+                                ->options(function (Get $get) {
+                                    $regencyCode = $get('kota');
+                                    if (!$regencyCode)
+                                        return [];
+                                    return TrefRegion::query()
+                                        ->where('code', 'like', $regencyCode . '.%')
+                                        ->where(DB::raw('LENGTH(code)'), 8)
+                                        ->pluck('name', 'code');
+                                })
+                                ->live()
+                                ->searchable()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('desa', null);
+                                }),
+                            Select::make('desa')
+                                ->label('Desa/Kelurahan')
+                                ->options(function (Get $get) {
+                                    $districtCode = $get('kecamatan');
+                                    if (!$districtCode)
+                                        return [];
+                                    return TrefRegion::query()
+                                        ->where('code', 'like', $districtCode . '.%')
+                                        ->where(DB::raw('LENGTH(code)'), 13)
+                                        ->pluck('name', 'code');
+                                })
+                                ->live()
+                                ->searchable(),
+                            Textarea::make('detail_alamat')
+                                ->label('Detail Alamat')
+                                ->columnSpanFull(),
+                        ])->columns(2),
+                    // --- END OF MOVED ADDRESS FIELDS ---
 
                     DatePicker::make('tanggal_informasi_masuk')
                         ->required()
@@ -180,19 +190,35 @@ class ProjectResource extends Resource
                             if ($type === Perorangan::class) {
                                 return [
                                     TextInput::make('nama')->required()->label('Nama Lengkap (Sesuai KTP)'),
-                                    Select::make('gender')->options(['Pria', 'Wanita'])->required()->label('Jenis Kelamin'),
-                                    TextInput::make('email')->email()->required()->unique(Perorangan::class, 'Email'),
+                                    Select::make('gender')->options(['Pria' => 'Pria', 'Wanita' => 'Wanita'])->required()->label('Jenis Kelamin'),
+                                    TextInput::make('email')->email()->required()->unique(Perorangan::class, 'email'),
                                     TextInput::make('telepon')->tel()->required(),
-                                    TextInput::make('alamat')->required()->columnSpanFull(),
+                                    // Note: You have duplicate address forms. This one is for the customer.
+                                    // The one above is for the project. This is likely correct.
+                                    Section::make('Alamat Customer')
+                                        ->schema([
+                                            Select::make('provinsi')->label('Provinsi')->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kota', null)),
+                                            Select::make('kota')->label('Kota/Kabupaten')->options(fn(Get $get) => $get('provinsi') ? TrefRegion::query()->where('code', 'like', $get('provinsi') . '.%')->where(DB::raw('LENGTH(code)'), 5)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kecamatan', null)),
+                                            Select::make('kecamatan')->label('Kecamatan')->options(fn(Get $get) => $get('kota') ? TrefRegion::query()->where('code', 'like', $get('kota') . '.%')->where(DB::raw('LENGTH(code)'), 8)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('desa', null)),
+                                            Select::make('desa')->label('Desa/Kelurahan')->options(fn(Get $get) => $get('kecamatan') ? TrefRegion::query()->where('code', 'like', $get('kecamatan') . '.%')->where(DB::raw('LENGTH(code)'), 13)->pluck('name', 'code') : [])->live()->searchable(),
+                                            Textarea::make('detail_alamat')->label('Detail Alamat')->columnSpanFull(),
+                                        ])->columns(2),
                                 ];
                             }
                             if ($type === Corporate::class) {
                                 return [
                                     TextInput::make('nama')->label('Nama Perusahaan')->required(),
-                                    Select::make('level')->options(['Kecil', 'Menengah', 'Besar'])->required(),
+                                    Select::make('level')->options(['Kecil' => 'Kecil', 'Menengah' => 'Menengah', 'Besar' => 'Besar'])->required(),
                                     TextInput::make('email')->email()->required()->unique(Corporate::class, 'email'),
                                     TextInput::make('telepon')->tel()->required(),
-                                    TextInput::make('alamat')->required(),
+                                    Section::make('Alamat Perusahaan')
+                                        ->schema([
+                                            Select::make('provinsi')->label('Provinsi')->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kota', null)),
+                                            Select::make('kota')->label('Kota/Kabupaten')->options(fn(Get $get) => $get('provinsi') ? TrefRegion::query()->where('code', 'like', $get('provinsi') . '.%')->where(DB::raw('LENGTH(code)'), 5)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kecamatan', null)),
+                                            Select::make('kecamatan')->label('Kecamatan')->options(fn(Get $get) => $get('kota') ? TrefRegion::query()->where('code', 'like', $get('kota') . '.%')->where(DB::raw('LENGTH(code)'), 8)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('desa', null)),
+                                            Select::make('desa')->label('Desa/Kelurahan')->options(fn(Get $get) => $get('kecamatan') ? TrefRegion::query()->where('code', 'like', $get('kecamatan') . '.%')->where(DB::raw('LENGTH(code)'), 13)->pluck('name', 'code') : [])->live()->searchable(),
+                                            Textarea::make('detail_alamat')->label('Detail Alamat')->columnSpanFull(),
+                                        ])->columns(2),
                                     TextInput::make('nib')->nullable()->label('NIB (Nomor Induk Berusaha)')
                                 ];
                             }
@@ -211,11 +237,11 @@ class ProjectResource extends Resource
                         ->visible(fn(Get $get) => filled($get('customer_type'))),
                 ]),
 
-            // --- BAGIAN KEUANGAN & STATUS ---
             Section::make('Keuangan & Status')
                 ->schema([
                     TextInput::make('nilai_project')
-                        ->label('Nilai Project')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
                         ->numeric()
                         ->prefix('Rp')
                         ->required()

@@ -37,13 +37,16 @@ class CreateProject extends CreateRecord
         if (empty($data['sewa_id'])) {
             $sewa = \App\Models\Sewa::create([
                 'judul' => 'Kontrak Sewa Otomatis untuk ' . $data['nama_project'], // sesuaikan field
-                'jenis' => 'untuk project', // sesuaikan field
                 'tgl_mulai' => now(),
                 'tgl_selesai' => now()->addDays(7),
-                'lokasi' => 'Bogor',
-                'alamat' => 'ciampea',
-                'customer_id' => $data['customer_id'],
+                'provinsi' => $data['provinsi'],
+                'kota' => $data['kota'],
+                'kecamatan' => $data['kecamatan'],
+                'desa' => $data['desa'],
+                'detail_alamat' => $data['detail_alamat'],
                 'user_id' => $data['user_id'],
+                'customer_id' => $data['customer_id'],
+                'customer_type' => $data['customer_type'],
             ]);
 
             $data['sewa_id'] = $sewa->id;
