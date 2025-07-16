@@ -47,7 +47,7 @@ class Project extends Model
 
     public function statusPekerjaan()
     {
-        return $this->belongsTo(StatusPekerjaan::class);
+        return $this->hasMany(StatusPekerjaan::class);
     }
 
     public function StatusPembayaran()
@@ -60,7 +60,13 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function Sewa(){
+    public function Sewa()
+    {
         return $this->belongsTo(Sewa::class);
+    }
+
+    public function pengajuanDanas(): HasMany
+    {
+        return $this->hasMany(PengajuanDana::class);
     }
 }

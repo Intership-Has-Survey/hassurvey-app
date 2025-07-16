@@ -35,7 +35,6 @@ class PembayaranObserver
         // Hitung total pembayaran yang sudah masuk untuk proyek ini.
         $totalDibayar = $project->statuspembayaran()->sum('nilai');
 
-        // --- PERBAIKAN LOGIKA ---
         // Kita secara eksplisit mengubah kedua nilai menjadi angka (float) sebelum membandingkan
         // untuk memastikan perbandingan numerik yang benar.
         $statusBaru = '';

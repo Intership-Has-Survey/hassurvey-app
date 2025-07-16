@@ -19,13 +19,17 @@ class StatusPekerjaanObserver
             return;
         }
 
-        $isSelesai = $statusPekerjaan->pekerjaan_lapangan === 'Selesai' &&
-            $statusPekerjaan->proses_data_dan_gambar === 'Selesai' &&
-            $statusPekerjaan->laporan === 'Selesai';
 
-        $statusBaru = $isSelesai ? 'Selesai' : 'Belum Selesai';
+        // $isSelesai = in_array($statusPekerjaan->jenis_pekerjaan, ['pekerjaan_lapangan', 'data_gambar', 'laporan'])
+        //     && in_array($statusPekerjaan->proses_data_dan_gambar, ['Selesai', 'Tidak Perlu'])
+        //     && in_array($statusPekerjaan->laporan, ['Selesai', 'Tidak Perlu']);
+        // $statusBaru = $isSelesai ? 'Selesai' : 'Belum Selesai';
 
-        $project->status_pekerjaan = $statusBaru;
+        $allStatus = $project->statusPekerjaan()->pluck('status');
+
+        // Tentukan apakah semua selesai / tidak perlu
+        $isSelesai = $allStatus->every(fn($status) => in_array($status, ['Selesai', 'Tidak Perlu']));
+        $project->status_pekerjaan = $isSelesai ? 'Selesai' : 'Belum Selesai';
         $project->saveQuietly();
     }
 }

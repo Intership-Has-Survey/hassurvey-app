@@ -16,6 +16,11 @@ return new class extends Migration
             $table->string('nama');
             $table->string('email')->unique();
             $table->string('telepon');
+            $table->string('provinsi', 2);
+            $table->string('kota', 5);
+            $table->string('kecamatan', 8);
+            $table->string('desa', 13);
+            $table->text('detail_alamat');
             $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users');

@@ -15,9 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('project_id')->constrained('projects')->cascadeOnDelete();
 
-            $table->string('pekerjaan_lapangan');
-            $table->string('proses_data_dan_gambar');
-            $table->string('laporan');
+            $table->string('jenis_pekerjaan');
+            $table->string('status');
 
             $table->text('keterangan')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
