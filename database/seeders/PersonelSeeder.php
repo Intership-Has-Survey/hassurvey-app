@@ -24,6 +24,7 @@ class PersonelSeeder extends Seeder
         $personels = [
             [
                 'nama' => 'Dzaky',
+                'tipe_personel' => 'internal',
                 'nik' => '3327081112990001',
                 'jabatan' => 'Surveyor',
                 'nomor_wa' => '081234567890',
@@ -38,6 +39,7 @@ class PersonelSeeder extends Seeder
             ],
             [
                 'nama' => 'Sulthon',
+                'tipe_personel' => 'internal',
                 'nik' => '3327081201000002',
                 'jabatan' => 'Surveyor',
                 'nomor_wa' => '081234567891',
@@ -52,6 +54,7 @@ class PersonelSeeder extends Seeder
             ],
             [
                 'nama' => 'Athallah',
+                'tipe_personel' => 'internal',
                 'nik' => '3327080505010003',
                 'jabatan' => 'Asisten Surveyor',
                 'nomor_wa' => '081234567892',
@@ -66,6 +69,7 @@ class PersonelSeeder extends Seeder
             ],
             [
                 'nama' => 'Rizki',
+                'tipe_personel' => 'freelance',
                 'nik' => '3327082008020004',
                 'jabatan' => 'Asisten Surveyor',
                 'nomor_wa' => '081234567893',
@@ -80,6 +84,7 @@ class PersonelSeeder extends Seeder
             ],
             [
                 'nama' => 'Surya',
+                'tipe_personel' => 'freelance',
                 'nik' => '3327081503980005',
                 'jabatan' => 'Drafter',
                 'nomor_wa' => '081234567894',

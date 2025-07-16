@@ -13,16 +13,17 @@ return new class extends Migration {
         Schema::create('personel', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('nik');
-            $table->string('jabatan');
-            $table->string('nomor_wa');
+            $table->string('nik')->unique();
             $table->string('tanggal_lahir');
+            $table->string('nomor_wa');
+            $table->string('tipe_personel');
+            $table->string('jabatan');
+            $table->string('keterangan')->nullable();
             $table->string('provinsi', 2);
             $table->string('kota', 5);
             $table->string('kecamatan', 8);
             $table->string('desa', 13);
             $table->text('detail_alamat');
-            $table->string('keterangan')->nullable();
             $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users');
