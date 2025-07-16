@@ -31,7 +31,7 @@ class StatusPembayaranRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         $project = $this->ownerRecord;
-        $nilaiProyek = (float) $project->nilai_project;
+        $nilaiProyek = (float) $project->nilai;
         $totalDibayar = (float) $project->statusPembayaran()->sum('nilai');
         $sisaPembayaran = $nilaiProyek - $totalDibayar;
 

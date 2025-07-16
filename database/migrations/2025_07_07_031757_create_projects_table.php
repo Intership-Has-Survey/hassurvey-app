@@ -20,13 +20,18 @@ return new class extends Migration {
             $table->string('sumber');
             // customer 
             $table->uuid('customer_id')->constrained('customers');
+
             $table->string('jenis_penjualan');
             $table->string('nama_pic')->nullable();
             $table->string('level_company')->nullable();
-            $table->string('lokasi');
-            $table->string('alamat');
+            // alamat proyek
+            $table->string('provinsi', 2);
+            $table->string('kota', 5);
+            $table->string('kecamatan', 8);
+            $table->string('desa', 13);
+            $table->text('detail_alamat');
             // keuangan & status
-            $table->decimal('nilai_project', 15, 2)->default(0);
+            $table->decimal('nilai', 15, 2)->default(0);
             $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
             $table->string('status_pekerjaan')->nullable()->default('Belum Selesai');
