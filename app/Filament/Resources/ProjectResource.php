@@ -316,6 +316,7 @@ class ProjectResource extends Resource
             RelationManagers\StatusPembayaranRelationManager::class,
             RelationManagers\DaftarAlatProjectRelationManager::class,
             RelationManagers\StatusPekerjaanRelationManager::class,
+            RelationManagers\PengajuanDanasRelationManager::class,
         ];
     }
 
