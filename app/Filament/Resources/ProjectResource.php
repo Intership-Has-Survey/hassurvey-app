@@ -16,11 +16,21 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
+use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\ProjectResource\Pages\ViewProject;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
+use App\Filament\Resources\ProjectResource\Pages\CreateProject;
+use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
+use App\Models\Perorangan;
+use App\Models\Corporate;
 
 class ProjectResource extends Resource
 {
@@ -145,112 +155,60 @@ class ProjectResource extends Resource
 
             Section::make('Informasi Customer')
                 ->schema([
-                    Select::make('customer_id')
-                        ->relationship('customer', 'nama')
-                        ->searchable()
-                        ->preload()
-                        ->label('Nama Klien/Perusahaan')
-                        ->required()
-                        ->createOptionForm([
-                            TextInput::make('nama')
-                                ->label('Nama Klien/Perusahaan')
-                                ->required(),
-                            TextInput::make('email')->email(),
-                            TextInput::make('telepon')->tel()->required(),
-                            Section::make('Alamat')
-                                ->schema([
-                                    Select::make('provinsi')
-                                        ->label('Provinsi')
-                                        ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('kota', null);
-                                            $set('kecamatan', null);
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('kota')
-                                        ->label('Kota/Kabupaten')
-                                        ->options(function (Get $get) {
-                                            $provinceCode = $get('provinsi');
-                                            if (!$provinceCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $provinceCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 5)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('kecamatan', null);
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('kecamatan')
-                                        ->label('Kecamatan')
-                                        ->options(function (Get $get) {
-                                            $regencyCode = $get('kota');
-                                            if (!$regencyCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $regencyCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 8)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('desa', null);
-                                        }),
-                                    Select::make('desa')
-                                        ->label('Desa/Kelurahan')
-                                        ->options(function (Get $get) {
-                                            $districtCode = $get('kecamatan');
-                                            if (!$districtCode) return [];
-                                            return TrefRegion::query()
-                                                ->where('code', 'like', $districtCode . '.%')
-                                                ->where(DB::raw('LENGTH(code)'), 13)
-                                                ->pluck('name', 'code');
-                                        })
-                                        ->live()
-                                        ->searchable(),
-                                    Textarea::make('detail_alamat')
-                                        ->label('Detail Alamat')
-                                        ->columnSpanFull(),
-                                ])->columns(2),
-                            Hidden::make('user_id')->default(auth()->id()),
-                        ])
-                        ->columnSpanFull(),
-                    Select::make('jenis_penjualan')
+                    Select::make('customer_type')
+                        ->label('Tipe Customer')
                         ->options([
-                            'Perseorangan' => 'Perseorangan',
-                            'Corporate' => 'Corporate',
+                            Perorangan::class => 'Perorangan',
+                            Corporate::class => 'Corporate',
                         ])
+                        ->live()
                         ->required()
-                        ->native(false)
-                        ->live(),
-                    TextInput::make('nama_pic')
-                        ->label('Nama PIC')
-                        ->visible(fn(Get $get) => $get('jenis_penjualan') === 'Corporate'),
-                    Select::make('level_company')
-                        ->label('Level Perusahaan')
-                        ->options(['Besar' => 'Besar', 'Kecil' => 'Kecil'])
-                        ->visible(fn(Get $get) => $get('jenis_penjualan') === 'Corporate')
-                        ->native(false),
-                    TextInput::make('lokasi')
-                        ->label('Lokasi Proyek')
-                        ->required(),
-                    Textinput::make('alamat')
-                        ->required()
-                        ->columnSpanFull(),
-                    // Section::make('Penyewaan Alat')
-                    //     ->schema([
-                    //         Select::make('sewa_id')
-                    //             ->label('Pilih Kontrak Sewa Alat')
-                    //             ->relationship('sewa', 'judul') // tetap relasi ke Sewa
-                    //             ->searchable()
-                    //             ->preload()
-                    //             ->required(),
-                    //     ]),
+                        ->placeholder('Pilih tipe customer terlebih dahulu'),
 
+                    Select::make('customer_id')
+                        ->label('Pilih Customer')
+                        ->options(function (Get $get): array {
+                            $type = $get('customer_type');
+                            if (!$type)
+                                return [];
+                            return $type::pluck('nama', 'id')->all();
+                        })
+                        ->searchable()
+                        ->required()
+                        ->createOptionForm(function (Get $get) {
+                            $type = $get('customer_type');
+                            if ($type === Perorangan::class) {
+                                return [
+                                    TextInput::make('nama')->required()->label('Nama Lengkap (Sesuai KTP)'),
+                                    Select::make('gender')->options(['Pria', 'Wanita'])->required()->label('Jenis Kelamin'),
+                                    TextInput::make('email')->email()->required()->unique(Perorangan::class, 'Email'),
+                                    TextInput::make('telepon')->tel()->required(),
+                                    TextInput::make('alamat')->required()->columnSpanFull(),
+                                ];
+                            }
+                            if ($type === Corporate::class) {
+                                return [
+                                    TextInput::make('nama')->label('Nama Perusahaan')->required(),
+                                    Select::make('level')->options(['Kecil', 'Menengah', 'Besar'])->required(),
+                                    TextInput::make('email')->email()->required()->unique(Corporate::class, 'email'),
+                                    TextInput::make('telepon')->tel()->required(),
+                                    TextInput::make('alamat')->required(),
+                                    TextInput::make('nib')->nullable()->label('NIB (Nomor Induk Berusaha)')
+                                ];
+                            }
+                            return [];
+                        })
+                        ->createOptionUsing(function (array $data, Get $get): ?string {
+                            $type = $get('customer_type');
+                            if (!$type)
+                                return null;
+
+                            $data['user_id'] = auth()->id();
+
+                            $record = $type::create($data);
+                            return $record->id;
+                        })
+                        ->visible(fn(Get $get) => filled($get('customer_type'))),
                 ]),
 
             // --- BAGIAN KEUANGAN & STATUS ---

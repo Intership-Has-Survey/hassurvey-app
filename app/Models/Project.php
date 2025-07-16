@@ -40,9 +40,9 @@ class Project extends Model
         return $this->belongsTo(Sales::class);
     }
 
-    public function customer(): BelongsTo
+    public function perorangan(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Perorangan::class);
     }
 
     public function statusPekerjaan()

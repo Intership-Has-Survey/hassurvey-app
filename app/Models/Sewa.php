@@ -8,7 +8,10 @@ use Iluminate\Database\Eloquent\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 
 class Sewa extends Model
 {
@@ -24,12 +27,9 @@ class Sewa extends Model
         'lokasi',
         'alamat',
         'total_biaya',
+        'customer_id',
+        'customer_type',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
 
     public function daftarAlat()
     {
@@ -40,8 +40,24 @@ class Sewa extends Model
             ->withTimestamps();
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function ($sewa) {
+            // Atur user_id jika belum ada dan user sedang login
+            if (!$sewa->user_id && Auth::check()) {
+                $sewa->user_id = Auth::id();
+            }
+        });
+    }
+
     public function projects()
     {
         return $this->hasMany(Project::class, 'sewa_id');
     }
+
+    public function customer(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
 }

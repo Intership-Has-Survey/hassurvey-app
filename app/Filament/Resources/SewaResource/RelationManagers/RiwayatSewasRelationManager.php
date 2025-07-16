@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Get;
+use Filament\Forms\Components\FileUpload;
 
 class RiwayatSewasRelationManager extends RelationManager
 {
@@ -24,13 +25,14 @@ class RiwayatSewasRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\DatePicker::make('tgl_keluar')
-                    ->label('Tanggal Keluar')
+                    ->label('Tanggal Alat Keluar')
                     ->required()
-                    ->readOnly(),
+                    ->disabled() // <-- Dibuat disabled agar tidak bisa diubah saat edit
+                    ->dehydrated(), // <-- Pastikan nilainya tetap terkirim meskipun disabled
                 Forms\Components\DatePicker::make('tgl_masuk')
                     ->label('Tanggal Masuk (diisi saat pengembalian)')
-                    ->required()
-                    ->minDate(fn(Get $get) => $get('tgl_keluar')),
+                    ->minDate(fn(Get $get) => $get('tgl_keluar'))
+                    ->live(), // <-- Reaktif untuk memicu validasi
                 Forms\Components\TextInput::make('harga_perhari')
                     ->numeric()
                     ->prefix('Rp')
@@ -43,6 +45,18 @@ class RiwayatSewasRelationManager extends RelationManager
                     ])
                     ->required()
                     ->default('Baik'),
+
+                // SOLUSI: Menambahkan input untuk keterangan dan foto bukti
+                Forms\Components\Textarea::make('keterangan')
+                    ->label('Keterangan Pengembalian (Opsional)')
+                    ->columnSpanFull(),
+                FileUpload::make('foto_bukti')
+                    ->label('Foto Bukti Pengembalian')
+                    ->image()
+                    ->directory('bukti-pengembalian')
+                    // Foto hanya wajib diisi jika tanggal masuk sudah diisi
+                    ->required(fn(Get $get): bool => filled($get('tgl_masuk')))
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -79,20 +93,15 @@ class RiwayatSewasRelationManager extends RelationManager
                             ->required(),
                         Forms\Components\Select::make('recordId')
                             ->label('Pilih Nomor Seri')
-                            // SOLUSI: Menggunakan $this->getOwnerRecord() untuk mengakses record induk
                             ->options(function (Get $get): array {
                                 $jenisAlat = $get('jenis_alat_filter');
                                 if (!$jenisAlat)
                                     return [];
-
-                                // Dapatkan ID alat yang sudah terpasang pada sewa ini
                                 $alreadyAttachedAlatIds = $this->getOwnerRecord()->daftarAlat()->pluck('daftar_alat.id');
-
                                 return DaftarAlat::query()
                                     ->where('jenis_alat', $jenisAlat)
                                     ->where('status', true)
                                     ->where('kondisi', true)
-                                    // Sembunyikan alat yang sudah ada di daftar sewa ini
                                     ->whereNotIn('id', $alreadyAttachedAlatIds)
                                     ->pluck('nomor_seri', 'id')
                                     ->all();
@@ -117,26 +126,31 @@ class RiwayatSewasRelationManager extends RelationManager
                 Tables\Actions\EditAction::make()
                     ->label('Update Pengembalian')
                     ->using(function (Model $record, array $data): Model {
-                        $tglKeluar = Carbon::parse($data['tgl_keluar']);
-                        $tglMasuk = Carbon::parse($data['tgl_masuk']);
-                        $durasiSewa = $tglKeluar->diffInDays($tglMasuk) + 1;
-                        $biayaSewa = $durasiSewa * $data['harga_perhari'];
+                        // Hanya proses jika tanggal masuk diisi
+                        if (!empty($data['tgl_masuk'])) {
+                            $tglKeluar = Carbon::parse($data['tgl_keluar']);
+                            $tglMasuk = Carbon::parse($data['tgl_masuk']);
+                            $durasiSewa = $tglKeluar->diffInDays($tglMasuk) + 1;
+                            $biayaSewa = $durasiSewa * $data['harga_perhari'];
 
-                        $record->pivot->tgl_masuk = $data['tgl_masuk'];
-                        $record->pivot->harga_perhari = $data['harga_perhari'];
-                        $record->pivot->biaya_sewa_alat = $biayaSewa;
-                        $record->pivot->save();
+                            // Update data di pivot table
+                            $record->pivot->tgl_masuk = $data['tgl_masuk'];
+                            $record->pivot->harga_perhari = $data['harga_perhari'];
+                            $record->pivot->biaya_sewa_alat = $biayaSewa;
+                            // SOLUSI: Menyimpan data keterangan dan foto bukti
+                            $record->pivot->keterangan = $data['keterangan'];
+                            $record->pivot->foto_bukti = $data['foto_bukti'];
+                            $record->pivot->save();
 
-                        $kondisiBaru = ($data['kondisi_kembali'] === 'Bermasalah') ? false : true;
-                        $record->update([
-                            'status' => true,
-                            'kondisi' => $kondisiBaru,
-                        ]);
-
+                            // Update data di tabel master daftar_alat
+                            $kondisiBaru = ($data['kondisi_kembali'] === 'Bermasalah') ? false : true;
+                            $record->update([
+                                'status' => true,
+                                'kondisi' => $kondisiBaru,
+                            ]);
+                        }
                         return $record;
                     }),
-                Tables\Actions\DetachAction::make()
-                    ->after(fn(Model $record) => $record->update(['status' => true])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

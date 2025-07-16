@@ -13,7 +13,6 @@ return new class extends Migration {
         Schema::create('sewa', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->text('judul');
-            $table->string('jenis');
             $table->date('tgl_mulai');
             $table->date('tgl_selesai');
             $table->text('lokasi');
@@ -21,7 +20,7 @@ return new class extends Migration {
             $table->decimal('total_biaya', 15, 2)->nullable();
             $table->timestamps();
 
-            $table->foreignUuid('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->uuidMorphs('customer');
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
         });

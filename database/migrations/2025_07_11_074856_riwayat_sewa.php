@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->dateTime('tgl_masuk')->nullable();
             $table->decimal('harga_perhari', 15, 2)->nullable();
             $table->decimal('biaya_sewa_alat', 15, 2)->nullable();
+            $table->text('keterangan')->nullable();
+            $table->string('foto_bukti')->nullable();
             $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users');
