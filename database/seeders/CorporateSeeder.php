@@ -15,6 +15,6 @@ class CorporateSeeder extends Seeder
     {
         // Membuat 25 data corporate dummy menggunakan factory.
         // Anda bisa ubah jumlahnya sesuai kebutuhan.
-        Corporate::factory()->count(5)->create();
+        Corporate::factory()->count(25)->create();
     }
 }

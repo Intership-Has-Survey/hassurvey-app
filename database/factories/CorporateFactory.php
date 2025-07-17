@@ -36,7 +36,7 @@ class CorporateFactory extends Factory
         return [
             'nama' => $this->faker->company(),
             'nib' => $this->faker->unique()->numerify('#############'), // NIB biasanya 13 digit
-            'level' => $this->faker->randomElement(['PT', 'CV', 'Yayasan', 'UMKM']),
+            'level' => $this->faker->randomElement(['Besar', 'Menengah', 'Kecil']),
             'email' => $this->faker->unique()->companyEmail(),
             'telepon' => $this->faker->phoneNumber(),
 

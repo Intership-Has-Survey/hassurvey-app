@@ -27,7 +27,7 @@ class PeroranganFactory extends Factory
 
         return [
             'nama' => $this->faker->name(),
-            'gender' => $this->faker->randomElement(['Laki-laki', 'Perempuan']),
+            'gender' => $this->faker->randomElement(['Pria', 'Wanita']),
             'email' => $this->faker->unique()->safeEmail(),
             'telepon' => $this->faker->unique()->phoneNumber(),
 
