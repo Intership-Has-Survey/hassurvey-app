@@ -24,6 +24,11 @@ class SalesSeeder extends Seeder
             'nama' => 'Syahrial',
             'email' => 'syahrial@gmail.com',
             'telepon' => '085161648713',
+            'provinsi' => '33', // Jawa Tengah
+            'kota' => '33.27', // Kab. Pemalang
+            'kecamatan' => '33.27.08', // Kec. Pemalang
+            'desa' => '33.27.08.2010', // Kel. Pelutan
+            'detail_alamat' => 'Jl. Gatot Subroto No. 10',
             'user_id' => $user->id,
         ]);
 
@@ -31,6 +36,11 @@ class SalesSeeder extends Seeder
             'nama' => 'Hipdi',
             'email' => 'hipdi@gmail.com',
             'telepon' => '085161648714',
+            'provinsi' => '33', // Jawa Tengah
+            'kota' => '33.27', // Kab. Pemalang
+            'kecamatan' => '33.27.08', // Kec. Pemalang
+            'desa' => '33.27.08.2010', // Kel. Pelutan
+            'detail_alamat' => 'Jl. Gatot Subroto No. 10',
             'user_id' => $user->id,
         ]);
 
@@ -38,6 +48,11 @@ class SalesSeeder extends Seeder
             'nama' => 'Ahmad',
             'email' => 'ahmad@gmail.com',
             'telepon' => '085161648715',
+            'provinsi' => '33', // Jawa Tengah
+            'kota' => '33.27', // Kab. Pemalang
+            'kecamatan' => '33.27.08', // Kec. Pemalang
+            'desa' => '33.27.08.2010', // Kel. Pelutan
+            'detail_alamat' => 'Jl. Gatot Subroto No. 10',
             'user_id' => $user->id,
         ]);
 
@@ -45,6 +60,11 @@ class SalesSeeder extends Seeder
             'nama' => 'Diaz',
             'email' => 'diaz@gmail.com',
             'telepon' => '085161648716',
+            'provinsi' => '33', // Jawa Tengah
+            'kota' => '33.27', // Kab. Pemalang
+            'kecamatan' => '33.27.08', // Kec. Pemalang
+            'desa' => '33.27.08.2010', // Kel. Pelutan
+            'detail_alamat' => 'Jl. Gatot Subroto No. 10',
             'user_id' => $user->id,
         ]);
 
@@ -52,6 +72,11 @@ class SalesSeeder extends Seeder
             'nama' => 'Karel',
             'email' => 'karel@gmail.com',
             'telepon' => '085161648717',
+            'provinsi' => '33', // Jawa Tengah
+            'kota' => '33.27', // Kab. Pemalang
+            'kecamatan' => '33.27.08', // Kec. Pemalang
+            'desa' => '33.27.08.2010', // Kel. Pelutan
+            'detail_alamat' => 'Jl. Gatot Subroto No. 10',
             'user_id' => $user->id,
         ]);
     }

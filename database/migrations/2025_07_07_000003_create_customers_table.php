@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -28,11 +29,11 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('telepon')->tel();
 
-            $table->string('provinsi', 2);
-            $table->string('kota', 5);
-            $table->string('kecamatan', 8);
-            $table->string('desa', 13);
-            $table->string('detail_alamat');
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->string('alamat');
 
             $table->string('nik')->nullable()->unique();
             $table->text('foto_ktp')->nullable();
@@ -52,11 +53,11 @@ return new class extends Migration {
             $table->string('level');
             $table->string('email')->unique();
             $table->string('telepon')->tel();
-            $table->string('provinsi', 2);
-            $table->string('kota', 5);
-            $table->string('kecamatan', 8);
-            $table->string('desa', 13);
-            $table->string('detail_alamat');
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->string('alamat');
 
             $table->timestamps();
 
@@ -74,8 +75,6 @@ return new class extends Migration {
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
         });
-
-
     }
 
 

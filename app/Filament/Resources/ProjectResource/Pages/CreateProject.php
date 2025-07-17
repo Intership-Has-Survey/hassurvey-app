@@ -37,12 +37,13 @@ class CreateProject extends CreateRecord
         if (empty($data['sewa_id'])) {
             $sewa = \App\Models\Sewa::create([
                 'judul' => 'Kontrak Sewa Otomatis untuk ' . $data['nama_project'], // sesuaikan field
-                'jenis' => 'untuk project', // sesuaikan field
+                // 'jenis' => 'untuk project', // sesuaikan field
                 'tgl_mulai' => now(),
                 'tgl_selesai' => now()->addDays(7),
                 'lokasi' => 'Bogor',
                 'alamat' => 'ciampea',
                 'customer_id' => $data['customer_id'],
+                'customer_type' => 'corporate',
                 'user_id' => $data['user_id'],
             ]);
 
@@ -52,16 +53,3 @@ class CreateProject extends CreateRecord
         return $data;
     }
 }
-
-// $table->uuid('id')->primary();
-// $table->text('judul');
-// $table->string('jenis');
-// $table->date('tgl_mulai');
-// $table->date('tgl_selesai');
-// $table->text('lokasi');
-// $table->text('alamat');
-// $table->decimal('total_biaya', 15, 2)->nullable();
-// $table->timestamps();
-
-// $table->foreignUuid('customer_id')->constrained('customers')->onDelete('cascade');
-// $table->foreignUuid('user_id')->constrained('users');

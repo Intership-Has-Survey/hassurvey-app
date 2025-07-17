@@ -183,7 +183,80 @@ class ProjectResource extends Resource
                                     Select::make('gender')->options(['Pria', 'Wanita'])->required()->label('Jenis Kelamin'),
                                     TextInput::make('email')->email()->required()->unique(Perorangan::class, 'Email'),
                                     TextInput::make('telepon')->tel()->required(),
-                                    TextInput::make('alamat')->required()->columnSpanFull(),
+                                    Select::make('provinsi')
+                                        ->label('Provinsi')
+                                        ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
+                                        ->live()
+                                        ->searchable()
+                                        ->required()
+                                        ->afterStateUpdated(function (Set $set) {
+                                            $set('kota', null);
+                                            $set('kecamatan', null);
+                                            $set('desa', null);
+                                        }),
+
+                                    Select::make('kota')
+                                        ->label('Kota/Kabupaten')
+                                        ->required()
+                                        ->options(function (Get $get) {
+                                            $provinsi = $get('provinsi');
+                                            if (!$provinsi) {
+                                                return [];
+                                            }
+                                            return TrefRegion::query()
+                                                ->where('code', 'like', $provinsi . '.%')
+                                                ->where(DB::raw('LENGTH(code)'), 5)
+                                                ->pluck('name', 'code');
+                                        })
+                                        ->live()
+                                        ->searchable()
+                                        ->afterStateUpdated(function (Set $set) {
+                                            $set('kecamatan', null);
+                                            $set('desa', null);
+                                        }),
+
+                                    Select::make('kecamatan')
+                                        ->label('Kecamatan')
+                                        ->required()
+                                        ->options(function (Get $get) {
+                                            $kota = $get('kota');
+                                            if (!$kota) {
+                                                return [];
+                                            }
+                                            return TrefRegion::query()
+                                                ->where('code', 'like', $kota . '.%')
+                                                ->where(DB::raw('LENGTH(code)'), 8)
+                                                ->pluck('name', 'code');
+                                        })
+                                        ->live()
+                                        ->searchable()
+                                        ->afterStateUpdated(function (Set $set) {
+                                            $set('desa', null);
+                                        }),
+
+                                    Select::make('desa')
+                                        ->label('Desa/Kelurahan')
+                                        ->required()
+                                        ->options(function (Get $get) {
+                                            $kecamatan = $get('kecamatan');
+                                            if (!$kecamatan) {
+                                                return [];
+                                            }
+                                            return TrefRegion::query()
+                                                ->where('code', 'like', $kecamatan . '.%')
+                                                ->where(DB::raw('LENGTH(code)'), 13)
+                                                ->pluck('name', 'code');
+                                        })
+                                        ->live()
+                                        ->searchable(),
+
+                                    Textarea::make('detail_alamat')
+                                        ->label('Detail Alamat')
+                                        ->required()
+                                        ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
+                                        ->columnSpanFull(),
+
+                                    // TextInput::make('alamat')->required()->columnSpanFull(),
                                 ];
                             }
                             if ($type === Corporate::class) {
