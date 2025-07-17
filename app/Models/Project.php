@@ -79,7 +79,7 @@ class Project extends Model
         return $this->belongsTo(Sewa::class);
     }
 
-    public function customer()
+    public function customers()
     {
         return $this->morphTo();
     }
