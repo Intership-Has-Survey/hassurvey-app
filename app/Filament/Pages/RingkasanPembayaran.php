@@ -12,6 +12,7 @@ use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectResource;
 use Filament\Tables\Concerns\InteractsWithTable;
+use App\Models\StatusPembayaran;
 
 class RingkasanPembayaran extends Page implements HasTable
 {
@@ -30,47 +31,53 @@ class RingkasanPembayaran extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Project::query()->whereHas('StatusPembayaran'))
+            // ->query(StatusPembayaran::query()->with('payable'))
+            // ->query(
+            //     StatusPembayaran::query()
+            //         ->whereIn('id', function ($query) {
+            //             $query->selectRaw('MAX(id)')
+            //                 ->from('status_pembayarans')
+            //                 ->groupBy('payable_id');
+            //         })
+            //         ->with('payable')
+            // )
+            ->query(
+                StatusPembayaran::query()
+                    ->selectRaw('payable_id, SUM(nilai) as total_dibayar, MAX(id)')
+                    ->groupBy('payable_id')
+            )
             ->columns([
-                TextColumn::make('nama_project')
-                    ->label('Nama Proyek')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('nilai_project')
-                    ->label('Nilai Project')
-                    ->money('IDR')
-                    ->sortable(),
-
-                TextColumn::make('total_dibayar')
-                    ->label('Total Dibayar')
-                    ->money('IDR')
-                    ->state(function (Project $record): float {
-                        // Menghitung total pembayaran dari relasi
-                        return $record->StatusPembayaran()->sum('nilai');
-                    })
-                    ->sortable(query: function (Builder $query, string $direction): Builder {
-                        return $query
-                            ->withSum('statuspembayaran as total_dibayar', 'nilai')
-                            ->orderBy('total_dibayar', $direction);
+                // TextColumn::make('nama_pembayaran')->label('Nama Pembayaran'),
+                // TextColumn::make('jenis_pembayaran'),
+                TextColumn::make('total_dibayar'),
+                TextColumn::make('payable_id'),
+                TextColumn::make('payable_type')
+                    ->label('Jenis Layanan')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'App\\Models\\Project' => 'Project',
+                        'App\\Models\\Sewa' => 'Sewa',
+                        'App\\Models\\Servis' => 'Servis',
+                        default => 'Lainnya'
                     }),
-
-                TextColumn::make('status_pembayaran')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn(string $state): string => match (true) {
-                        $state === 'Lunas' => 'success',
-                        str_contains($state, '%') => 'warning',
-                        default => 'danger',
-                    }),
+                TextColumn::make('nama_layanan')
+                    ->label('Nama Layanan')
+                    ->getStateUsing(fn(StatusPembayaran $record) => $record->payable?->nama_project ?? $record->payable?->nama_sewa ?? '-'),
             ])
             ->actions([
-                Action::make('view_payments')
-                    ->label('Lihat Riwayat Pembayaran')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn(Project $record): string => StatusPembayaranResource::getUrl('index', [
-                        'project_id' => $record->id,
-                    ])),
+                // Action::make('view_payments')
+                //     ->label('Lihat Riwayat Pembayaran')
+                //     ->icon('heroicon-o-eye')
+                //     ->url(fn(Project $record): string => StatusPembayaranResource::getUrl('index', [
+                //         'project_id' => $record->id,
+                //     ])),
+
+                // Action::make('view_payments')
+                //     ->label('LIHAT')
+                //     ->icon('heroicon-o-eye')
+                //     ->url(fn(StatusPembayaran $record): string => StatusPembayaranResource::getUrl('index', [
+                //         'payable_id' => $record->id,
+                //     ]))
+                //     ->openUrlInNewTab(),
             ]);
     }
 }

@@ -352,7 +352,7 @@ class ProjectResource extends Resource
                                         ->live()
                                         ->searchable(),
 
-                                    Textarea::make('alamat')
+                                    Textarea::make('detail_alamat')
                                         ->label('Detail Alamat')
                                         ->required()
                                         ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
@@ -401,7 +401,8 @@ class ProjectResource extends Resource
                         ->numeric()
                         ->prefix('Rp')
                         ->required()
-                        ->disabled(fn(callable $get) => $get('status') === 'Closing'),
+                        ->disabled(fn(callable $get) => $get('status') === 'Closing')
+                        ->dehydrated(true),
                     Select::make('status')
                         ->label('Status Prospek')
                         ->options(['Prospect' => 'Prospect', 'Follow up' => 'Follow up', 'Closing' => 'Closing'])

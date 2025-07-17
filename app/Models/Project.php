@@ -50,9 +50,14 @@ class Project extends Model
         return $this->hasMany(StatusPekerjaan::class);
     }
 
-    public function StatusPembayaran()
+    // public function StatusPembayaran()
+    // {
+    //     return $this->hasMany(StatusPembayaran::class);
+    // }
+
+    public function statusPembayaran()
     {
-        return $this->hasMany(StatusPembayaran::class);
+        return $this->morphMany(StatusPembayaran::class, 'payable');
     }
 
     public function user()

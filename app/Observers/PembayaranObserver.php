@@ -12,12 +12,16 @@ class PembayaranObserver
      */
     public function saved(StatusPembayaran $pembayaran): void
     {
-        $this->updateProjectPaymentStatus($pembayaran->project);
+        if ($pembayaran->payable instanceof Project) {
+            $this->updateProjectPaymentStatus($pembayaran->payable);
+        }
     }
 
     public function deleted(StatusPembayaran $pembayaran): void
     {
-        $this->updateProjectPaymentStatus($pembayaran->project);
+        if ($pembayaran->payable instanceof Project) {
+            $this->updateProjectPaymentStatus($pembayaran->payable);
+        }
     }
 
     /**
@@ -25,26 +29,19 @@ class PembayaranObserver
      */
     protected function updateProjectPaymentStatus(Project $project): void
     {
-        // Jika proyek tidak punya nilai kontrak, jangan lakukan apa-apa
         if ($project->nilai_project <= 0) {
             $project->status_pembayaran = 'Nilai Kontrak Belum Ditentukan';
             $project->saveQuietly();
             return;
         }
 
-        // Hitung total pembayaran yang sudah masuk untuk proyek ini.
-        $totalDibayar = $project->statuspembayaran()->sum('nilai');
+        // Ambil total pembayaran dengan relasi morphMany
+        $totalDibayar = $project->statusPembayaran()->sum('nilai');
 
-        // Kita secara eksplisit mengubah kedua nilai menjadi angka (float) sebelum membandingkan
-        // untuk memastikan perbandingan numerik yang benar.
-        $statusBaru = '';
-        if ((float)$totalDibayar >= (float)$project->nilai_project) {
-            $statusBaru = 'Lunas';
-        } else {
-            $statusBaru = 'Belum Lunas';
-        }
+        $statusBaru = ((float) $totalDibayar >= (float) $project->nilai_project)
+            ? 'Lunas'
+            : 'Belum Lunas';
 
-        // Simpan status baru ke tabel proyek
         $project->status_pembayaran = $statusBaru;
         $project->saveQuietly();
     }

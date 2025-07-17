@@ -52,4 +52,9 @@ class Sewa extends Model
     {
         return $this->hasMany(PengajuanDana::class, 'sewa_id');
     }
+
+    public function statusPembayarans()
+    {
+        return $this->morphMany(StatusPembayaran::class, 'payable');
+    }
 }

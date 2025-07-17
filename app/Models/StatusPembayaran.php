@@ -17,13 +17,23 @@ class StatusPembayaran extends Model
         parent::boot();
     }
 
-    public function project()
+    // public function project()
+    // {
+    //     return $this->belongsTo(Project::class);
+    // }
+
+    public function payable()
     {
-        return $this->belongsTo(Project::class);
+        return $this->morphTo();
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected function getTableRecordKey($record): string
+    {
+        return $record->id ?? $record->payable_id ?? uniqid();
     }
 }

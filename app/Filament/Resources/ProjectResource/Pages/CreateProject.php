@@ -10,6 +10,11 @@ class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
+    }
+
     // protected function mutateFormDataBeforeCreate(array $data): array
     // {
     //     if (empty($data['sewa_id'])) {
