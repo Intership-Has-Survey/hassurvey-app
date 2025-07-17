@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\Action;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers;
+use Filament\Forms\Components\Hidden;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Illuminate\Database\Eloquent\Model;
@@ -37,23 +38,8 @@ class PengajuanDanaResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\Select::make('tipe_pengajuan')
-                            ->label('Tipe Pengajuan')
-                            ->options([
-                                'project' => 'Untuk Proyek',
-                                'inhouse' => 'In-House (Internal)',
-                            ])
-                            ->live()
-                            ->required()
-                            ->dehydrated(false),
-
-                        Forms\Components\Select::make('project_id')
-                            ->relationship('project', 'nama_project')
-                            ->searchable()
-                            ->preload()
-                            ->label('Pilih Proyek')
-                            ->requiredIf('tipe_pengajuan', 'project')
-                            ->visible(fn(Get $get) => $get('tipe_pengajuan') === 'project'),
+                        Hidden::make('tipe_pengajuan')
+                            ->default('inhouse'),
 
                         Forms\Components\Textarea::make('deskripsi_pengajuan')
                             ->label('Deskripsi Umum')
@@ -79,7 +65,9 @@ class PengajuanDanaResource extends Resource
                     ->searchable()
                     ->description(function (PengajuanDana $record): string {
                         if ($record->project) {
-                            return $record->project->nama_project;
+                            return 'Untuk Proyek: ' . $record->project->nama_project;
+                        } elseif ($record->sewa) {
+                            return 'Untuk Sewa: ' . $record->sewa->judul;
                         }
                         return 'Untuk: In-House (Internal)';
                     }),

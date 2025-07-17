@@ -5,12 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Project;
-use App\Models\User;
-use App\Models\Kategori;
-use App\Models\Sales;
-use App\Models\Customer;
-
-
 
 class ProjectSeeder extends Seeder
 {
@@ -19,6 +13,7 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
+<<<<<<< HEAD
         $user = User::first();
 
         if (!$user) {
@@ -134,5 +129,10 @@ class ProjectSeeder extends Seeder
             'status_pekerjaan' => 'Belum Selesai',
             'user_id' => $user->id, // Ganti dengan ID user yang sesuai
         ]);
+=======
+        // Membuat 150 data project dummy menggunakan factory.
+        // Anda bisa ubah jumlahnya sesuai kebutuhan.
+        Project::factory()->count(25)->create();
+>>>>>>> ecec74491dd6c21c8dfaa08b7f18ddc4deec2fa8
     }
 }

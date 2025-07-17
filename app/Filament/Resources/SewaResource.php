@@ -2,30 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SewaResource\Pages;
-use App\Filament\Resources\SewaResource\RelationManagers;
+use Filament\Forms;
 use App\Models\Sewa;
+use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Illuminate\Support\Facades\DB;
-use App\Models\TrefRegion;
-use Filament\Forms\Components\Textarea;
-use App\Models\Perorangan;
-use App\Models\Corporate;
-use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Filters\TrashedFilter;
+use App\Models\Corporate;
+use App\Models\Perorangan;
+use App\Models\TrefRegion;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use function Livewire\Volt\placeholder;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TrashedFilter;
+use App\Filament\Resources\SewaResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\SewaResource\RelationManagers;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 
 class SewaResource extends Resource
 {
@@ -347,7 +349,8 @@ class SewaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\RiwayatSewasRelationManager::class,
+            RiwayatSewasRelationManager::class,
+            PengajuanDanasRelationManager::class,
         ];
     }
 

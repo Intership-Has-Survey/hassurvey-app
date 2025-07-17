@@ -48,4 +48,8 @@ class Sewa extends Model
         return $this->morphTo();
     }
 
+    public function pengajuanDanas(): HasMany
+    {
+        return $this->hasMany(PengajuanDana::class, 'sewa_id');
+    }
 }
