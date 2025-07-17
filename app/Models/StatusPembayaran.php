@@ -31,4 +31,9 @@ class StatusPembayaran extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected function getTableRecordKey($record): string
+    {
+        return $record->id ?? $record->payable_id ?? uniqid();
+    }
 }
