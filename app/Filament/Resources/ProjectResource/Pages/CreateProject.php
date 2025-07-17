@@ -55,16 +55,3 @@ class CreateProject extends CreateRecord
         return $data;
     }
 }
-
-// $table->uuid('id')->primary();
-// $table->text('judul');
-// $table->string('jenis');
-// $table->date('tgl_mulai');
-// $table->date('tgl_selesai');
-// $table->text('lokasi');
-// $table->text('alamat');
-// $table->decimal('total_biaya', 15, 2)->nullable();
-// $table->timestamps();
-
-// $table->foreignUuid('customer_id')->constrained('customers')->onDelete('cascade');
-// $table->foreignUuid('user_id')->constrained('users');

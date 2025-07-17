@@ -105,37 +105,7 @@ class DaftarAlatProjectRelationManager extends RelationManager
 
                     ])
             ])
-            ->actions([
-                // Tables\Actions\ViewAction::make(),
-                // Tables\Actions\EditAction::make(),
-                // Tables\Actions\DetachAction::make()
-                //     // LOGIKA PINTAR SETELAH DETACH
-                //     ->after(function (Model $record) {
-                //         // Cek apakah alat ini masih terikat pada proyek aktif lainnya.
-                //         $isStillInUse = $record->projects()
-                //             ->where('status_pekerjaan', '!=', 'Selesai')
-                //             ->exists();
-                //         // Jika SUDAH TIDAK dipakai di mana pun, baru set statusnya jadi Tersedia.
-                //         if (!$isStillInUse) {
-                //             $record->update(['status' => 'Tersedia']);
-                //         }
-                //     }),
-            ])
-            ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DetachBulkAction::make()
-                //         ->after(function (Collection $records) {
-                //             foreach ($records as $record) {
-                //                 // Logika yang sama dengan DetachAction tunggal
-                //                 $isStillInUse = $record->projects()
-                //                     ->where('status_pekerjaan', '!=', 'Selesai')
-                //                     ->exists();
-                //                 if (!$isStillInUse) {
-                //                     $record->update(['status' => 'Tersedia']);
-                //                 }
-                //             }
-                //         }),
-                // ]),
-            ]);
+            ->actions([])
+            ->bulkActions([]);
     }
 }

@@ -27,6 +27,7 @@ return new class extends Migration {
 
             // Relasi
             $table->uuidMorphs('customer');
+            $table->foreignUuid('sewa_id')->constrained('sewa');
             $table->foreignUuid('user_id')->constrained('users');
             $table->foreignUuid('sewa_id')->constrained('sewa');
             $table->softDeletes();
