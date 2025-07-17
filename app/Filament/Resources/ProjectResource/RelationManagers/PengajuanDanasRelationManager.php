@@ -66,6 +66,15 @@ class PengajuanDanasRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('editPengajuanDana')
+                    ->label('Edit Pengajuan Dana')
+                    ->icon('heroicon-o-pencil')
+                    ->color('warning')
+                    ->url(
+                        fn($record) => $record->project()
+                            ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
+                            : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
+                    )
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -18,6 +18,12 @@ return new class extends Migration {
             $table->uuid('sales_id')->constrained('sales');
             $table->date('tanggal_informasi_masuk');
             $table->string('sumber');
+
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->string('detail_alamat');
             // keuangan & status
             $table->decimal('nilai_project', 15, 2)->default(0);
             $table->string('status');
@@ -27,9 +33,8 @@ return new class extends Migration {
 
             // Relasi
             $table->uuidMorphs('customer');
-            $table->foreignUuid('sewa_id')->constrained('sewa');
+            $table->foreignUuid('sewa_id')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
-            $table->foreignUuid('sewa_id')->constrained('sewa');
             $table->softDeletes();
         });
     }

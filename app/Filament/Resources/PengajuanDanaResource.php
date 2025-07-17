@@ -122,20 +122,37 @@ class PengajuanDanaResource extends Resource
                     ->disabled(function (Model $record) {
                         return auth()->user()->role !== $record->dalam_review;
                     })
-                    // ->visible(fn(Model $record) => $record->status !== 'gold') // hanya tampil jika belum gold
                     ->action(function (Model $record) {
                         $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+
+                        // Hitung total pengajuan dari detail
+                        $total = $record->detailPengajuans->reduce(function ($carry, $item) {
+                            return $carry + ($item->qty * $item->harga_satuan);
+                        }, 0);
+
                         $currentIndex = array_search($record->dalam_review, $review);
 
-                        if ($currentIndex !== false && $currentIndex < count($review) - 1) {
-                            $record->update([
-                                'dalam_review' => $review[$currentIndex + 1],
-                                'disetujui' => auth()->user()->role,
-                                'ditolak' => null,
-                                'alasan' => null,
-                            ]);
+                        if ($currentIndex !== false) {
+                            // Jika keuangan dan total <= 2 juta, langsung approved
+                            if ($record->dalam_review === 'keuangan' && $total <= 2000000) {
+                                $record->update([
+                                    'dalam_review' => 'approved',
+                                    'disetujui' => auth()->user()->role,
+                                    'ditolak' => null,
+                                    'alasan' => null,
+                                ]);
+                            } elseif ($currentIndex < count($review) - 1) {
+                                // Normal flow
+                                $record->update([
+                                    'dalam_review' => $review[$currentIndex + 1],
+                                    'disetujui' => auth()->user()->role,
+                                    'ditolak' => null,
+                                    'alasan' => null,
+                                ]);
+                            }
                         }
                     }),
+
                 Action::make('Tolak')
                     ->label('Tolak')
                     ->color('danger')

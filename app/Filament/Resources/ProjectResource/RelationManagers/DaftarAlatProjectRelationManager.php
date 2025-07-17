@@ -49,20 +49,61 @@ class DaftarAlatProjectRelationManager extends RelationManager
             ->filters([])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
-                    ->label('Tambah Alat')
-                    ->modalHeading('Tambah Alat ke Proyek')
-                    ->preloadRecordSelect()
                     ->using(function (RelationManager $livewire, Model $record, array $data): void {
                         $project = $livewire->ownerRecord;
+
+                        // 1. Cek apakah Project sudah punya Sewa
+                        if (!$project->sewa_id) {
+                            // Jika belum, buat Sewa baru
+                            $sewa = \App\Models\Sewa::create([
+                                'judul' => $project->nama_project,
+                                'tgl_mulai' => now(),
+                                'tgl_selesai' => now()->addDays(7),
+                                'provinsi' => $project->provinsi,
+                                'kota' => $project->kota,
+                                'kecamatan' => $project->kecamatan,
+                                'desa' => $project->desa,
+                                'detail_alamat' => $project->detail_alamat,
+                                'user_id' => auth()->id(),
+                                'customer_id' => $project->customer_id,
+                                'customer_type' => $project->customer_type,
+                            ]);
+
+                            // Update project dengan ID sewa baru
+                            $project->update(['sewa_id' => $sewa->id]);
+                        } else {
+                            // Ambil Sewa yang sudah ada
+                            $sewa = $project->sewa;
+                        }
+
+                        // 2. Attach alat ke Sewa
                         $pivotData = collect($data)->only([
                             'tgl_keluar',
                             'harga_perhari',
                             'user_id',
                         ])->toArray();
-                        $pivotData['sewa_id'] = $project->sewa_id;
+
+                        $pivotData['sewa_id'] = $sewa->id;
+
                         $livewire->getRelationship()->attach($record, $pivotData);
+
+                        // 3. Update status alat (false = sedang dipinjam)
                         $record->update(['status' => false]);
                     })
+                    ->label('Tambah Alat')
+                    ->modalHeading('Tambah Alat ke Proyek')
+                    ->preloadRecordSelect()
+                    // ->using(function (RelationManager $livewire, Model $record, array $data): void {
+                    //     $project = $livewire->ownerRecord;
+                    //     $pivotData = collect($data)->only([
+                    //         'tgl_keluar',
+                    //         'harga_perhari',
+                    //         'user_id',
+                    //     ])->toArray();
+                    //     $pivotData['sewa_id'] = $project->sewa_id;
+                    //     $livewire->getRelationship()->attach($record, $pivotData);
+                    //     $record->update(['status' => false]);
+                    // })
                     ->after(fn(Model $record) => $record->update(['status' => false]))
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         Forms\Components\Select::make('jenis_alat_filter')
@@ -102,10 +143,22 @@ class DaftarAlatProjectRelationManager extends RelationManager
                         Hidden::make('sewa_id')->default(fn(RelationManager $livewire) => $livewire->ownerRecord->sewa_id),
                         Hidden::make('user_id')
                             ->default(auth()->id())
-
                     ])
             ])
-            ->actions([])
+            ->actions([
+                Tables\Actions\Action::make('goToSewa')
+                    ->label('Update Pengembalian')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('warning')
+                    ->url(fn($record, RelationManager $livewire) => route('filament.admin.resources.sewas.edit', [
+                        'record' => $livewire->ownerRecord->sewa_id
+                    ]))
+                    ->openUrlInNewTab() // atau hapus jika ingin redirect di tab yang sama
+                    ->visible(fn($record) => is_null($record->tgl_masuk)), // hanya tampil jika belum dikembalikan
+            ])
+
+
+
             ->bulkActions([]);
     }
 }

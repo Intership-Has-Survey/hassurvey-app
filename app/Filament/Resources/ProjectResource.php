@@ -260,7 +260,7 @@ class ProjectResource extends Resource
                                         ->live()
                                         ->searchable(),
 
-                                    Textarea::make('detail_alamat')
+                                    Textarea::make('alamat')
                                         ->label('Detail Alamat')
                                         ->required()
                                         ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 
 class TrefRegionSeeder extends Seeder
 {
@@ -13,9 +13,10 @@ class TrefRegionSeeder extends Seeder
     public function run(): void
     {
         // Path ke file .sql 
-        $sqlFilePath = database_path('seeders\sql\tref_regions.sql');
+        $sqlFilePath = database_path('seeders/sql/tref_regions1.sql');
 
-       
+
+        // DB::unprepared(file_get_contents($sqlFilePath));
         DB::unprepared(file_get_contents($sqlFilePath));
     }
 }

@@ -27,12 +27,12 @@ class ProjectSeeder extends Seeder
 
         // 1. Ambil SEMUA ID user dari database, HANYA SEKALI.
         // pluck() sangat efisien karena hanya mengambil kolom 'id'.
-        $customerIds = customer::pluck('id');
+        $customerIds = Customer::pluck('id');
 
-        // Jika tidak ada customer sama sekali, buat satu sebagai fallback.
+        // Jika tidak ada Customer sama sekali, buat satu sebagai fallback.
         if ($customerIds->isEmpty()) {
             // Sebaiknya jalankan customerSeeder dulu, tapi ini untuk pengaman.
-            $customerIds->push(customer::factory()->create()->id);
+            $customerIds->push(Customer::factory()->create()->id);
         }
         // 1. Ambil SEMUA ID user dari database, HANYA SEKALI.
         // pluck() sangat efisien karena hanya mengambil kolom 'id'.
