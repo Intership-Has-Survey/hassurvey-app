@@ -190,8 +190,7 @@ class PersonelResource extends Resource
                     ->label('Status')
                     ->badge()
                     ->color(
-                        fn(string $state): string =>
-                        str_contains($state, 'dalam project') ? 'warning' : 'success'
+                        fn(string $state): string => $state === 'Tersedia' ? 'success' : 'warning'
                     ),
                 TextColumn::make('keterangan')
                     ->label('Keterangan')

@@ -26,7 +26,7 @@ class Project extends Model
     public function personels()
     {
         return $this->belongsToMany(Personel::class, 'personel_project')
-            ->withPivot('user_id', 'peran')
+            ->withPivot('user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
             ->withTimestamps();
     }
 
@@ -60,6 +60,11 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function customer()
+    {
+        return $this->morphTo();
+    }
+
     public function pengajuanDanas(): HasMany
     {
         return $this->hasMany(PengajuanDana::class);
@@ -74,7 +79,6 @@ class Project extends Model
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
             ->using(RiwayatSewa::class)
-            // SOLUSI: Mengganti 'biaya_sewa' menjadi 'biaya_sewa_alat' agar sesuai dengan migrasi
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
     }

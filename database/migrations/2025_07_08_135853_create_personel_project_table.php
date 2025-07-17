@@ -15,6 +15,9 @@ return new class extends Migration
             $table->foreignUuid('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignUuid('personel_id')->constrained('personel')->cascadeOnDelete();
 
+            $table->date('tanggal_mulai')->nullable();
+            $table->date('tanggal_berakhir')->nullable();
+
             $table->string('peran');
             $table->timestamps();
             $table->foreignUuid('user_id')->constrained('users');

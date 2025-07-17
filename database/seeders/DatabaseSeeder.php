@@ -18,13 +18,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             KategoriSeeder::class,
             PemilikSeeder::class,
-<<<<<<< HEAD
-            PersonelSeeder::class,
-            SalesSeeder::class,
-            DaftarAlatSeeder::class,
-            // CustomerSeeder::class,
-            // ProjectSeeder::class,
-=======
             CorporateSeeder::class,
             PeroranganSeeder::class,
             PersonelSeeder::class,
@@ -32,7 +25,6 @@ class DatabaseSeeder extends Seeder
             DaftarAlatSeeder::class,
             ProjectSeeder::class,
             SewaSeeder::class,
->>>>>>> ecec74491dd6c21c8dfaa08b7f18ddc4deec2fa8
         ]);
     }
 }

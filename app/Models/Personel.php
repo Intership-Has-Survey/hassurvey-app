@@ -25,12 +25,13 @@ class Personel extends Model
 
     public function getStatusAttribute()
     {
-        $project = $this->projects()
-            ->where('status_pekerjaan', '!=', 'selesai')
-            ->first();
 
-        return $project
-            ? 'dalam project ' . $project->nama_project
-            : 'tersedia';
+        $activeProject = $this->projects()->wherePivotNull('tanggal_berakhir')->first();
+
+        if ($activeProject) {
+            return 'Dalam Proyek: ' . $activeProject->nama_project;
+        }
+
+        return 'Tersedia';
     }
 }
