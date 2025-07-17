@@ -34,7 +34,7 @@ return new class extends Migration {
             $table->string('kota', 5)->nullable();
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
-            $table->string('alamat');
+            $table->string('detail_alamat');
 
             $table->string('nik')->nullable()->unique();
             $table->text('foto_ktp')->nullable();

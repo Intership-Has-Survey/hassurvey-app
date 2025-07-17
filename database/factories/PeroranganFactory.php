@@ -36,7 +36,7 @@ class PeroranganFactory extends Factory
             'kota' => $cityCode,
             'kecamatan' => $districtCode,
             'desa' => $villageCode,
-            'alamat' => 'Jl. ' . $this->faker->streetName() . ' No. ' . $this->faker->buildingNumber(),
+            'detail_alamat' => 'Jl. ' . $this->faker->streetName() . ' No. ' . $this->faker->buildingNumber(),
 
             'nik' => $this->faker->unique()->numerify('################'),
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
