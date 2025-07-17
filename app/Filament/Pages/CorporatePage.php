@@ -16,9 +16,10 @@ class CorporatePage extends Page implements HasTable
     use InteractsWithTable;
 
     // Properti untuk navigasi dan tampilan halaman
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationLabel = 'Perusahaan';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $navigationGroup = 'Customer';
-    protected static ?string $title = 'Corporate';
+    protected static ?string $title = 'Customer Perusahaan';
 
     // INI YANG MEMPERBAIKI ERROR ANDA:
     // Setiap Page wajib menunjuk ke file view Blade.
@@ -41,7 +42,7 @@ class CorporatePage extends Page implements HasTable
             ->query($this->getTableQuery())
             ->columns([
                 TextColumn::make('nama')
-                    ->label('Nama Klien')
+                    ->label('Nama Perusahaan')
                     ->searchable(),
                 TextColumn::make('telepon')->searchable(),
                 TextColumn::make('email')->searchable()->toggleable(isToggledHiddenByDefault: true),

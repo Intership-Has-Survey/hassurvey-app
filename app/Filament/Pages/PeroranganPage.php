@@ -16,9 +16,11 @@ class PeroranganPage extends Page implements HasTable
     use InteractsWithTable;
 
     // Properti untuk navigasi dan tampilan halaman
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?string $navigationGroup = 'Customer';
-    protected static ?string $title = 'Perorangan';
+    protected static ?string $title = 'Customer Perorangan';
+
+    protected static ?string $navigationLabel = 'Perorangan';
 
     // INI YANG MEMPERBAIKI ERROR ANDA:
     // Setiap Page wajib menunjuk ke file view Blade.

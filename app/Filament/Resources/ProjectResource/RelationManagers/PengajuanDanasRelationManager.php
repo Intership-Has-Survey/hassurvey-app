@@ -15,6 +15,7 @@ class PengajuanDanasRelationManager extends RelationManager
 {
     protected static string $relationship = 'pengajuanDanas';
 
+    protected static bool $isLazy = false;
     public function form(Form $form): Form
     {
         return $form
@@ -65,8 +66,8 @@ class PengajuanDanasRelationManager extends RelationManager
                     ->color('warning')
                     ->url(
                         fn($record) => $record->project()
-                            ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
-                            : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
+                        ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
+                        : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
                     )
             ])
             ->bulkActions([

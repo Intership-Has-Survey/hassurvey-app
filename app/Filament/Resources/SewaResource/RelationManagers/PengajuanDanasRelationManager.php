@@ -14,6 +14,8 @@ class PengajuanDanasRelationManager extends RelationManager
 {
     protected static string $relationship = 'pengajuanDanas';
 
+    protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         return $form

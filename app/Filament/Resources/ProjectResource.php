@@ -37,9 +37,13 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Project';
-    protected static ?string $navigationGroup = 'Jasa Pemetaan';
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+    protected static ?string $navigationLabel = 'Layanan Pemetaan';
+    protected static ?string $navigationGroup = 'Layanan';
+    protected static ?string $title = 'Proyek Pemetaan';
+
+    protected static ?string $modelLabel = 'Project Pemetaan';
+    protected static ?string $pluralModelLabel = 'Project Pemetaan';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

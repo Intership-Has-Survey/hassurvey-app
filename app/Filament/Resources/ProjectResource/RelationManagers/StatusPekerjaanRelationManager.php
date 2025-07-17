@@ -16,6 +16,8 @@ class StatusPekerjaanRelationManager extends RelationManager
 {
     protected static string $relationship = 'statusPekerjaan';
 
+    protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         return $form

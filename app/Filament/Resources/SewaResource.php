@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SewaResource\RelationManagers;
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
+use Filament\Pages\Actions;
 
 class SewaResource extends Resource
 {
@@ -35,9 +36,13 @@ class SewaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Jasa Sewa';
+    protected static ?string $navigationGroup = 'Layanan';
 
-    protected static ?string $navigationLabel = 'Manajemen Sewa';
+    protected static ?string $navigationLabel = 'Layanan Sewa';
+
+    protected static ?string $title = 'Penyewaan';
+    protected static ?string $modelLabel = 'Penyewaan';
+    protected static ?string $pluralModelLabel = 'Penyewaan';
 
     public static function form(Form $form): Form
     {
@@ -47,6 +52,7 @@ class SewaResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('judul')
                             ->required()
+                            ->placeholder('Masukkan Judul Penyewaan')
                             ->label('Judul Penyewaan')
                             ->columnSpanFull(),
                         Forms\Components\DatePicker::make('tgl_mulai')
@@ -56,10 +62,12 @@ class SewaResource extends Resource
                             ->minDate(fn(Get $get) => $get('tgl_mulai')),
 
                     ])->columns(2),
-                Section::make('Lokasi Proyek')
+                Section::make('Lokasi Project Alat yang Disewa')
                     ->schema([
                         Select::make('provinsi')
                             ->label('Provinsi')
+                            ->required()
+                            ->placeholder('Pilih Provinsi')
                             ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
                             ->live()
                             ->searchable()
@@ -70,6 +78,8 @@ class SewaResource extends Resource
                             }),
                         Select::make('kota')
                             ->label('Kota/Kabupaten')
+                            ->required()
+                            ->placeholder('Pilih Kota/Kabupaten')
                             ->options(function (Get $get) {
                                 $provinceCode = $get('provinsi');
                                 if (!$provinceCode)
@@ -87,6 +97,8 @@ class SewaResource extends Resource
                             }),
                         Select::make('kecamatan')
                             ->label('Kecamatan')
+                            ->required()
+                            ->placeholder('Pilih Kecamatan')
                             ->options(function (Get $get) {
                                 $regencyCode = $get('kota');
                                 if (!$regencyCode)
@@ -103,6 +115,8 @@ class SewaResource extends Resource
                             }),
                         Select::make('desa')
                             ->label('Desa/Kelurahan')
+                            ->required()
+                            ->placeholder('Pilih Desa/Kelurahan')
                             ->options(function (Get $get) {
                                 $districtCode = $get('kecamatan');
                                 if (!$districtCode)
@@ -116,6 +130,7 @@ class SewaResource extends Resource
                             ->searchable(),
                         Textarea::make('detail_alamat')
                             ->label('Detail Alamat')
+                            ->required()
                             ->columnSpanFull()
                             ->placeholder('cth: Jl. Supriyadi No,12, RT.3/RW.4'),
                     ])->columns(2),
@@ -135,6 +150,7 @@ class SewaResource extends Resource
 
                         Select::make('customer_id')
                             ->label('Pilih Customer')
+                            ->placeholder('Pilih customer')
                             ->options(function (Get $get): array {
                                 $type = $get('customer_type');
                                 if (!$type)

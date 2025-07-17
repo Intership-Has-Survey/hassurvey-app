@@ -19,7 +19,7 @@ use App\Filament\Resources\JenisPekerjaanResource\RelationManagers;
 class JenisPekerjaanResource extends Resource
 {
     protected static ?string $model = JenisPekerjaan::class;
-
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-bug-ant';
     protected static ?string $navigationLabel = 'Jenis Pekerjaan';
     protected static ?string $navigationGroup = 'Jasa Pemetaan';

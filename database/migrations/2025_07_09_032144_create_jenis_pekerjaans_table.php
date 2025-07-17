@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('keterangan')->nullable();
             $table->timestamps();
 
+            
+
             $table->foreignUuid('user_id')->constrained('users');
         });
     }
