@@ -25,6 +25,13 @@ return new class extends Migration {
             $table->string('status_pekerjaan')->nullable()->default('Belum Selesai');
             $table->timestamps();
 
+            // Alamat lokasi project
+            $table->string('provinsi', 2);
+            $table->string('kota', 5);
+            $table->string('kecamatan', 8);
+            $table->string('desa', 13);
+            $table->text('detail_alamat');
+
             // Relasi
             $table->uuidMorphs('customer');
             $table->foreignUuid('user_id')->constrained('users');
