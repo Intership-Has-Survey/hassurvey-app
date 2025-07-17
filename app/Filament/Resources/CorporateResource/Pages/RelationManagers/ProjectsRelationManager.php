@@ -12,6 +12,10 @@ class ProjectsRelationManager extends RelationManager
 {
     protected static string $relationship = 'projects';
 
+    protected static ?string $title = 'Riwayat Pemetaan';
+
+    protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         // Form untuk membuat/mengedit project dari halaman ini (opsional)
@@ -28,7 +32,8 @@ class ProjectsRelationManager extends RelationManager
         // Tabel ini akan menampilkan proyek yang berelasi dengan customer yang sedang dilihat
         return $table
             ->recordTitleAttribute('nama_project')
-            ->heading('Riwayat Proyek Customer Corporate')
+            ->striped()
+            ->heading('Riwayat Proyek Pemetaan')
             ->columns([
                 Tables\Columns\TextColumn::make('nama_project'),
                 Tables\Columns\TextColumn::make('status')->badge(),

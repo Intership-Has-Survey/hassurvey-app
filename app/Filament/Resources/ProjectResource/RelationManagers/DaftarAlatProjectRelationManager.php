@@ -21,6 +21,8 @@ class DaftarAlatProjectRelationManager extends RelationManager
 {
     protected static string $relationship = 'daftarAlat';
 
+    protected static bool $isLazy = false;
+
     public function table(Table $table): Table
     {
         $sewa = $this->ownerRecord->sewa;

@@ -79,6 +79,11 @@ class Project extends Model
         return $this->belongsTo(Sewa::class);
     }
 
+    public function customer()
+    {
+        return $this->morphTo();
+    }
+
 
     public function daftarAlat()
     {

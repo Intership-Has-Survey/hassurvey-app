@@ -13,6 +13,8 @@ use Filament\Tables\Columns\DateColumn;
 class SewaRelationManager extends RelationManager
 {
     protected static string $relationship = 'sewa';
+    protected static ?string $title = 'Riwayat Penyewaan';
+    protected static bool $isLazy = false;
 
     public function form(Form $form): Form
     {
@@ -41,7 +43,7 @@ class SewaRelationManager extends RelationManager
         // Tabel ini akan menampilkan proyek yang berelasi dengan customer yang sedang dilihat
         return $table
             ->recordTitleAttribute('judul_sewa')
-            ->heading('Riwayat Proyek Customer Perorangan')
+            ->heading('Riwayat Penyewaan')
             ->columns([
                 Tables\Columns\TextColumn::make('judul'),
                 Tables\Columns\TextColumn::make('tgl_mulai')->date(),

@@ -221,8 +221,8 @@ class SewaResource extends Resource
                                                     ->label('Detail Alamat')
                                                     ->columnSpanFull(),
                                             ])->columns(2),
-                                        FileUpload::make('foto_ktp')->label('Foto KTP')->image()->required(),
-                                        FileUpload::make('foto_kk')->label('Foto KK')->image()->required(),
+                                        FileUpload::make('foto_ktp')->label('Foto KTP')->image()->nullable(),
+                                        FileUpload::make('foto_kk')->label('Foto KK')->image()->nullable(),
                                     ];
                                 }
                                 if ($type === Corporate::class) {

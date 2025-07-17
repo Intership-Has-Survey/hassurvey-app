@@ -20,6 +20,8 @@ class RiwayatSewasRelationManager extends RelationManager
 {
     protected static string $relationship = 'daftarAlat';
 
+    protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         return $form

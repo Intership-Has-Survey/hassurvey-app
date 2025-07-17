@@ -24,6 +24,7 @@ return new class extends Migration {
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
             $table->string('detail_alamat');
+            
             // keuangan & status
             $table->decimal('nilai_project', 15, 2)->default(0);
             $table->string('status');

@@ -28,6 +28,8 @@ class StatusPembayaranRelationManager extends RelationManager
 
     protected static ?string $title = 'Riwayat Pembayaran';
 
+    protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         $project = $this->ownerRecord;

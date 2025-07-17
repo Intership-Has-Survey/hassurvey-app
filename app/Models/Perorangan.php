@@ -34,7 +34,7 @@ class Perorangan extends Model
     /**
      * The corporate entities that this person is associated with.
      */
-    public function corporate()
+    public function corporates()
     {
         return $this->belongsToMany(Corporate::class, 'perorangan_corporate')
             ->using(PeroranganCorporate::class)

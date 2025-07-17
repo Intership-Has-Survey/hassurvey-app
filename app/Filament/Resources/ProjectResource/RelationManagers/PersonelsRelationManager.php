@@ -16,6 +16,8 @@ class PersonelsRelationManager extends RelationManager
 
     protected static ?string $title = 'Tim Personel Proyek';
 
+    protected static bool $isLazy = false;
+
     // Form ini hanya digunakan untuk MENGEDIT data pivot (peran)
     public function form(Form $form): Form
     {

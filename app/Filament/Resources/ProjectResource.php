@@ -424,7 +424,6 @@ class ProjectResource extends Resource
 
                 TextColumn::make('customer.nama')
                     ->label('Nama Klien/Perusahaan')
-                    ->sortable()
                     ->searchable(),
 
                 TextColumn::make('status')->sortable()->badge(),
