@@ -22,6 +22,7 @@ class RingkasanPembayaran extends Page implements HasTable
     protected static ?string $title = 'Daftar Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Keuangan';
 
     /**
      * Mendefinisikan struktur tabel untuk halaman ini.

@@ -17,19 +17,7 @@ class Sewa extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
     protected $table = 'sewa';
-    protected $fillable = [
-        'customer_id',
-        'judul',
-        'user_id',
-        'tgl_mulai',
-        'tgl_selesai',
-        'jenis',
-        'lokasi',
-        'alamat',
-        'total_biaya',
-        'customer_id',
-        'customer_type',
-    ];
+    protected $guarded = [];
 
     public function daftarAlat()
     {
@@ -55,7 +43,7 @@ class Sewa extends Model
         return $this->hasMany(Project::class, 'sewa_id');
     }
 
-    public function customer(): MorphTo
+    public function customer()
     {
         return $this->morphTo();
     }

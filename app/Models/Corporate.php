@@ -16,15 +16,7 @@ class Corporate extends Model
 
     protected $table = 'corporate';
 
-    protected $fillable = [
-        'nama',
-        'nib',
-        'level',
-        'email',
-        'telepon',
-        'alamat',
-        'user_id',
-    ];
+    protected $guarded = [];
 
     public function user()
     {

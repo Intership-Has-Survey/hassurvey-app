@@ -56,8 +56,17 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->navigationGroups([
+                'Manajemen Data Master',
+                'Customer',
+                'Keuangan',
+                'Jasa Pemetaan',
+                'Jasa Sewa',
+            ])
             ->plugins([
                 ActivitylogPlugin::make(),
             ]);
+
+
     }
 }
