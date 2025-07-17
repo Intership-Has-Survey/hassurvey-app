@@ -17,9 +17,14 @@ class StatusPembayaran extends Model
         parent::boot();
     }
 
-    public function project()
+    // public function project()
+    // {
+    //     return $this->belongsTo(Project::class);
+    // }
+
+    public function payable()
     {
-        return $this->belongsTo(Project::class);
+        return $this->morphTo();
     }
 
     public function user()
