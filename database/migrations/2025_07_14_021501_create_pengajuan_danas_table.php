@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('pengajuan_danas', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('project_id')->nullable()->constrained('projects')->nullOnDelete();
+            $table->foreignUuid('project_id')->nullable()->constrained('projects')->onDelete('cascade');
+            $table->foreignUuid('sewa_id')->nullable()->constrained('sewa')->onDelete('cascade');
             $table->string('judul_pengajuan');
             $table->text('deskripsi_pengajuan')->nullable();
             $table->string('nama_bank')->nullable();

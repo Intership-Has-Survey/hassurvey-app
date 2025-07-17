@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             SalesSeeder::class,
             DaftarAlatSeeder::class,
             // ProjectSeeder::class,
-
+            TrefRegionSeeder::class,
         ]);
     }
 }
