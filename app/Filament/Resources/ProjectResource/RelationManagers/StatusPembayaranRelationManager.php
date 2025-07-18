@@ -117,4 +117,10 @@ class StatusPembayaranRelationManager extends RelationManager
                 ]),
             ]);
     }
+
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        return in_array($user->role, ['admin', 'keuangan']);
+    }
 }
