@@ -125,6 +125,25 @@ class RiwayatSewasRelationManager extends RelationManager
                     ])
             ])
             ->actions([
+                Tables\Actions\DetachAction::make()
+                    ->label('batal')
+                    ->visible(function ($record) {
+                        $today = today();
+                        $createdAt = $record->created_at?->copy()->startOfDay();
+                        return ($today == $createdAt);
+                    })
+                    ->after(function (array $data, Model $record) {
+                        $record->update(['status' => true]);
+                    }),
+                Tables\Actions\Action::make('info')
+                    ->label('Tidak bisa dibatalkan')
+                    ->disabled()
+                    ->color('gray')
+                    ->visible(function ($record) {
+                        $today = today();
+                        $createdAt = $record->created_at?->copy()->startOfDay();
+                        return ($today != $createdAt);
+                    }),
                 Tables\Actions\EditAction::make()
                     ->label('Update Pengembalian')
                     ->using(function (Model $record, array $data): Model {
