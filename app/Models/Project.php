@@ -87,7 +87,7 @@ class Project extends Model
 
     public function daftarAlat()
     {
-        return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
+        return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'project_id', 'daftar_alat_id')
             ->using(RiwayatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();

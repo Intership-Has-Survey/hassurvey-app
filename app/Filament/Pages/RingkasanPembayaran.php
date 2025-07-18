@@ -43,8 +43,8 @@ class RingkasanPembayaran extends Page implements HasTable
             // )
             ->query(
                 StatusPembayaran::query()
-                    ->selectRaw('payable_id, SUM(nilai) as total_dibayar, MAX(id)')
-                    ->groupBy('payable_id')
+                // ->selectRaw('id, payable_id, SUM(nilai) as total_dibayar')
+                // ->groupBy('id', 'payable_id')
             )
             ->columns([
                 // TextColumn::make('nama_pembayaran')->label('Nama Pembayaran'),

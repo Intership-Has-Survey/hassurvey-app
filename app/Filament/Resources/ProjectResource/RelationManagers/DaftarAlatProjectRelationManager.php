@@ -9,13 +9,16 @@ use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-
+use Filament\Tables\Columns\ButtonColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms\Get;
+use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
 
 class DaftarAlatProjectRelationManager extends RelationManager
 {
@@ -23,18 +26,58 @@ class DaftarAlatProjectRelationManager extends RelationManager
 
     protected static bool $isLazy = false;
 
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\DatePicker::make('tgl_keluar')
+                    ->label('Tanggal Alat Keluar')
+                    ->required()
+                    ->disabled() // <-- Dibuat disabled agar tidak bisa diubah saat edit
+                    ->dehydrated(), // <-- Pastikan nilainya tetap terkirim meskipun disabled
+                Forms\Components\DatePicker::make('tgl_masuk')
+                    ->label('Tanggal Masuk (diisi saat pengembalian)')
+                    ->minDate(fn(Get $get) => $get('tgl_keluar'))
+                    ->live(), // <-- Reaktif untuk memicu validasi
+                Forms\Components\TextInput::make('harga_perhari')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->required(),
+                Forms\Components\Select::make('kondisi_kembali')
+                    ->label('Kondisi Alat Saat Dikembalikan')
+                    ->options([
+                        'Baik' => 'Baik',
+                        'Bermasalah' => 'Bermasalah',
+                    ])
+                    ->required()
+                    ->default('Baik'),
+
+                // SOLUSI: Menambahkan input untuk keterangan dan foto bukti
+                Forms\Components\Textarea::make('keterangan')
+                    ->label('Keterangan Pengembalian (Opsional)')
+                    ->columnSpanFull(),
+                FileUpload::make('foto_bukti')
+                    ->label('Foto Bukti Pengembalian')
+                    ->image()
+                    ->directory('bukti-pengembalian')
+                    // Foto hanya wajib diisi jika tanggal masuk sudah diisi
+                    ->required(fn(Get $get): bool => filled($get('tgl_masuk')))
+                    ->columnSpanFull(),
+            ]);
+    }
+
     public function table(Table $table): Table
     {
         $sewa = $this->ownerRecord->sewa;
         return $table
-            ->query(function () use ($sewa) {
-                if (!$sewa) {
-                    return DaftarAlat::query()->whereNull('id'); // kosong
-                }
+            // ->query(function () use ($sewa) {
+            //     if (!$sewa) {
+            //         return DaftarAlat::query()->whereNull('id'); // kosong
+            //     }
 
-                return $sewa->daftarAlat()
-                    ->select('daftar_alat.*', 'riwayat_sewa.sewa_id', 'riwayat_sewa.daftar_alat_id', 'riwayat_sewa.tgl_keluar', 'riwayat_sewa.tgl_masuk', 'riwayat_sewa.harga_perhari', 'riwayat_sewa.biaya_sewa_alat');
-            })
+            //     return $sewa->daftarAlat()
+            //         ->select('daftar_alat.*', 'riwayat_sewa.sewa_id', 'riwayat_sewa.daftar_alat_id', 'riwayat_sewa.tgl_keluar', 'riwayat_sewa.tgl_masuk', 'riwayat_sewa.harga_perhari', 'riwayat_sewa.biaya_sewa_alat');
+            // })
             ->recordTitleAttribute('nomor_seri')
             ->columns([
                 TextColumn::make('nomor_seri')->searchable(),
@@ -148,6 +191,34 @@ class DaftarAlatProjectRelationManager extends RelationManager
                     ])
             ])
             ->actions([
+                Tables\Actions\EditAction::make()
+                    ->label('Update Pengembalian')
+                    ->using(function (Model $record, array $data): Model {
+                        // Hanya proses jika tanggal masuk diisi
+                        if (!empty($data['tgl_masuk'])) {
+                            $tglKeluar = Carbon::parse($data['tgl_keluar']);
+                            $tglMasuk = Carbon::parse($data['tgl_masuk']);
+                            $durasiSewa = $tglKeluar->diffInDays($tglMasuk) + 1;
+                            $biayaSewa = $durasiSewa * $data['harga_perhari'];
+
+                            // Update data di pivot table
+                            $record->pivot->tgl_masuk = $data['tgl_masuk'];
+                            $record->pivot->harga_perhari = $data['harga_perhari'];
+                            $record->pivot->biaya_sewa_alat = $biayaSewa;
+                            // SOLUSI: Menyimpan data keterangan dan foto bukti
+                            $record->pivot->keterangan = $data['keterangan'];
+                            $record->pivot->foto_bukti = $data['foto_bukti'];
+                            $record->pivot->save();
+
+                            // Update data di tabel master daftar_alat
+                            $kondisiBaru = ($data['kondisi_kembali'] === 'Bermasalah') ? false : true;
+                            $record->update([
+                                'status' => true,
+                                'kondisi' => $kondisiBaru,
+                            ]);
+                        }
+                        return $record;
+                    }),
                 Tables\Actions\Action::make('goToSewa')
                     ->label('Update Pengembalian')
                     ->icon('heroicon-o-arrow-top-right-on-square')
@@ -156,7 +227,18 @@ class DaftarAlatProjectRelationManager extends RelationManager
                         'record' => $livewire->ownerRecord->sewa_id
                     ]))
                     ->openUrlInNewTab() // atau hapus jika ingin redirect di tab yang sama
-                    ->visible(fn($record) => is_null($record->tgl_masuk)), // hanya tampil jika belum dikembalikan
+                    ->visible(fn($record) => is_null($record->tgl_masuk)),
+                Tables\Actions\Action::make('kembalikan')
+                    ->label('Kembalikan')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->visible(fn($record) => is_null($record->pivot->tgl_masuk))
+                    ->action(function ($record) {
+                        $record->pivot->update([
+                            'tgl_masuk' => now(),
+                        ]);
+                    }), // hanya tampil jika belum dikembalikan
             ])
 
 

@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->foreignUuid('user_id')->constrained('users');
             $table->foreignUuid('daftar_alat_id')->constrained('daftar_alat')->onDelete('cascade');
             $table->foreignUuid('sewa_id')->constrained('sewa')->onDelete('cascade');
+            $table->foreignUuid('project_id')->nullable();
             $table->softDeletes();
         });
     }
