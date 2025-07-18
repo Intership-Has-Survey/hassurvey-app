@@ -23,6 +23,11 @@ class PengajuanDana extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function sewa(): BelongsTo
+    {
+        return $this->belongsTo(Sewa::class);
+    }
+
     public function detailPengajuans(): HasMany
     {
         return $this->hasMany(DetailPengajuan::class);

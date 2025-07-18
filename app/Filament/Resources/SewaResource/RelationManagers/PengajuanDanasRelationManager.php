@@ -40,6 +40,11 @@ class PengajuanDanasRelationManager extends RelationManager
             ->recordTitleAttribute('judul_pengajuan')
             ->columns([
                 Tables\Columns\TextColumn::make('judul_pengajuan'),
+                Tables\Columns\TextColumn::make('deskripsi_pengajuan'),
+                Tables\Columns\TextColumn::make('nama_bank'),
+                Tables\Columns\TextColumn::make('nomor_rekening'),
+                Tables\Columns\TextColumn::make('nama_pemilik_rekening'),
+                Tables\Columns\TextColumn::make('user.name'),
             ])
             ->filters([
                 //
@@ -48,7 +53,15 @@ class PengajuanDanasRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('editPengajuanDana')
+                    ->label('Edit')
+                    ->icon('heroicon-o-pencil')
+                    ->color('warning')
+                    ->url(
+                        fn($record) => $record->project()
+                            ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
+                            : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
+                    ),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
