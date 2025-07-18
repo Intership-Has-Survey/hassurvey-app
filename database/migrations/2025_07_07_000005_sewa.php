@@ -15,12 +15,16 @@ return new class extends Migration {
             $table->text('judul');
             $table->date('tgl_mulai');
             $table->date('tgl_selesai');
+            $table->string('rentang');
             $table->string('provinsi', 2);
             $table->string('kota', 5);
             $table->string('kecamatan', 8);
             $table->string('desa', 13);
             $table->text('detail_alamat');
-            $table->decimal('total_biaya', 15, 2)->nullable();
+
+            $table->decimal('harga_perkiraan', 15, 2)->nullable();
+            $table->decimal('harga_real', 15, 2)->nullable();
+            $table->decimal('harga_fix', 15, 2)->nullable();
             $table->timestamps();
 
             $table->uuidMorphs('customer');

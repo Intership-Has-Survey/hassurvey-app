@@ -82,12 +82,13 @@ class DaftarAlatProjectRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('nomor_seri')->searchable(),
                 BadgeColumn::make('kondisi')
-                    ->label('Kondisi Master')
+                    ->label('Kondisi Alat')
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
                     ->color(fn(bool $state) => $state ? 'success' : 'danger'),
                 TextColumn::make('tgl_keluar')->date('d-m-Y'),
                 TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
                 TextColumn::make('harga_perhari')->money('IDR')->sortable(),
+                TextColumn::make('biaya_perkiraan_alat')->money('IDR')->sortable()->label('Total Biaya'),
                 TextColumn::make('biaya_sewa_alat')->money('IDR')->sortable()->label('Total Biaya'),
             ])
             ->recordTitleAttribute('nomor_seri')

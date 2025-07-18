@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             SalesSeeder::class,
             DaftarAlatSeeder::class,
             ProjectSeeder::class,
-            SewaSeeder::class,
+            //SewaSeeder::class,
         ]);
     }
 }
