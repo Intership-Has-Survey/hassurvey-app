@@ -32,6 +32,8 @@ use App\Filament\Resources\ProjectResource\Pages\CreateProject;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Models\Perorangan;
 use App\Models\Corporate;
+use Illuminate\Database\Eloquent\Model;
+
 
 class ProjectResource extends Resource
 {
@@ -50,6 +52,7 @@ class ProjectResource extends Resource
     {
         return $form->schema([
             Section::make('Informasi Proyek')
+                ->disabled(fn(Get $get) => $get('status_pekerjaan') === 'Selesai')
                 ->schema([
                     TextInput::make('nama_project')
                         ->label('Nama Proyek')
@@ -91,6 +94,7 @@ class ProjectResource extends Resource
                                     TextInput::make('nama')->label('Nama Sales')->required(),
                                     TextInput::make('telepon')->tel()->required(),
                                     TextInput::make('email')->email()->required(),
+
 
                                 ])->columns(2),
                             Section::make('Alamat Sales')
@@ -259,6 +263,7 @@ class ProjectResource extends Resource
                 ])->columns(2),
 
             Section::make('Informasi Customer')
+                ->disabled(fn(Get $get) => $get('status_pekerjaan') === 'Selesai')
                 ->schema([
                     Select::make('customer_type')
                         ->label('Tipe Customer')
@@ -398,6 +403,7 @@ class ProjectResource extends Resource
                 ]),
 
             Section::make('Keuangan & Status')
+                ->disabled(fn(Get $get) => $get('status_pekerjaan') === 'Selesai')
                 ->schema([
                     TextInput::make('nilai_project')
                         ->mask(RawJs::make('$money($input)'))
@@ -445,6 +451,7 @@ class ProjectResource extends Resource
                     ->color(fn(string $state): string => match ($state) {
                         'Selesai' => 'success',
                         'Belum Selesai' => 'warning',
+                        default => 'secondary',
                     }),
 
                 TextColumn::make('tanggal_informasi_masuk')->label('Masuk')->date()->sortable(),

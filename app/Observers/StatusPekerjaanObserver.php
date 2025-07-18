@@ -9,27 +9,35 @@ class StatusPekerjaanObserver
 {
     public function saved(StatusPekerjaan $statusPekerjaan): void
     {
-        $this->updateProjectWorkStatus($statusPekerjaan);
+        if ($statusPekerjaan->project) {
+            $this->updateProjectWorkStatus($statusPekerjaan->project);
+        }
     }
 
-    protected function updateProjectWorkStatus(StatusPekerjaan $statusPekerjaan): void
+    protected function updateProjectWorkStatus(Project $project): void
     {
-        $project = $statusPekerjaan->project;
-        if (!$project) {
+        $requiredStages = ['pekerjaan_lapangan', 'data_gambar', 'laporan'];
+
+        $allStages = $project->statusPekerjaan()->whereIn('jenis_pekerjaan', $requiredStages)->get();
+
+        // Check if all required stages exist
+        $existingStages = $allStages->pluck('jenis_pekerjaan')->unique()->toArray();
+
+        $missingStages = array_diff($requiredStages, $existingStages);
+
+        if (count($missingStages) > 0) {
+            $project->status_pekerjaan = 'Belum Selesai';
+            $project->saveQuietly();
             return;
         }
 
+        $isFullyFinished = $allStages->every(function ($stage) {
+            return in_array($stage->status, ['Selesai', 'Tidak Perlu']);
+        });
 
-        // $isSelesai = in_array($statusPekerjaan->jenis_pekerjaan, ['pekerjaan_lapangan', 'data_gambar', 'laporan'])
-        //     && in_array($statusPekerjaan->proses_data_dan_gambar, ['Selesai', 'Tidak Perlu'])
-        //     && in_array($statusPekerjaan->laporan, ['Selesai', 'Tidak Perlu']);
-        // $statusBaru = $isSelesai ? 'Selesai' : 'Belum Selesai';
+        $statusBaru = $isFullyFinished ? 'Selesai' : 'Belum Selesai';
 
-        $allStatus = $project->statusPekerjaan()->pluck('status');
-
-        // Tentukan apakah semua selesai / tidak perlu
-        $isSelesai = $allStatus->every(fn($status) => in_array($status, ['Selesai', 'Tidak Perlu']));
-        $project->status_pekerjaan = $isSelesai ? 'Selesai' : 'Belum Selesai';
+        $project->status_pekerjaan = $statusBaru;
         $project->saveQuietly();
     }
 }
