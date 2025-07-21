@@ -18,7 +18,7 @@ class RingkasanTransaksi extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationLabel = 'Transaksi Keluar';
+    protected static ?string $navigationLabel = 'Pengeluaran';
     protected static ?string $navigationGroup = 'Keuangan';
     protected static ?string $title = 'Ringkasan Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-transaksi';

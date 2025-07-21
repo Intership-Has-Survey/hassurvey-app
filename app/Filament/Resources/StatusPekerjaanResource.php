@@ -53,6 +53,7 @@ class StatusPekerjaanResource extends Resource
                 Tables\Columns\TextColumn::make('pekerjaan_lapangan')->badge(),
                 Tables\Columns\TextColumn::make('proses_data_dan_gambar')->badge(),
                 Tables\Columns\TextColumn::make('laporan')->badge(),
+                Tables\Columns\TextColumn::make('user.name')->label('Dibuat Oleh'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

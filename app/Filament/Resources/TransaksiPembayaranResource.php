@@ -76,7 +76,7 @@ class TransaksiPembayaranResource extends Resource
                 Tables\Columns\TextColumn::make('metode_pembayaran')
                     ->badge(),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Dibayar oleh')
+                    ->label('Dibuat oleh')
                     ->sortable(),
             ])
             ->filters([

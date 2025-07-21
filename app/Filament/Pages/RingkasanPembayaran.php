@@ -19,7 +19,7 @@ class RingkasanPembayaran extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $navigationLabel = 'Daftar Pembayaran';
+    protected static ?string $navigationLabel = 'Pemasukan';
     protected static ?string $title = 'Daftar Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;

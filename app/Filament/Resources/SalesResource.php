@@ -133,7 +133,7 @@ class SalesResource extends Resource
                 TextColumn::make('email'),
                 TextColumn::make('telepon'),
                 TextColumn::make('user.name')
-                    ->label('Editor')
+                    ->label('Dibuat Oleh')
                     ->sortable()
                     ->searchable(),
 

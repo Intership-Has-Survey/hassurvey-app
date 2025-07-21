@@ -90,7 +90,7 @@ class StatusPembayaranResource extends Resource
                     ->money('IDR')
                     ->sortable(),
 
-                TextColumn::make('user.name')->label('Editor'),
+                TextColumn::make('user.name')->label('Dibuat Oleh'),
             ])
             ->filters([
                 // TrashedFilter::make(),

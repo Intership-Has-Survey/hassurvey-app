@@ -16,4 +16,9 @@ class Kategori extends Model
     {
         return $this->belongsTo(\App\Models\User::class);
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
 }

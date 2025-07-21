@@ -197,7 +197,7 @@ class PersonelResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('user.name')
-                    ->label('Editor')
+                    ->label('Dibuat Oleh')
                     ->sortable()
                     ->searchable(),
             ])

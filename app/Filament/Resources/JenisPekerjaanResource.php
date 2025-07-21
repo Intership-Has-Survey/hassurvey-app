@@ -46,7 +46,7 @@ class JenisPekerjaanResource extends Resource
                 // TextInput::make('nama_project')->required(),
                 Tables\Columns\TextColumn::make('nama'),
                 Tables\Columns\TextColumn::make('keterangan'),
-                Tables\Columns\TextColumn::make('user.name')->label('Editor')
+                Tables\Columns\TextColumn::make('user.name')->label('Dibuat oleh')
                     ->searchable()
                     ->sortable(),
             ])

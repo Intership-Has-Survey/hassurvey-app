@@ -52,7 +52,7 @@ class KategoriResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('keterangan'),
                 TextColumn::make('user.name')
-                    ->label('Editor')
+                    ->label('Dibuat Oleh')
                     ->sortable()
                     ->searchable(),
             ])
