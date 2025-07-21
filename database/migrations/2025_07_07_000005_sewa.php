@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->text('judul');
             $table->date('tgl_mulai');
-            $table->date('tgl_selesai');
-            $table->string('rentang');
+            $table->date('tgl_selesai')->nullable();
+            $table->string('rentang')->nullable();
             $table->string('provinsi', 2);
             $table->string('kota', 5);
             $table->string('kecamatan', 8);

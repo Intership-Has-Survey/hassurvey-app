@@ -19,7 +19,6 @@ return new class extends Migration {
             $table->decimal('biaya_sewa_alat', 15, 2)->nullable();
             $table->text('keterangan')->nullable();
             $table->string('foto_bukti')->nullable();
-            $table->string('jenis_alat_filter')->nullable();
             $table->string('recordId')->nullable(); // Tambahkan kolom recordId untuk menyimpan ID record terkait
             $table->timestamps();
 
