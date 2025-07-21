@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 
 class Sewa extends Model
@@ -23,7 +25,6 @@ class Sewa extends Model
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
             ->using(RiwayatSewa::class)
-            // SOLUSI: Mengganti 'biaya_sewa' menjadi 'biaya_sewa_alat' agar sesuai dengan migrasi
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
     }
@@ -31,7 +32,6 @@ class Sewa extends Model
     protected static function booted(): void
     {
         static::creating(function ($sewa) {
-            // Atur user_id jika belum ada dan user sedang login
             if (!$sewa->user_id && Auth::check()) {
                 $sewa->user_id = Auth::id();
             }
@@ -53,8 +53,48 @@ class Sewa extends Model
         return $this->hasMany(PengajuanDana::class, 'sewa_id');
     }
 
-    public function statusPembayarans()
+    protected $casts = [
+        'is_locked' => 'boolean',
+    ];
+
+    protected function status(): Attribute
     {
-        return $this->morphMany(StatusPembayaran::class, 'payable');
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                if ($attributes['is_locked']) {
+                    return 'Selesai';
+                }
+
+                if (isset($attributes['tgl_selesai'])) {
+                    $tglSelesai = Carbon::parse($attributes['tgl_selesai']);
+                    if (Carbon::today()->gt($tglSelesai)) {
+                        return 'Jatuh Tempo';
+                    }
+                }
+
+                return 'Belum Selesai';
+            },
+        );
+    }
+
+    public function canAddTools(): bool
+    {
+        if ($this->is_locked) {
+            return false;
+        }
+
+        $totalAlat = $this->daftarAlat()->count();
+        if ($totalAlat === 0) {
+            return true; 
+        }
+
+        $alatDikembalikan = $this->daftarAlat()->wherePivotNotNull('tgl_masuk')->count();
+        $butuhPengganti = $this->daftarAlat()->wherePivot('needs_replacement', true)->count();
+
+        if ($totalAlat === $alatDikembalikan && $butuhPengganti === 0) {
+            return false;
+        }
+
+        return true;
     }
 }

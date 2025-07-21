@@ -25,6 +25,11 @@ return new class extends Migration {
             $table->decimal('harga_perkiraan', 15, 2)->nullable();
             $table->decimal('harga_real', 15, 2)->nullable();
             $table->decimal('harga_fix', 15, 2)->nullable();
+
+            $table->string('status')->default('Belum Selesai');
+            $table->boolean('needs_replacement')->default(false);
+            $table->boolean('is_locked')->default(false);
+
             $table->timestamps();
 
             $table->uuidMorphs('customer');

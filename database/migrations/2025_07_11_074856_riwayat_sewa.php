@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->text('keterangan')->nullable();
             $table->string('foto_bukti')->nullable();
             $table->string('recordId')->nullable(); // Tambahkan kolom recordId untuk menyimpan ID record terkait
+            $table->boolean(('needs_replacement'))->default(false); // Tambahkan kolom untuk kebutuhan penggantian alat
             $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users');
