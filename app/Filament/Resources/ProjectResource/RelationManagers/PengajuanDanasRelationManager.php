@@ -7,8 +7,12 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\BankAccount;
 
 
 class PengajuanDanasRelationManager extends RelationManager
@@ -32,10 +36,58 @@ class PengajuanDanasRelationManager extends RelationManager
                     ->label('Deskripsi Umum')
                     ->columnSpanFull(),
 
-                Forms\Components\TextInput::make('nama_bank')->maxLength(255),
-                Forms\Components\TextInput::make('nomor_rekening')->maxLength(255),
-                Forms\Components\TextInput::make('nama_pemilik_rekening')->maxLength(255),
-                Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                // Forms\Components\Select::make('nama_bank')->maxLength(255),
+                Select::make('bank_id')
+                    ->relationship('bank', 'nama_bank')
+                    ->placeholder('Pilih Bank')
+                    ->searchable()
+                    ->preload()
+                    ->label('Daftar Bank')
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null))
+                    ->createOptionForm([
+                        TextInput::make('nama_bank')
+                            ->label('Nama Bank')
+                            ->required(),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
+                    ]),
+                Forms\Components\Select::make('bank_account_id')
+                    ->label('Nomor Rekening')
+                    ->options(function (callable $get) {
+                        $bankId = $get('bank_id');
+                        if (!$bankId) {
+                            return [];
+                        }
+                        return \App\Models\BankAccount::where('bank_id', $bankId)
+                            ->get()
+                            ->mapWithKeys(function ($account) {
+                                return [$account->id => "{$account->no_rek} ({$account->nama_pemilik})"];
+                            });
+                    })
+                    ->reactive()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('no_rek')
+                            ->label('Nomor Rekening')
+                            ->required(),
+                        Forms\Components\TextInput::make('nama_pemilik')
+                            ->label('Nama Pemilik')
+                            ->required(),
+                        Forms\Components\Hidden::make('bank_id')
+                            ->default(fn(callable $get) => $get('bank_id')), // ambil dari select bank
+                        Forms\Components\Hidden::make('user_id')
+                            ->default(auth()->id()),
+                    ])
+                    ->createOptionUsing(function (array $data, callable $get): string {
+                        // Ambil bank_id dari form utama
+                        $data['bank_id'] = $get('bank_id');
+
+                        $account = \App\Models\BankAccount::create($data);
+                        return $account->id; // UUID
+                    })
+                    ->required(),
+
             ]);
     }
 

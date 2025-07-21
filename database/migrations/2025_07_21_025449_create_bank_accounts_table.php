@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('banks', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('nama_bank');
-            $table->foreignUuid('user_id')->constrained('users');
+        Schema::create('bank_accounts', function (Blueprint $table) {
+            $table->Uuid('id')->primary();
+            $table->foreignUuid('bank_id')->constrained('banks');
+            $table->string('no_rek');
+            $table->string('nama_pemilik');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('banks');
+        Schema::dropIfExists('bank_accounts');
     }
 };

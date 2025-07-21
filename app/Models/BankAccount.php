@@ -3,18 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
-
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Bank extends Model
+
+class BankAccount extends Model
 {
     //
     use HasUuids;
-    protected $guarded = ['id'];
 
-    public function accounts()
+    protected $guarded = ['id'];
+    public function bank()
     {
-        return $this->hasMany(BankAccount::class);
+        return $this->belongsTo(Bank::class);
     }
 }
