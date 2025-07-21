@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -31,6 +32,7 @@ class PengajuanDanasRelationManager extends RelationManager
                 Forms\Components\TextInput::make('nomor_rekening')->maxLength(255),
                 Forms\Components\TextInput::make('nama_pemilik_rekening')->maxLength(255),
                 Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+
             ]);
     }
 
@@ -69,5 +71,16 @@ class PengajuanDanasRelationManager extends RelationManager
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected function canCreate(): bool
+    {
+        return in_array(auth()->user()?->role, ['operasional']);
+    }
+
+    protected function canAttach(): bool
+    {
+        // return $this->can('attach');
+        return in_array(auth()->user()?->role, ['operasional']);
     }
 }

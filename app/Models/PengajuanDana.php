@@ -44,6 +44,11 @@ class PengajuanDana extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
