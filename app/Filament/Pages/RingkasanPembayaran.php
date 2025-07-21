@@ -7,6 +7,7 @@ use Filament\Pages\Page;
 use Filament\Tables\Table;
 use App\Filament\Resources\StatusPembayaranResource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,25 +44,41 @@ class RingkasanPembayaran extends Page implements HasTable
             // )
             ->query(
                 StatusPembayaran::query()
-                // ->selectRaw('id, payable_id, SUM(nilai) as total_dibayar')
-                // ->groupBy('id', 'payable_id')
+                    ->selectRaw('payable_id as id, SUM(nilai) as total_dibayar,payable_type')
+                    ->groupBy('payable_id', 'payable_type')
             )
             ->columns([
-                // TextColumn::make('nama_pembayaran')->label('Nama Pembayaran'),
-                // TextColumn::make('jenis_pembayaran'),
-                TextColumn::make('total_dibayar'),
-                TextColumn::make('payable_id'),
                 TextColumn::make('payable_type')
                     ->label('Jenis Layanan')
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'App\\Models\\Project' => 'Project',
-                        'App\\Models\\Sewa' => 'Sewa',
+                        'App\\Models\\Project' => 'Jasa Pemetaan',
+                        'App\\Models\\Sewa' => 'Penyewaan',
                         'App\\Models\\Servis' => 'Servis',
                         default => 'Lainnya'
                     }),
                 TextColumn::make('nama_layanan')
                     ->label('Nama Layanan')
-                    ->getStateUsing(fn(StatusPembayaran $record) => $record->payable?->nama_project ?? $record->payable?->nama_sewa ?? '-'),
+                    ->getStateUsing(function ($record) {
+                        if ($record->payable_type === 'App\\Models\\Project') {
+                            return \App\Models\Project::find($record->id)?->nama_project ?? '-';
+                        } elseif ($record->payable_type === 'App\\Models\\Sewa') {
+                            return \App\Models\Sewa::find($record->id)?->judul ?? '-';
+                        }
+                        return '-';
+                    }),
+                TextColumn::make('Total Harga')
+                    ->label('Harga Layanan')
+                    ->money('IDR')
+                    ->getStateUsing(function ($record) {
+                        if ($record->payable_type === 'App\\Models\\Project') {
+                            return \App\Models\Project::find($record->id)?->nilai_project ?? '-';
+                        } elseif ($record->payable_type === 'App\\Models\\Sewa') {
+                            return \App\Models\Sewa::find($record->id)?->harga_real ?? '-';
+                        }
+                        return '-';
+                    }),
+                TextColumn::make('total_dibayar')
+                    ->money('IDR'),
             ])
             ->actions([
                 // Action::make('view_payments')
@@ -71,13 +88,25 @@ class RingkasanPembayaran extends Page implements HasTable
                 //         'project_id' => $record->id,
                 //     ])),
 
-                // Action::make('view_payments')
-                //     ->label('LIHAT')
-                //     ->icon('heroicon-o-eye')
-                //     ->url(fn(StatusPembayaran $record): string => StatusPembayaranResource::getUrl('index', [
-                //         'payable_id' => $record->id,
-                //     ]))
-                //     ->openUrlInNewTab(),
+
+
+                Action::make('view_payments')
+                    ->label('LIHAT')
+                    ->icon('heroicon-o-eye')
+                    ->url(function (StatusPembayaran $record) {
+                        if ($record->payable_type === 'App\\Models\\Project' && $record->id) {
+                            return ProjectResource::getUrl('edit', [
+                                'record' => $record->id,
+                            ]) . '?activeRelationManager=1#status_pembayarans';
+                        }
+                        return null; // Jangan kembalikan URL kosong
+                    })
+                // ->visible(
+                //     fn(StatusPembayaran $record): bool =>
+                //     $record->payable_type === 'App\\Models\\Project' && $record->payable_id !== null
+                // )
+
+                // ->openUrlInNewTab(),
             ]);
     }
 }

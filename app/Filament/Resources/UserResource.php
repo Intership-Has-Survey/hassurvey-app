@@ -23,6 +23,14 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationLabel = 'Manajemen User';
+
+    protected static ?string $navigationGroup = 'Manajemen Data Master';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static ?int $navigationGroupSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -45,8 +53,7 @@ class UserResource extends Resource
                         'keuangan' => 'Direktur Keuangan',
                         'direktur' => 'Direktur Utama',
                     ])
-                    ->label('Sumber Pemesanan')
-                    ->placeholder('Pilih jenis sumber pemesanan')
+                    ->label('Role')
                     ->required()
                     ->native(false),
             ]);

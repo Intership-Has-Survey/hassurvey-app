@@ -73,11 +73,15 @@ class StatusPembayaranResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('project.nama_project')
-                    ->label('Proyek')
-                    ->searchable()
-                    ->sortable(),
-
+                TextColumn::make('nama_layanan')
+                    ->label('Nama Layanan')
+                    ->getStateUsing(function ($record) {
+                        return match ($record->payable_type) {
+                            'App\\Models\\Project' => $record->payable?->nama_project,
+                            'App\\Models\\Sewa' => $record->payable?->nama_sewa,
+                            default => '-'
+                        };
+                    }),
                 TextColumn::make('nama_pembayaran')
                     ->label('Metode Pembayaran')
                     ->searchable(),
