@@ -249,4 +249,9 @@ class SewaResource extends Resource
             'edit' => Pages\EditSewa::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Sewa'); // atau permission spesifik
+    }
 }

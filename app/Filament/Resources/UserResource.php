@@ -46,16 +46,12 @@ class UserResource extends Resource
                 TextInput::make('password')
                     ->label('Password')
                     ->required(),
-                Select::make('sumber')
-                    ->options([
-                        'operasional' => 'Operasional',
-                        'dirops' => 'Direktur Operasional',
-                        'keuangan' => 'Direktur Keuangan',
-                        'direktur' => 'Direktur Utama',
-                    ])
-                    ->label('Role')
-                    ->required()
-                    ->native(false),
+                Select::make('roles')
+                    ->multiple()
+                    ->relationship('roles', 'name')
+                    ->preload()
+                    ->label('Assign Roles'),
+                // Select::make('roles')->multiple()->relationship('roles', 'name')
             ]);
     }
 

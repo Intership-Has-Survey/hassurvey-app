@@ -490,4 +490,9 @@ class ProjectResource extends Resource
             'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Project'); // atau permission spesifik
+    }
 }
