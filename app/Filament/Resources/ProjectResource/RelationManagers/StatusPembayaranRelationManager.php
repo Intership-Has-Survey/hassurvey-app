@@ -20,6 +20,8 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\RawJs;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\StatusPembayaran;
 
 class StatusPembayaranRelationManager extends RelationManager
 {
@@ -118,9 +120,18 @@ class StatusPembayaranRelationManager extends RelationManager
             ]);
     }
 
-    public static function canAccess(): bool
+    protected function canCreate(): bool
     {
-        $user = auth()->user();
-        return in_array($user->role, ['admin', 'keuangan']);
+        return in_array(auth()->user()?->role, ['keuangan']);
+    }
+
+    protected function canEdit(Model $record): bool
+    {
+        return in_array(auth()->user()?->role, ['keuangan']);
+    }
+
+    protected function canDelete(Model $record): bool
+    {
+        return auth()->user()->role === 'keuangan';
     }
 }

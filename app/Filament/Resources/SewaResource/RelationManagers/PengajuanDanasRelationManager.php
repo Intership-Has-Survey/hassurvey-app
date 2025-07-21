@@ -70,4 +70,15 @@ class PengajuanDanasRelationManager extends RelationManager
                 ]),
             ]);
     }
+
+    protected function canCreate(): bool
+    {
+        return in_array(auth()->user()?->role, ['operasional']);
+    }
+
+    protected function canAttach(): bool
+    {
+        // return $this->can('attach');
+        return in_array(auth()->user()?->role, ['operasional']);
+    }
 }
