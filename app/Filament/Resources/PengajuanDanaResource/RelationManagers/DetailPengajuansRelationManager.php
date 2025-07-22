@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
+use App\Models\Level;
 
 class DetailPengajuansRelationManager extends RelationManager
 {
@@ -40,9 +41,47 @@ class DetailPengajuansRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    // ->after(function ($livewire, $record) {
+                    //     // Update total harga (jika diperlukan)
+                    //     $livewire->getOwnerRecord()->updateTotalHarga();
+
+                    //     // Ambil nilai pengajuan
+                    //     $nilai = $record->nilai;
+
+                    //     // Cari level yang cocok berdasarkan max_nilai
+                    //     $level = Level::where('max_nilai', '>=', $nilai)
+                    //         ->orderBy('max_nilai') // Ambil level dengan batas paling kecil yang masih mencukupi
+                    //         ->first();
+
+                    //     // Update level_id di record pengajuan jika ditemukan
+                    //     if ($level) {
+                    //         $record->update(['level_id' => $level->id]);
+                    //     }
+                    // })
                     ->after(function ($livewire, $record) {
-                        $livewire->getOwnerRecord()->updateTotalHarga();
-                    }),
+                        $pengajuan = $livewire->getOwnerRecord();
+                        $pengajuan->updateTotalHarga();
+
+                        $nilai = $pengajuan->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            // Ambil step pertama berdasarkan urutan step
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+
+                            // Ambil nama role dari relasi role di levelStep
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $pengajuan->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                            ]);
+                        }
+                    })
+
             ])
             ->actions([
                 EditAction::make()

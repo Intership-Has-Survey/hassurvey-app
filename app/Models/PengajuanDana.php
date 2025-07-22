@@ -11,10 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 class PengajuanDana extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsActivity;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivity, HasRoles;
 
     protected $guarded = ['id'];
 
@@ -57,6 +59,11 @@ class PengajuanDana extends Model
             ->useLogName('Pengajuan');
     }
 
+    public function roles()
+    {
+        return $this->belongsTo(Role::class, 'dalam_review');
+    }
+
     public function updateTotalHarga()
     {
         $this->nilai = $this->detailPengajuans->sum(function ($detail) {
@@ -65,4 +72,56 @@ class PengajuanDana extends Model
 
         $this->save();
     }
+
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
+
+    public function approve()
+    {
+        $userRole = auth()->user()->roles;
+        $roleName = auth()->user()->roles->first()?->name;
+        // dd($userRole);
+        // dd($roleName);
+        // Cari level
+        $level = $this->level;
+        $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
+
+        $currentIndex = array_search(auth()->user()->roles->first()?->id, $steps);
+        // dd($currentIndex);
+        // dd($steps);
+        // dd($userRole);
+
+        if ($currentIndex !== false && isset($steps[$currentIndex + 1])) {
+            // Masih ada step berikutnya
+            $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
+        } else {
+            // Sudah final step
+            $this->update([
+                'dalam_review' => null,
+                'disetujui' => 'approved',
+            ]);
+        }
+    }
+    // public function approve()
+    // {
+    //     $userRole = auth()->user()->role;
+    //     // Cari level
+    //     $level = $this->level;
+    //     $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
+
+    //     $currentIndex = array_search($userRole, $steps);
+
+    //     if ($currentIndex !== false && isset($steps[$currentIndex + 1])) {
+    //         // Masih ada step berikutnya
+    //         $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
+    //     } else {
+    //         // Sudah final step
+    //         $this->update([
+    //             'dalam_review' => null,
+    //             'disetujui' => 'approved',
+    //         ]);
+    //     }
+    // }
 }

@@ -80,7 +80,7 @@ class PengajuanDanaResource extends Resource
                     })
                     ->money('IDR'),
 
-                Tables\Columns\TextColumn::make('dalam_review')
+                Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
                     ->label('Dalam Review')
                     ->color(fn(string $state): string => match ($state) {
@@ -96,93 +96,92 @@ class PengajuanDanaResource extends Resource
                 Tables\Columns\TextColumn::make('disetujui')->label('Disetujui'),
                 Tables\Columns\TextColumn::make('ditolak')->label('Ditolak'),
                 Tables\Columns\TextColumn::make('user.name')->label('Dibuat oleh'),
+                Tables\Columns\TextColumn::make('level.nama')->label('Level'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime('d M Y')->sortable(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Action::make('approve')
-                    ->label('Approve')
-                    ->color('primary')
-                    ->button()
-                    ->requiresConfirmation()
-                    ->visible(fn() => auth()->user()->role !== 'operasional')
-                    ->disabled(function (Model $record) {
-                        return auth()->user()->role !== $record->dalam_review;
-                    })
-                    ->action(function (Model $record) {
-                        $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+                    ->label('Setujui')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn($record) => $record->dalam_review == auth()->user()->roles->first()?->id)
+                    // ->requiresConfirmation()
+                    ->action(fn($record) => $record->approve()),
+                // Action::make('approve')
+                //     ->label('Approve')
+                //     ->color('primary')
+                //     ->button()
+                //     ->requiresConfirmation()
+                //     ->visible(fn() => auth()->user()->role !== 'operasional')
+                //     ->disabled(function (Model $record) {
+                //         return auth()->user()->role !== $record->dalam_review;
+                //     })
+                //     ->action(function (Model $record) {
+                //         $review = ['dirops', 'keuangan', 'direktur', 'approved'];
 
-                        // Hitung total pengajuan dari detail
-                        $total = $record->detailPengajuans->reduce(function ($carry, $item) {
-                            return $carry + ($item->qty * $item->harga_satuan);
-                        }, 0);
+                //         // Hitung total pengajuan dari detail
+                //         $total = $record->detailPengajuans->reduce(function ($carry, $item) {
+                //             return $carry + ($item->qty * $item->harga_satuan);
+                //         }, 0);
 
-                        $currentIndex = array_search($record->dalam_review, $review);
+                //         $currentIndex = array_search($record->dalam_review, $review);
 
-                        if ($currentIndex !== false) {
-                            // Jika keuangan dan total <= 2 juta, langsung approved
-                            if ($record->dalam_review === 'keuangan' && $total <= 2000000) {
-                                $record->update([
-                                    'dalam_review' => 'approved',
-                                    'disetujui' => auth()->user()->role,
-                                    'ditolak' => null,
-                                    'alasan' => null,
-                                ]);
-                            } elseif ($currentIndex < count($review) - 1) {
-                                // Normal flow
-                                $record->update([
-                                    'dalam_review' => $review[$currentIndex + 1],
-                                    'disetujui' => auth()->user()->role,
-                                    'ditolak' => null,
-                                    'alasan' => null,
-                                ]);
-                            }
-                        }
-                    }),
+                //         if ($currentIndex !== false) {
+                //             // Jika keuangan dan total <= 2 juta, langsung approved
+                //             if ($record->dalam_review === 'keuangan' && $total <= 2000000) {
+                //                 $record->update([
+                //                     'dalam_review' => 'approved',
+                //                     'disetujui' => auth()->user()->role,
+                //                     'ditolak' => null,
+                //                     'alasan' => null,
+                //                 ]);
+                //             } elseif ($currentIndex < count($review) - 1) {
+                //                 // Normal flow
+                //                 $record->update([
+                //                     'dalam_review' => $review[$currentIndex + 1],
+                //                     'disetujui' => auth()->user()->role,
+                //                     'ditolak' => null,
+                //                     'alasan' => null,
+                //                 ]);
+                //             }
+                //         }
+                //     }),
 
-                Action::make('Tolak')
-                    ->label('Tolak')
-                    ->color('danger')
-                    ->visible(fn() => auth()->user()->role !== 'operasional')
-                    ->form([
-                        Forms\Components\Textarea::make('alasan')
-                            ->label('Alasan Penolakan')
-                            ->required(),
-                    ])
-                    ->requiresConfirmation()
-                    ->disabled(function (Model $record) {
-                        return auth()->user()->role !== $record->dalam_review;
-                    })
-                    ->action(function (Model $record, array $data) {
-                        $review = ['dirops', 'keuangan', 'direktur', 'approved'];
-                        $currentIndex = array_search($record->dalam_review, $review);
-
-                        if ($currentIndex !== false) {
-                            // Turunkan level jika bisa (misal dari gold → silver)
-                            $newStatus = $record->dalam_review;
-                            if ($currentIndex > 0) {
-                                $newStatus = $review[$currentIndex - 1];
-                            }
-
-                            // Simpan status baru + alasan
-                            $record->update([
-                                'dalam_review' => $newStatus,
-                                'ditolak' => auth()->user()->role,
-                                'disetujui' => null,
-                                'alasan' => $data['alasan'], // pastikan kolom ini ada di tabel
-                            ]);
-                        }
-                    }),
+                // Action::make('Tolak')
+                // ->label('Tolak')
+                // ->color('danger')
+                // ->visible(fn() => auth()->user()->role !== 'operasional')
+                // ->form([
+                //     Forms\Components\Textarea::make('alasan')
+                //         ->label('Alasan Penolakan')
+                //         ->required(),
+                // ])
+                // ->requiresConfirmation()
                 // ->disabled(function (Model $record) {
-                //     $role = auth()->user()->role;
-                //     return !(
-                //         ($role === 'keuangan' && $record->status === 'bronze') ||
-                //         ($role === 'direktur' && $record->status === 'silver')
-                //     );
+                //     return auth()->user()->role !== $record->dalam_review;
+                // })
+                // ->action(function (Model $record, array $data) {
+                //     $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+                //     $currentIndex = array_search($record->dalam_review, $review);
+
+                //     if ($currentIndex !== false) {
+                //         // Turunkan level jika bisa (misal dari gold → silver)
+                //         $newStatus = $record->dalam_review;
+                //         if ($currentIndex > 0) {
+                //             $newStatus = $review[$currentIndex - 1];
+                //         }
+
+                //         // Simpan status baru + alasan
+                //         $record->update([
+                //             'dalam_review' => $newStatus,
+                //             'ditolak' => auth()->user()->role,
+                //             'disetujui' => null,
+                //             'alasan' => $data['alasan'], // pastikan kolom ini ada di tabel
+                //         ]);
+                //     }
                 // }),
-
-
                 ActivityLogTimelineTableAction::make('Log'),
             ]);
     }
@@ -207,11 +206,6 @@ class PengajuanDanaResource extends Resource
         ];
     }
 
-    // public static function canCreate(): bool
-    // {
-    //     return in_array(auth()->user()?->role, ['operasional', 'admin']);
-    // }
-
     // public static function canEdit(Model $record): bool
     // {
     //     $userRole = auth()->user()?->role;
@@ -228,4 +222,6 @@ class PengajuanDanaResource extends Resource
     //         default     => false, // selain itu tidak boleh edit
     //     };
     // }
+
+
 }

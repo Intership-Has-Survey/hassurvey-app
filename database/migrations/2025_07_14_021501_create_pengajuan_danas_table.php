@@ -25,6 +25,7 @@ return new class extends Migration
             $table->enum('ditolak', ['dirops', 'keuangan', 'direktur'])->nullable();
             $table->enum('disetujui', ['dirops', 'keuangan', 'direktur'])->nullable();
             $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('level_id');
             $table->timestamps();
             $table->softDeletes();
         });
