@@ -14,10 +14,16 @@ return new class extends Migration
         Schema::create('pemilik', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
+            $table->string('gender');
             $table->string('NIK')->unique();
             $table->string('email')->unique();
             $table->string('telepon');
-            $table->text('alamat');
+            
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->string('detail_alamat');
 
             $table->timestamps();
 

@@ -54,7 +54,6 @@ return new class extends Migration {
             $table->string('level');
             $table->string('email')->unique();
             $table->string('telepon')->tel();
-            // $table->string('alamat');
 
             $table->string('provinsi', 2);
             $table->string('kota', 5);
