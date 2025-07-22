@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
-use App\Filament\Resources\ProjectResource;
 use Filament\Actions;
+use App\Models\Corporate;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\ProjectResource;
 
 class CreateProject extends CreateRecord
 {
@@ -15,26 +16,34 @@ class CreateProject extends CreateRecord
         return $this->getResource()::getUrl('edit', ['record' => $this->record]);
     }
 
-    // protected function mutateFormDataBeforeCreate(array $data): array
-    // {
-    //     if (empty($data['sewa_id'])) {
-    //         $sewa = \App\Models\Sewa::create([
-    //             'judul' => 'Kontrak Sewa Otomatis untuk ' . $data['nama_project'], // sesuaikan field
-    //             'tgl_mulai' => now(),
-    //             'tgl_selesai' => now()->addDays(7),
-    //             'provinsi' => $data['provinsi'],
-    //             'kota' => $data['kota'],
-    //             'kecamatan' => $data['kecamatan'],
-    //             'desa' => $data['desa'],
-    //             'detail_alamat' => $data['detail_alamat'],
-    //             'user_id' => $data['user_id'],
-    //             'customer_id' => $data['customer_id'],
-    //             'customer_type' => $data['customer_type'],
-    //         ]);
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (filled($data['corporate_id'])) {
+            $data['customer_flow_type'] = 'corporate';
+        } else {
+            $data['customer_flow_type'] = 'perorangan';
+        }
 
-    //         $data['sewa_id'] = $sewa->id;
-    //     }
+        return $data;
+    }
+    protected function afterCreate(): void
+    {
+        // 1. Ambil data project yang baru saja dibuat
+        $project = $this->getRecord();
+        // 2. Ambil semua data dari form
+        $data = $this->form->getState();
 
-    //     return $data;
-    // }
+        // 3. Cek apakah ini adalah alur kerja 'corporate' dan perusahaan sudah dipilih
+        if (($data['customer_flow_type'] ?? null) === 'corporate' && !empty($data['corporate_id'])) {
+            $corporate = Corporate::find($data['corporate_id']);
+
+            if ($corporate && !empty($data['perorangan'])) {
+                // 4. Ambil semua ID PIC dari repeater
+                $picIds = collect($data['perorangan'])->pluck('perorangan_id')->filter();
+
+                // 5. Hubungkan semua PIC tersebut ke Corporate
+                $corporate->perorangans()->syncWithoutDetaching($picIds);
+            }
+        }
+    }
 }

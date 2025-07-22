@@ -1,19 +1,26 @@
 <?php
+
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
-use App\Filament\Resources\PeroranganResource\RelationManagers\SewaRelationManager;
 use Filament\Forms;
 use Filament\Tables;
-use App\Models\Perorangan;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
+use App\Models\Perorangan;
+use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use App\Filament\Resources\PeroranganResource\Pages;
-use Filament\Forms\Components\Section;
+use Illuminate\Support\Facades\DB;
 // TAMBAHKAN IMPORT INI:
-use App\Filament\Resources\PeroranganResource\RelationManagers\ProjectsRelationManager;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use App\Filament\Resources\PeroranganResource\Pages;
 use Filament\Resources\RelationManagers\RelationGroup;
+use App\Filament\Resources\PeroranganResource\RelationManagers\SewaRelationManager;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\PeroranganResource\RelationManagers\ProjectsRelationManager;
 use App\Filament\Resources\PeroranganResource\RelationManagers\CorporateRelationManager;
 
 class PeroranganResource extends Resource
@@ -42,10 +49,11 @@ class PeroranganResource extends Resource
                 ])->columns(2),
             Section::make('Alamat')
                 ->schema([
-                    Forms\Components\TextInput::make('provinsi')->required()->maxLength(2),
-                    Forms\Components\TextInput::make('kota')->required()->maxLength(5),
-                    Forms\Components\TextInput::make('kecamatan')->required()->maxLength(8),
-                    Forms\Components\TextInput::make('desa')->required()->maxLength(13),
+                    Select::make('provinsi')->label('Provinsi')->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kota', null)),
+                    Select::make('kota')->label('Kota/Kabupaten')->options(fn(Get $get) => $get('provinsi') ? TrefRegion::query()->where('code', 'like', $get('provinsi') . '.%')->where(DB::raw('LENGTH(code)'), 5)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kecamatan', null)),
+                    Select::make('kecamatan')->label('Kecamatan')->options(fn(Get $get) => $get('kota') ? TrefRegion::query()->where('code', 'like', $get('kota') . '.%')->where(DB::raw('LENGTH(code)'), 8)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('desa', null)),
+                    Select::make('desa')->label('Desa/Kelurahan')->options(fn(Get $get) => $get('kecamatan') ? TrefRegion::query()->where('code', 'like', $get('kecamatan') . '.%')->where(DB::raw('LENGTH(code)'), 13)->pluck('name', 'code') : [])->live()->searchable(),
+                    Textarea::make('detail_alamat')->label('Detail Alamat')->columnSpanFull(),
                 ])->columns(2),
             Section::make('Dokumen Identitas')
                 ->schema([

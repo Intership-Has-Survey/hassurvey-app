@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use \Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 // PERBAIKAN: Nama kelas diubah menjadi PascalCase (Corporate)
 class Corporate extends Model
@@ -23,13 +24,9 @@ class Corporate extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function perorangan()
+    public function perorangan(): BelongsToMany
     {
-        // PERBAIKAN: Menggunakan nama kelas Perorangan yang sudah diperbaiki
-        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')
-            ->using(PeroranganCorporate::class) // Memberitahu Eloquent untuk menggunakan model pivot kustom
-            ->withPivot('user_id')
-            ->withTimestamps();
+        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate');
     }
 
     public function sewa(): MorphMany

@@ -2,35 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SewaResource\Pages;
-use App\Filament\Resources\SewaResource\RelationManagers;
-use App\Models\Corporate;
-use App\Models\Perorangan;
-use App\Models\Sewa;
-use App\Models\TrefRegion;
-use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Form;
+use App\Models\Sewa;
+use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Corporate;
+use App\Models\Perorangan;
+use App\Models\TrefRegion;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use function Livewire\Volt\placeholder;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\BadgeColumn;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TrashedFilter;
-use Filament\Forms\Components\Toggle;
+use App\Filament\Resources\SewaResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\SewaResource\RelationManagers;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 
 class SewaResource extends Resource
 {
@@ -194,7 +191,7 @@ class SewaResource extends Resource
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
                             ->numeric()
                             ->prefix('Rp')
-                            ->live(), 
+                            ->live(),
 
                         Toggle::make('tutup_sewa')
                             ->label('Tutup dan Kunci Transaksi Sewa')
@@ -237,7 +234,7 @@ class SewaResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn(Sewa $record): bool => !$record->is_locked), 
+                    ->visible(fn(Sewa $record): bool => !$record->is_locked),
 
                 Tables\Actions\Action::make('selesaikan_sewa')
                     ->label('Selesaikan Sewa')
@@ -259,8 +256,8 @@ class SewaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\RiwayatSewasRelationManager::class,
-            RelationManagers\PengajuanDanasRelationManager::class,
+            RiwayatSewasRelationManager::class,
+            PengajuanDanasRelationManager::class,
         ];
     }
 

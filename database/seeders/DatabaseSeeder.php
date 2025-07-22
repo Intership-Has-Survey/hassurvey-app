@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
             PersonelSeeder::class,
             SalesSeeder::class,
             DaftarAlatSeeder::class,
-            //ProjectSeeder::class,
-            //SewaSeeder::class,
+            // ProjectSeeder::class,
+            SewaSeeder::class,
         ]);
     }
 }

@@ -34,8 +34,8 @@ class SewaFactory extends Factory
             throw new \Exception('Tabel wilayah (villages) kosong. Jalankan TrefRegionSeeder terlebih dahulu.');
         }
         $villageCode = $randomVillage->code;
-        $districtCode = substr($villageCode, 0, 7);
-        $cityCode = substr($villageCode, 0, 4);
+        $districtCode = substr($villageCode, 0, 8);
+        $cityCode = substr($villageCode, 0, 5);
         $provinceCode = substr($villageCode, 0, 2);
         // --- Akhir Logika Alamat ---
 

@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
             $table->string('detail_alamat');
-            
+
             // keuangan & status
             $table->decimal('nilai_project', 15, 2)->default(0);
             $table->string('status');
@@ -33,7 +33,8 @@ return new class extends Migration {
             $table->timestamps();
 
             // Relasi
-            $table->uuidMorphs('customer');
+            $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
+            $table->foreignUuid('perorangan_id')->constrained('perorangan');
             $table->foreignUuid('sewa_id')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

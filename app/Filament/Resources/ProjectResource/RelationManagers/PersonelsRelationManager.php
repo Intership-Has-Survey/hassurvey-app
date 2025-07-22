@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
+use App\Models\Personel;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -14,7 +15,7 @@ class PersonelsRelationManager extends RelationManager
 {
     protected static string $relationship = 'personels';
 
-    protected static ?string $title = 'Tim Personel Proyek';
+    protected static ?string $title = 'Tim Personel';
 
     protected static bool $isLazy = false;
 
@@ -58,12 +59,17 @@ class PersonelsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                // Tables\Actions\CreateAction::make(),
-                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\AttachAction::make()
-                    ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
-                        $action->getRecordSelect(),
+                        Forms\Components\Select::make('recordId')
+                            ->label('Pilih Personel')
+                            ->options(function () {
+                                $alreadyAttachedIds = $this->getOwnerRecord()->personels()->pluck('personel.id');
+                                return Personel::whereNotIn('id', $alreadyAttachedIds)->pluck('nama', 'id');
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         Forms\Components\Select::make('peran')
                             ->options([
                                 'surveyor' => 'Surveyor',
@@ -81,7 +87,10 @@ class PersonelsRelationManager extends RelationManager
                         Hidden::make('user_id')
                             ->default(auth()->id()),
                     ])
-
+                    ->successNotificationTitle('Personel berhasil ditambahkan.')
+                    ->label('Tambah Personel')
+                    ->modalHeading('Tambah Personel ke Proyek')
+                    ->modalSubmitActionLabel('Tambah')
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

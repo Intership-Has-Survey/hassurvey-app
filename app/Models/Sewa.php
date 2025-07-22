@@ -85,7 +85,7 @@ class Sewa extends Model
 
         $totalAlat = $this->daftarAlat()->count();
         if ($totalAlat === 0) {
-            return true; 
+            return true;
         }
 
         $alatDikembalikan = $this->daftarAlat()->wherePivotNotNull('tgl_masuk')->count();
