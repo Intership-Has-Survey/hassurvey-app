@@ -7,6 +7,9 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 
 class DetailPengajuansRelationManager extends RelationManager
 {
@@ -36,11 +39,20 @@ class DetailPengajuansRelationManager extends RelationManager
                     ->money('IDR'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make()
+                    ->after(function ($livewire, $record) {
+                        $livewire->getOwnerRecord()->updateTotalHarga();
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make()
+                    ->after(function ($livewire, $record) {
+                        $livewire->getOwnerRecord()->updateTotalHarga();
+                    }),
+                DeleteAction::make()
+                    ->after(function ($livewire) {
+                        $livewire->getOwnerRecord()->updateTotalHarga();
+                    }),
             ]);
     }
 }

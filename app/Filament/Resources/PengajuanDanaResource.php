@@ -207,25 +207,25 @@ class PengajuanDanaResource extends Resource
         ];
     }
 
-    public static function canCreate(): bool
-    {
-        return in_array(auth()->user()?->role, ['operasional', 'admin']);
-    }
+    // public static function canCreate(): bool
+    // {
+    //     return in_array(auth()->user()?->role, ['operasional', 'admin']);
+    // }
 
-    public static function canEdit(Model $record): bool
-    {
-        $userRole = auth()->user()?->role;
+    // public static function canEdit(Model $record): bool
+    // {
+    //     $userRole = auth()->user()?->role;
 
-        return match ($userRole) {
-            'admin'     => true,
-            'operasional'  => $record->dalam_review === 'dirops',
-            'dirops'  => $record->dalam_review === 'dirops',
-            'keuangan'  => $record->dalam_review === 'keuangan',
-            'direktur'  => $record->dalam_review === 'direktur',
+    //     return match ($userRole) {
+    //         'admin'     => true,
+    //         'operasional'  => $record->dalam_review === 'dirops',
+    //         'dirops'  => $record->dalam_review === 'dirops',
+    //         'keuangan'  => $record->dalam_review === 'keuangan',
+    //         'direktur'  => $record->dalam_review === 'direktur',
 
-            // 'keuangan'  => $record->dalam_review === 'bronze',
-            // 'direktur'  => $record->dalam_review === 'silver',
-            default     => false, // selain itu tidak boleh edit
-        };
-    }
+    //         // 'keuangan'  => $record->dalam_review === 'bronze',
+    //         // 'direktur'  => $record->dalam_review === 'silver',
+    //         default     => false, // selain itu tidak boleh edit
+    //     };
+    // }
 }

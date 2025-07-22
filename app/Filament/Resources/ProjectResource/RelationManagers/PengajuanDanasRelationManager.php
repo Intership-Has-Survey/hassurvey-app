@@ -31,6 +31,12 @@ class PengajuanDanasRelationManager extends RelationManager
 
                 Forms\Components\Hidden::make('tipe_pengajuan')
                     ->default('project'),
+                Forms\Components\Hidden::make('nilai')
+                    ->default('0'),
+                Forms\Components\Hidden::make('nilai')
+                    ->default('0'),
+                Forms\Components\Hidden::make('user_id')
+                    ->default(auth()->id()),
 
                 Forms\Components\Textarea::make('deskripsi_pengajuan')
                     ->label('Deskripsi Umum')
@@ -98,9 +104,10 @@ class PengajuanDanasRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('judul_pengajuan'),
                 Tables\Columns\TextColumn::make('deskripsi_pengajuan'),
-                Tables\Columns\TextColumn::make('nama_bank'),
-                Tables\Columns\TextColumn::make('nomor_rekening'),
-                Tables\Columns\TextColumn::make('nama_pemilik_rekening'),
+                Tables\Columns\TextColumn::make('bank.nama_bank'),
+                Tables\Columns\TextColumn::make('bank.accounts.no_rek')->label('Nomor Rekening'),
+                Tables\Columns\TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Pemilik'),
+
                 Tables\Columns\TextColumn::make('user.name'),
             ])
             ->filters([
@@ -136,14 +143,14 @@ class PengajuanDanasRelationManager extends RelationManager
         ];
     }
 
-    protected function canCreate(): bool
-    {
-        return in_array(auth()->user()?->role, ['operasional']);
-    }
+    // protected function canCreate(): bool
+    // {
+    //     return in_array(auth()->user()?->role, ['operasional']);
+    // }
 
-    protected function canAttach(): bool
-    {
-        // return $this->can('attach');
-        return in_array(auth()->user()?->role, ['operasional']);
-    }
+    // protected function canAttach(): bool
+    // {
+    //     // return $this->can('attach');
+    //     return in_array(auth()->user()?->role, ['operasional']);
+    // }
 }

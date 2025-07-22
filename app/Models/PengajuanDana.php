@@ -56,4 +56,13 @@ class PengajuanDana extends Model
             ->logOnlyDirty()
             ->useLogName('Pengajuan');
     }
+
+    public function updateTotalHarga()
+    {
+        $this->nilai = $this->detailPengajuans->sum(function ($detail) {
+            return $detail->qty * $detail->harga_satuan;
+        });
+
+        $this->save();
+    }
 }

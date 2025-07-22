@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('judul_pengajuan');
             $table->text('deskripsi_pengajuan')->nullable();
             $table->string('bank_id')->constrained('banks');
+            $table->decimal('nilai', 15, 2);
             // $table->string('nomor_rekening')->nullable();
             // $table->string('nama_pemilik_rekening')->nullable();
             $table->enum('dalam_review', ['dirops', 'keuangan', 'direktur', 'approved'])->default('dirops');
