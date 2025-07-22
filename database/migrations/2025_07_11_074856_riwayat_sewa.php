@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->primary(['daftar_alat_id', 'sewa_id']);
             $table->dateTime('tgl_keluar')->nullable();
             $table->dateTime('tgl_masuk')->nullable();
+            $table->string('kondisi_kembali')->default('Baik');
             $table->decimal('harga_perhari', 15, 2)->nullable();
             $table->decimal('biaya_perkiraan_alat', 15, 2)->nullable();
             $table->decimal('biaya_sewa_alat', 15, 2)->nullable();

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Support\RawJs;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -31,9 +32,15 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             ->schema([
                 Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Alat Keluar')->disabled()->dehydrated(),
                 Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->live()->required(),//->maxDate(now()),
-                Forms\Components\TextInput::make('harga_perhari')->numeric()->prefix('Rp')->required(),
+                Forms\Components\TextInput::make('harga_perhari')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->required()
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(',')
+                    ->maxlength(20),
                 Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->placeholder('Masukkan diskon berapa hari jika ada')->postfix(' Hari')->minValue('0'),
-                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live(),
+                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated(),
                 Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
                 Forms\Components\Textarea::make('keterangan')->label('Keterangan')->columnSpanFull(),
                 FileUpload::make('foto_bukti')->label('Foto Bukti')->image()->directory('bukti-pengembalian')->required()->columnSpanFull(),

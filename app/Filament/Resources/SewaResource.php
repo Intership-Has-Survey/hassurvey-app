@@ -4,7 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SewaResource\Pages;
 use App\Filament\Resources\SewaResource\RelationManagers;
+use Filament\Notifications\Notification; // Tambahkan ini di atas
+use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
+use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
 use App\Models\Corporate;
+use Filament\Support\Exceptions\Halt;
+use Filament\Support\RawJs;
 use App\Models\Perorangan;
 use App\Models\Sewa;
 use App\Models\TrefRegion;
@@ -191,6 +196,9 @@ class SewaResource extends Resource
                         Forms\Components\TextInput::make('harga_fix')
                             ->label('Harga Final (Harga Setelah Negosiasi)')
                             ->hiddenOn('create')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->maxlength(20)
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
                             ->numeric()
                             ->prefix('Rp')
@@ -255,7 +263,23 @@ class SewaResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        // Tambahkan hook 'before' untuk validasi sebelum hapus
+                        ->before(function (Collection $records, BulkAction $action) {
+                            foreach ($records as $record) {
+                                // Cek jika salah satu record sudah punya riwayat alat
+                                if ($record->daftarAlat()->exists()) {
+                                    // Kirim notifikasi error
+                                    Notification::make()
+                                        ->title('Gagal Menghapus')
+                                        ->body("Sewa '{$record->judul}' tidak dapat dihapus karena sudah memiliki riwayat penyewaan alat.")
+                                        ->danger()
+                                        ->send();
+                                    // Hentikan aksi hapus
+                                    $action->halt();
+                                }
+                            }
+                        }),
                 ]),
             ]);
     }
@@ -274,7 +298,6 @@ class SewaResource extends Resource
             'index' => Pages\ListSewa::route('/'),
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
-            'view' => Pages\ViewSewa::route('/{record}'),
         ];
     }
 }
