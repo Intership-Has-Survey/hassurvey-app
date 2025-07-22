@@ -159,6 +159,7 @@ class DaftarAlatResource extends Resource
             'index' => Pages\ListDaftarAlats::route('/'),
             'create' => Pages\CreateDaftarAlat::route('/create'),
             'edit' => Pages\EditDaftarAlat::route('/{record}/edit'),
+            'view' => Pages\ViewDaftarAlat::route('/{record}'),
         ];
     }
 }

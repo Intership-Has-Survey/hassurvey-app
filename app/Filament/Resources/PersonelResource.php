@@ -208,7 +208,7 @@ class PersonelResource extends Resource
                     ->label('Jabatan')
                     ->searchable()
                     ->options(function () {
-                        return \App\Models\Personel::query()
+                        return Personel::query()
                             ->select('jabatan')
                             ->distinct()
                             ->pluck('jabatan', 'jabatan');
