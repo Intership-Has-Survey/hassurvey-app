@@ -34,7 +34,7 @@ return new class extends Migration {
 
             // Relasi
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
-            $table->foreignUuid('perorangan_id')->constrained('perorangan');
+            // $table->foreignUuid('perorangan_id')->constrained('perorangan');
             $table->foreignUuid('sewa_id')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

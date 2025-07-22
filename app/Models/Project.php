@@ -41,14 +41,14 @@ class Project extends Model
         return $this->belongsTo(Sales::class);
     }
 
-    public function perorangan(): BelongsToMany
-    {
-        return $this->belongsToMany(Perorangan::class, 'project_perorangan');
-    }
-
     public function corporate(): BelongsTo
     {
         return $this->belongsTo(Corporate::class);
+    }
+
+    public function perorangan(): BelongsToMany
+    {
+        return $this->belongsToMany(Perorangan::class, 'project_perorangan');
     }
 
     public function statusPekerjaan()

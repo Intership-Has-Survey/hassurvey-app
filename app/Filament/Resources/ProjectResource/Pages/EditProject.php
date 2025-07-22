@@ -41,13 +41,19 @@ class EditProject extends EditRecord
 
     protected function afterSave(): void
     {
+        $this->syncPicsToCorporate();
+    }
+
+    protected function syncPicsToCorporate(): void
+    {
         $project = $this->getRecord();
         $data = $this->form->getState();
 
         if (($data['customer_flow_type'] ?? null) === 'corporate' && !empty($data['corporate_id'])) {
             $corporate = Corporate::find($data['corporate_id']);
-            if ($corporate && !empty($data['perorangan'])) {
-                $picIds = collect($data['perorangan'])->pluck('perorangan_id')->filter();
+            $picIds = $project->perorangans()->pluck('id');
+
+            if ($corporate && $picIds->isNotEmpty()) {
                 $corporate->perorangans()->syncWithoutDetaching($picIds);
             }
         }

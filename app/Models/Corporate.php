@@ -35,11 +35,8 @@ class Corporate extends Model
         return $this->morphMany(Sewa::class, 'customer');
     }
 
-    public function projects(): MorphMany
+    public function projects(): BelongsToMany
     {
-        // A Perorangan can have many projects.
-        // The 'customer' parameter refers to the 'customer_type' and 'customer_id' columns
-        // on the 'projects' table.
-        return $this->morphMany(Project::class, 'customer');
+        return $this->belongsToMany(Project::class, 'project_perorangan');
     }
 }

@@ -28,21 +28,20 @@ class CreateProject extends CreateRecord
     }
     protected function afterCreate(): void
     {
-        // 1. Ambil data project yang baru saja dibuat
+        $this->syncPicsToCorporate();
+    }
+
+    protected function syncPicsToCorporate(): void
+    {
         $project = $this->getRecord();
-        // 2. Ambil semua data dari form
         $data = $this->form->getState();
 
-        // 3. Cek apakah ini adalah alur kerja 'corporate' dan perusahaan sudah dipilih
         if (($data['customer_flow_type'] ?? null) === 'corporate' && !empty($data['corporate_id'])) {
             $corporate = Corporate::find($data['corporate_id']);
+            $picIds = $project->perorangan()->pluck('id');
 
-            if ($corporate && !empty($data['perorangan'])) {
-                // 4. Ambil semua ID PIC dari repeater
-                $picIds = collect($data['perorangan'])->pluck('perorangan_id')->filter();
-
-                // 5. Hubungkan semua PIC tersebut ke Corporate
-                $corporate->perorangans()->syncWithoutDetaching($picIds);
+            if ($corporate && $picIds->isNotEmpty()) {
+                $corporate->perorangan()->syncWithoutDetaching($picIds);
             }
         }
     }

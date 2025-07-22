@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+namespace App\Filament\Resources;
+
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Sales;
@@ -19,240 +21,106 @@ use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
+use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\ProjectResource\Pages\ViewProject;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
+use App\Filament\Resources\ProjectResource\Pages\CreateProject;
+use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-map';
     protected static ?string $navigationLabel = 'Layanan Pemetaan';
     protected static ?string $navigationGroup = 'Layanan';
-    protected static ?string $title = 'Proyek Pemetaan';
-    protected static ?string $modelLabel = 'Project Pemetaan';
-    protected static ?string $pluralModelLabel = 'Project Pemetaan';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Section::make('Informasi Proyek')
-                ->description('Informasi dasar mengenai proyek pemetaan')
-                ->icon('heroicon-o-information-circle')
-                ->disabled(fn(?Model $record) => $record?->status_pekerjaan === 'Selesai')
+            Forms\Components\Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')
-                        ->label('Nama Proyek')
-                        ->placeholder('Masukkan nama proyek')
-                        ->required()
-                        ->maxLength(255)
-                        ->columnSpanFull(),
-
-                    Select::make('kategori_id')
-                        ->relationship('kategori', 'nama')
-                        ->placeholder('Pilih kategori proyek')
-                        ->searchable()
-                        ->preload()
-                        ->label('Kategori Proyek')
-                        ->required()
-                        ->createOptionForm([
-                            TextInput::make('nama')
-                                ->label('Nama Kategori')
-                                ->required()
-                                ->maxLength(50),
-                            TextInput::make('keterangan')
-                                ->label('Keterangan')
-                                ->required()
-                                ->maxLength(300),
-                            Hidden::make('user_id')
-                                ->default(auth()->id()),
-                        ]),
-
-                    Select::make('sales_id')
-                        ->label('Sales')
-                        ->options(function () {
-                            return Sales::query()
-                                ->select('id', 'nama', 'nik')
-                                ->get()
-                                ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                        })
-                        ->placeholder('Pilih sales')
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->createOptionForm(self::getSalesForm()),
-
-                    DatePicker::make('tanggal_informasi_masuk')
-                        ->required()
-                        ->label('Tanggal Informasi Masuk')
-                        ->placeholder('Pilih tanggal')
-                        ->native(false)
-                        ->default(now()),
-
-                    Select::make('sumber')
-                        ->options([
-                            'Online' => 'Online',
-                            'Offline' => 'Offline',
-                        ])
-                        ->label('Sumber Pemesanan')
-                        ->placeholder('Pilih sumber')
-                        ->required()
-                        ->native(false),
+                    Forms\Components\TextInput::make('nama_project')->required()->columnSpanFull(),
+                    Forms\Components\Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required()->createOptionForm(self::getKategoriForm()),
+                    Forms\Components\Select::make('sales_id')->relationship('sales', 'nama')->searchable()->preload()->required()->createOptionForm(self::getSalesForm()),
+                    Forms\Components\DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
+                    Forms\Components\Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])->columns(2),
 
-            Section::make('Lokasi Proyek')
-                ->description('Alamat lengkap lokasi pelaksanaan proyek')
-                ->icon('heroicon-o-map-pin')
-                ->disabled(fn(?Model $record) => $record?->status_pekerjaan === 'Selesai')
-                ->schema(self::getAddressFields())
-                ->columns(2),
-
-            Section::make('Informasi Customer')
-                ->description('Data customer dan person in charge')
-                ->icon('heroicon-o-users')
-                ->disabled(fn(?Model $record) => $record?->status_pekerjaan === 'Selesai')
+            Forms\Components\Section::make('Informasi Customer')
                 ->schema([
                     Forms\Components\Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                         ->live()->required()->dehydrated(false)
-                        ->columnSpanFull(),
+                        ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
-                    Forms\Components\Grid::make(2)
+                    Forms\Components\Select::make('corporate_id')
+                        ->relationship('corporate', 'nama')
+                        ->label('Pilih Perusahaan')
+                        ->live()
+                        ->createOptionForm([ /* ... */])
+                        ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+                    Forms\Components\Repeater::make('perorangan')
+                        ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Customer')
+                        ->relationship()
                         ->schema([
-                            Forms\Components\Select::make('corporate_id')
-                                ->relationship('corporate', 'nama')
-                                ->label('Pilih Perusahaan')
-                                ->live()
-                                ->createOptionForm([ /* ... */])
-                                ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                                ->columnSpanFull(),
-
                             Forms\Components\Select::make('perorangan_id')
-                                ->label('Pilih Customer')
-                                ->options(Perorangan::pluck('nama', 'id'))
-                                ->searchable()
-                                ->required()
-                                ->createOptionForm(self::getPeroranganForm())
+                                ->label(false) // Label disembunyikan untuk tampilan simple
+                                ->options(function (Get $get, $state): array {
+                                    $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
+                                    $selectedPicIds = array_diff($selectedPicIds, [$state]);
+                                    return Perorangan::whereNotIn('id', $selectedPicIds)->pluck('nama', 'id')->all();
+                                })
+                                ->searchable()->required()
+                                ->createOptionForm([ /* ... */])
                                 ->createOptionUsing(function (array $data): string {
                                     $data['user_id'] = auth()->id();
-                                    $perorangan = Perorangan::create($data);
-                                    return $perorangan->id;
-                                })
-                                ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                                ->columnSpanFull(),
-
-                            Forms\Components\Repeater::make('perorangan')
-                                ->label('PIC (Person in Charge)')
-                                ->relationship()
-                                ->schema([
-                                    Forms\Components\Select::make('perorangan_id')
-                                        ->label('Pilih PIC')
-                                        ->options(function (Get $get, $state): array {
-                                            $selectedPicIds = collect($get('../../perorangan'))
-                                                ->pluck('perorangan_id')
-                                                ->filter()
-                                                ->all();
-
-                                            $selectedPicIds = array_diff($selectedPicIds, [$state]);
-
-                                            return Perorangan::whereNotIn('id', $selectedPicIds)
-                                                ->pluck('nama', 'id')
-                                                ->all();
-                                        })
-                                        ->searchable()
-                                        ->required()
-                                        ->createOptionForm(self::getPeroranganForm())
-                                        ->createOptionUsing(function (array $data, Get $get): string {
-                                            $data['user_id'] = auth()->id();
-                                            $perorangan = Perorangan::create($data);
-
-                                            $corporateId = $get('../../corporate_id');
-                                            if ($corporateId) {
-                                                $corporate = Corporate::find($corporateId);
-                                                if ($corporate) {
-                                                    $corporate->perorangan()->attach($perorangan->id);
-                                                }
-                                            }
-                                            return $perorangan->id;
-                                        }),
-                                ])
-                                ->minItems(1)
-                                ->addable()
-                                ->grid(2)
-                                ->addActionLabel('Tambah PIC')
-                                ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                                ->columnSpanFull()
-                                ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                                    // 1. Ekstrak semua ID perorangan dari state repeater
-                                    $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                                    // 2. Lakukan sinkronisasi ke tabel pivot
-                                    $record->perorangan()->sync($ids);
-                                })
-                                ->afterStateUpdated(function (Get $get, $state) {
-                                    $flowType = $get('../../customer_flow_type');
-                                    $corporateId = $get('../../corporate_id');
-                                    if ($flowType === 'corporate' && $corporateId && $state) {
-                                        $corporate = Corporate::find($corporateId);
-                                        if ($corporate) {
-                                            // Menghubungkan PIC yang dipilih ke Corporate
-                                            $corporate->perorangan()->syncWithoutDetaching($state);
-                                        }
-                                    }
+                                    return Perorangan::create($data)->id;
                                 }),
-
-                        ]),
+                        ])
+                        ->minItems(1)
+                        ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
+                        ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
+                        ->addActionLabel('Tambah PIC')
+                        // ->simple()
+                        ->itemLabel(fn(array $state): ?string => Perorangan::find($state['perorangan_id'])?->nama)
+                        ->visible(fn(Get $get) => filled($get('customer_flow_type')))
+                        ->saveRelationshipsUsing(function (Model $record, array $state): void {
+                            $ids = array_map(fn($item) => $item['perorangan_id'], $state);
+                            $record->perorangan()->sync($ids);
+                        }),
                 ]),
 
-            Section::make('Keuangan & Status')
-                ->description('Nilai proyek dan status penanganan')
-                ->icon('heroicon-o-currency-dollar')
-                ->disabled(fn(?Model $record) => $record?->status_pekerjaan === 'Selesai')
-                ->schema([
-                    TextInput::make('nilai_project')
-                        ->label('Nilai Proyek')
-                        ->mask(RawJs::make('$money($input)'))
-                        ->stripCharacters(',')
-                        ->numeric()
-                        ->prefix('Rp')
-                        ->placeholder('0')
-                        ->required()
-                        ->disabled(
-                            fn(?Model $record, Get $get) =>
-                            $record?->status === 'Closing' || $get('status') === 'Closing'
-                        )
-                        ->dehydrated(true)
-                        ->helperText('Nilai akan terkunci saat status menjadi Closing'),
+            // ... (Section Keuangan & Status)
 
-                    Select::make('status')
-                        ->label('Status Proyek')
-                        ->options([
-                            'Prospect' => 'Prospect',
-                            'Follow up 1' => 'Follow up 1',
-                            'Follow up 2' => 'Follow up 2',
-                            'Follow up 3' => 'Follow up 3',
-                            'Closing' => 'Closing'
-                        ])
-                        ->required()
-                        ->native(false)
-                        ->live()
-                        ->helperText('Status menentukan tahapan penanganan proyek'),
+            Forms\Components\Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2),
+
+            Forms\Components\Section::make('Keuangan & Status')
+                ->schema([
+                    Forms\Components\TextInput::make('nilai_project')->numeric()->prefix('Rp')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    Forms\Components\Select::make('status')->label('Status Prospek')->options(['Prospect' => 'Prospect', 'Follow up' => 'Follow up', 'Closing' => 'Closing'])->required()->native(false),
                 ])->columns(2),
 
-            Hidden::make('user_id')
-                ->default(auth()->id()),
+            Forms\Components\Hidden::make('user_id')->default(auth()->id()),
         ]);
     }
 
@@ -260,95 +128,23 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_project')
-                    ->label('Nama Proyek')
-                    ->sortable()
-                    ->searchable()
-                    ->weight('medium')
-                    ->wrap(),
-
-                TextColumn::make('kategori.nama')
-                    ->label('Kategori')
-                    ->sortable()
-                    ->searchable()
-                    ->badge()
-                    ->color('info'),
-
-                TextColumn::make('customer_display')
-                    ->label('Customer')
-                    ->state(function (Project $record): string {
-                        if ($record->corporate) {
-                            return $record->corporate->nama;
-                        }
-                        $firstPeorangan = $record->perorangan->first();
-                        return $firstPeorangan ? $firstPeorangan->nama : '-';
-                    })
+                Tables\Columns\TextColumn::make('nama_project')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('kategori.nama')->sortable(),
+                Tables\Columns\TextColumn::make('customer.nama')
+                    ->label('Klien/Perusahaan')
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query
-                            ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
-                            ->orWhereHas('perorangan', fn($q) => $q->where('nama', 'like', "%{$search}%"));
-                    })
-                    ->wrap(),
-
-                TextColumn::make('sales.nama')
-                    ->label('Sales')
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(),
-
-                TextColumn::make('nilai_project')
-                    ->label('Nilai')
-                    ->money('IDR')
-                    ->sortable()
-                    ->alignEnd(),
-
-                TextColumn::make('status')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Prospect' => 'gray',
-                        'Follow up 1' => 'warning',
-                        'Follow up 2' => 'warning',
-                        'Follow up 3' => 'danger',
-                        'Closing' => 'success',
-                        default => 'gray',
+                        return $query->whereHasMorph('customer', [Perorangan::class, Corporate::class], fn(Builder $q) => $q->where('nama', 'like', "%{$search}%"));
                     }),
-
-                TextColumn::make('status_pembayaran')
-                    ->label('Pembayaran')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Lunas' => 'success',
-                        'Belum Lunas' => 'danger',
-                        'Sebagian' => 'warning',
-                        default => 'gray',
-                    })
-                    ->toggleable(),
-
-                TextColumn::make('status_pekerjaan')
-                    ->label('Pekerjaan')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Selesai' => 'success',
-                        'Dalam Progres' => 'warning',
-                        'Belum Dimulai' => 'gray',
-                        default => 'gray',
-                    })
-                    ->toggleable(),
-
-                TextColumn::make('tanggal_informasi_masuk')
-                    ->label('Tgl. Masuk')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('sumber')
-                    ->badge()
-                    ->color('info')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('status')->sortable()->badge(),
+                Tables\Columns\TextColumn::make('status_pembayaran')->badge()->color(fn(string $state): string => match ($state) {
+                    'Lunas' => 'success',
+                    'Belum Lunas' => 'danger',
+                    default => 'warning'
+                }),
+                Tables\Columns\TextColumn::make('status_pekerjaan')->badge()->color(fn(string $state): string => $state === 'Selesai' ? 'success' : 'warning'),
             ])
             ->filters([
-                SelectFilter::make('status')
+                Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'Prospect' => 'Prospect',
                         'Follow up 1' => 'Follow up 1',
@@ -356,11 +152,11 @@ class ProjectResource extends Resource
                         'Follow up 3' => 'Follow up 3',
                         'Closing' => 'Closing'
                     ]),
-                SelectFilter::make('kategori')
+                Tables\Filters\SelectFilter::make('kategori')
                     ->relationship('kategori', 'nama')
                     ->searchable()
                     ->preload(),
-                SelectFilter::make('status_pembayaran')
+                Tables\Filters\SelectFilter::make('status_pembayaran')
                     ->options([
                         'Lunas' => 'Lunas',
                         'Belum Lunas' => 'Belum Lunas',
@@ -389,6 +185,7 @@ class ProjectResource extends Resource
             RelationManagers\DaftarAlatProjectRelationManager::class,
             RelationManagers\StatusPekerjaanRelationManager::class,
             RelationManagers\PengajuanDanasRelationManager::class,
+
         ];
     }
 
@@ -617,5 +414,25 @@ class ProjectResource extends Resource
         }
 
         return $perorangan->id;
+    }
+
+    private static function getKategoriForm(): array
+    {
+        return [
+            Section::make('Informasi Kategori')
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Kategori')
+                        ->required()
+                        ->maxLength(100),
+                    Textarea::make('deskripsi')
+                        ->label('Deskripsi')
+                        ->maxLength(500)
+                        ->nullable(),
+                ])->columns(2),
+
+            Hidden::make('user_id')
+                ->default(auth()->id()),
+        ];
     }
 }

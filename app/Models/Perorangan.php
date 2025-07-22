@@ -37,7 +37,7 @@ class Perorangan extends Model
      */
     public function corporates(): BelongsToMany
     {
-        return $this->belongsToMany(Corporate::class, 'corporate_perorangan');
+        return $this->belongsToMany(Corporate::class, 'perorangan_corporate');
     }
 
     /**
@@ -53,11 +53,8 @@ class Perorangan extends Model
      *
      * SOLUSI: Mengubah relasi menjadi morphMany agar sesuai dengan struktur polimorfik.
      */
-    public function projects(): MorphMany
+    public function projects(): BelongsToMany
     {
-        // A Perorangan can have many projects.
-        // The 'customer' parameter refers to the 'customer_type' and 'customer_id' columns
-        // on the 'projects' table.
-        return $this->morphMany(Project::class, 'customer');
+        return $this->belongsToMany(Project::class, 'project_perorangan');
     }
 }
