@@ -28,7 +28,9 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Forms\Components\Toggle;
 
 class SewaResource extends Resource
 {
@@ -43,7 +45,6 @@ class SewaResource extends Resource
 
     public static function form(Form $form): Form
     {
-        // -- Logika Kalkulasi Durasi Rentang ---
         $calculateRentang = function (Set $set, Get $get) {
             $startDate = $get('tgl_mulai');
             $endDate = $get('tgl_selesai');
@@ -85,7 +86,6 @@ class SewaResource extends Resource
                 $set('rentang', null);
             }
         };
-        //-- Akhir Logika Kalkulasi Durasi Rentang ---
 
         return $form
             ->schema([
@@ -149,14 +149,12 @@ class SewaResource extends Resource
                             ->label('Harga Total Perkiraan (Total Nilai Kontrak)')
                             ->visibleOn('edit')
                             ->content(function (Get $get, ?Sewa $record): string|HtmlString {
-                                // Ambil tanggal selesai dari form state agar reaktif
                                 $tglSelesaiKontrak = $get('tgl_selesai');
 
                                 if ($record && $tglSelesaiKontrak) {
                                     $tglSelesaiKontrak = Carbon::parse($tglSelesaiKontrak);
                                     $totalPerkiraan = 0;
 
-                                    // Iterasi dan hitung ulang berdasarkan tanggal dari form
                                     foreach ($record->daftarAlat as $alat) {
                                         $pivotData = $alat->pivot;
                                         if ($pivotData && $pivotData->tgl_keluar && $pivotData->harga_perhari) {
@@ -195,9 +193,16 @@ class SewaResource extends Resource
                             ->visibleOn('edit')
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
                             ->numeric()
-                            ->prefix('Rp'),
+                            ->prefix('Rp')
+                            ->live(),
+
+                        Toggle::make('tutup_sewa')
+                            ->label('Tutup dan Kunci Transaksi Sewa')
+                            ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
+                            ->visible(fn(Get $get): bool => filled($get('harga_fix')))
                     ])->columns(1),
-            ]);
+            ])
+            ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
     }
 
     public static function table(Table $table): Table
@@ -216,15 +221,33 @@ class SewaResource extends Resource
                 Tables\Columns\TextColumn::make('tgl_selesai')
                     ->date('d-m-Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('lokasi')
-                    ->sortable(),
+
+                BadgeColumn::make('status')
+                    ->label('Status Sewa')
+                    ->color(fn(string $state): string => match ($state) {
+                        'Selesai' => 'success',
+                        'Konfirmasi Selesai' => 'info',
+                        'Jatuh Tempo' => 'danger',
+                        'Belum Selesai' => 'warning',
+                        default => 'secondary',
+                    }),
             ])
             ->filters([
                 TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn(Sewa $record): bool => !$record->is_locked),
+
+                Tables\Actions\Action::make('selesaikan_sewa')
+                    ->label('Selesaikan Sewa')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Selesaikan dan Kunci Transaksi?')
+                    ->modalDescription('Aksi ini tidak dapat dibatalkan. Pastikan semua proses sudah final.')
+                    ->action(fn(Sewa $record) => $record->update(['is_locked' => true]))
+                    ->visible(fn(Sewa $record): bool => $record->status === 'Konfirmasi Selesai' || $record->status === 'Jatuh Tempo'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
