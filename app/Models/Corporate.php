@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use \Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +27,7 @@ class Corporate extends Model
 
     public function perorangan(): BelongsToMany
     {
-        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate');
+        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')->withPivot('user_id');
     }
 
     public function sewa(): MorphMany
@@ -35,8 +36,8 @@ class Corporate extends Model
         return $this->morphMany(Sewa::class, 'customer');
     }
 
-    public function projects(): BelongsToMany
+    public function projects(): HasMany
     {
-        return $this->belongsToMany(Project::class, 'project_perorangan');
+        return $this->hasMany(Project::class);
     }
 }

@@ -2,14 +2,15 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
-use Filament\Actions;
+use App\Filament\Resources\ProjectResource;
 use App\Models\Corporate;
 use Filament\Resources\Pages\CreateRecord;
-use App\Filament\Resources\ProjectResource;
 
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
+
+    public ?string $customerFlowType = null;
 
     protected function getRedirectUrl(): string
     {
@@ -18,30 +19,25 @@ class CreateProject extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (filled($data['corporate_id'])) {
-            $data['customer_flow_type'] = 'corporate';
-        } else {
-            $data['customer_flow_type'] = 'perorangan';
+        $this->customerFlowType = $data['customer_flow_type'] ?? null;
+
+        if ($this->customerFlowType === 'perorangan') {
+            $data['corporate_id'] = null;
         }
+
+        unset($data['customer_flow_type']);
 
         return $data;
     }
+
     protected function afterCreate(): void
     {
-        $this->syncPicsToCorporate();
-    }
-
-    protected function syncPicsToCorporate(): void
-    {
-        $project = $this->getRecord();
-        $data = $this->form->getState();
-
-        if (($data['customer_flow_type'] ?? null) === 'corporate' && !empty($data['corporate_id'])) {
-            $corporate = Corporate::find($data['corporate_id']);
-            $picIds = $project->perorangan()->pluck('id');
-
-            if ($corporate && $picIds->isNotEmpty()) {
-                $corporate->perorangan()->syncWithoutDetaching($picIds);
+        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
+            $corporate = $this->record->corporate;
+            if ($corporate) {
+                $corporate->perorangan()->syncWithoutDetaching([
+                    $this->record->perorangan_id => ['user_id' => auth()->id()]
+                ]);
             }
         }
     }

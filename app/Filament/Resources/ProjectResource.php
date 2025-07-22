@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources;
 
-namespace App\Filament\Resources;
-
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Sales;
@@ -22,27 +20,11 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
-use App\Filament\Resources\ProjectResource\Pages\EditProject;
-use App\Filament\Resources\ProjectResource\Pages\ViewProject;
-use App\Filament\Resources\ProjectResource\Pages\ListProjects;
-use App\Filament\Resources\ProjectResource\Pages\CreateProject;
-use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
-use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
-use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
-use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
-use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
 
 class ProjectResource extends Resource
 {
@@ -58,8 +40,8 @@ class ProjectResource extends Resource
             Forms\Components\Section::make('Informasi Proyek')
                 ->schema([
                     Forms\Components\TextInput::make('nama_project')->required()->columnSpanFull(),
-                    Forms\Components\Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required()->createOptionForm(self::getKategoriForm()),
-                    Forms\Components\Select::make('sales_id')->relationship('sales', 'nama')->searchable()->preload()->required()->createOptionForm(self::getSalesForm()),
+                    Forms\Components\Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required(),
+                    Forms\Components\Select::make('sales_id')->relationship('sales', 'nama')->searchable()->preload()->required(),
                     Forms\Components\DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
                     Forms\Components\Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])->columns(2),
@@ -76,33 +58,29 @@ class ProjectResource extends Resource
                         ->relationship('corporate', 'nama')
                         ->label('Pilih Perusahaan')
                         ->live()
-                        ->createOptionForm([ /* ... */])
+                        ->createOptionForm(self::getCorporateForm())
                         ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                     Forms\Components\Repeater::make('perorangan')
-                        ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Customer')
+                        ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                         ->relationship()
                         ->schema([
                             Forms\Components\Select::make('perorangan_id')
-                                ->label(false) // Label disembunyikan untuk tampilan simple
+                                ->label(false)
                                 ->options(function (Get $get, $state): array {
                                     $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
                                     $selectedPicIds = array_diff($selectedPicIds, [$state]);
                                     return Perorangan::whereNotIn('id', $selectedPicIds)->pluck('nama', 'id')->all();
                                 })
                                 ->searchable()->required()
-                                ->createOptionForm([ /* ... */])
-                                ->createOptionUsing(function (array $data): string {
-                                    $data['user_id'] = auth()->id();
-                                    return Perorangan::create($data)->id;
-                                }),
+                                ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
+                                ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                         ])
                         ->minItems(1)
                         ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                         ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                         ->addActionLabel('Tambah PIC')
                         // ->simple()
-                        ->itemLabel(fn(array $state): ?string => Perorangan::find($state['perorangan_id'])?->nama)
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $ids = array_map(fn($item) => $item['perorangan_id'], $state);
@@ -110,16 +88,8 @@ class ProjectResource extends Resource
                         }),
                 ]),
 
-            // ... (Section Keuangan & Status)
-
             Forms\Components\Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2),
-
-            Forms\Components\Section::make('Keuangan & Status')
-                ->schema([
-                    Forms\Components\TextInput::make('nilai_project')->numeric()->prefix('Rp')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                    Forms\Components\Select::make('status')->label('Status Prospek')->options(['Prospect' => 'Prospect', 'Follow up' => 'Follow up', 'Closing' => 'Closing'])->required()->native(false),
-                ])->columns(2),
-
+            Forms\Components\Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2),
             Forms\Components\Hidden::make('user_id')->default(auth()->id()),
         ]);
     }
@@ -128,21 +98,33 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_project')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('kategori.nama')->sortable(),
-                Tables\Columns\TextColumn::make('customer.nama')
-                    ->label('Klien/Perusahaan')
+                Tables\Columns\TextColumn::make('nama_project')->sortable()->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('customer_display')
+                    ->label('Klien Utama')
+                    ->state(function (Project $record): string {
+                        if ($record->corporate) {
+                            return $record->corporate->nama;
+                        }
+                        return $record->perorangan->first()?->nama ?? 'N/A';
+                    })
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->whereHasMorph('customer', [Perorangan::class, Corporate::class], fn(Builder $q) => $q->where('nama', 'like', "%{$search}%"));
+                        return $query
+                            ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
+                            ->orWhereHas('perorangan', fn($q) => $q->where('nama', 'like', "%{$search}%"));
                     }),
+                Tables\Columns\TextColumn::make('perorangan.nama')
+                    ->label('PIC')
+                    ->listWithLineBreaks()
+                    ->limitList(2),
                 Tables\Columns\TextColumn::make('status')->sortable()->badge(),
-                Tables\Columns\TextColumn::make('status_pembayaran')->badge()->color(fn(string $state): string => match ($state) {
+                Tables\Columns\TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()->color(fn(string $state): string => match ($state) {
                     'Lunas' => 'success',
                     'Belum Lunas' => 'danger',
                     default => 'warning'
                 }),
-                Tables\Columns\TextColumn::make('status_pekerjaan')->badge()->color(fn(string $state): string => $state === 'Selesai' ? 'success' : 'warning'),
+                Tables\Columns\TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()->color(fn(string $state): string => $state === 'Selesai' ? 'success' : 'warning'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -273,7 +255,7 @@ class ProjectResource extends Resource
                 ->live()
                 ->searchable(),
 
-            Textarea::make('detail_alamat')
+            Forms\Components\Textarea::make('detail_alamat')
                 ->required()
                 ->placeholder('Masukkan detail alamat lengkap')
                 ->label('Detail Alamat')
@@ -282,34 +264,68 @@ class ProjectResource extends Resource
         ];
     }
 
+    private static function getKeuanganFields(): array
+    {
+        return [
+            Forms\Components\TextInput::make('nilai_project')
+                ->label('Anggaran Proyek')
+                ->numeric()
+                ->required()
+                ->placeholder('Masukkan anggaran proyek')
+                ->prefix('Rp ')
+                ->mask(RawJs::make('$money($input)'))
+                ->stripCharacters(',')
+                ->maxlength(20),
+            Select::make('status')
+                ->label('Status Proyek')
+                ->options([
+                    'Prospect' => 'Prospect',
+                    'Follow up 1' => 'Follow up 1',
+                    'Follow up 2' => 'Follow up 2',
+                    'Follow up 3' => 'Follow up 3',
+                    'Closing' => 'Closing',
+                ])
+                ->required()
+                ->native(false),
+            // Hidden::make('status_pembayaran')
+            //     ->label('Status Pembayaran')
+            //     ->options([
+            //         'Lunas' => 'Lunas',
+            //         'Belum Lunas' => 'Belum Lunas',
+            //     ])
+            //     // ->required()
+            //     ->native(false),
+        ];
+    }
+
     private static function getSalesForm(): array
     {
         return [
-            Section::make('Informasi Sales')
+            Forms\Components\Section::make('Informasi Sales')
                 ->schema([
-                    TextInput::make('nama')
+                    Forms\Components\TextInput::make('nama')
                         ->label('Nama Sales')
                         ->required()
                         ->maxLength(100),
-                    TextInput::make('nik')
+                    Forms\Components\TextInput::make('nik')
                         ->label('NIK')
                         ->required()
                         ->length(16)
                         ->unique(ignoreRecord: true)
                         ->numeric(),
-                    TextInput::make('email')
+                    Forms\Components\TextInput::make('email')
                         ->label('Email')
                         ->required()
                         ->email()
                         ->maxLength(100),
-                    TextInput::make('telepon')
+                    Forms\Components\TextInput::make('telepon')
                         ->label('Telepon')
                         ->required()
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
 
-            Section::make('Alamat Sales')
+            Forms\Components\Section::make('Alamat Sales')
                 ->schema(self::getAddressFields())
                 ->columns(2),
 
@@ -321,20 +337,20 @@ class ProjectResource extends Resource
     private static function getCorporateForm(): array
     {
         return [
-            Section::make('Informasi Perusahaan')
+            Forms\Components\Section::make('Informasi Perusahaan')
                 ->schema([
-                    TextInput::make('nama')
+                    Forms\Components\TextInput::make('nama')
                         ->label('Nama Perusahaan')
                         ->required()
                         ->maxLength(200),
-                    TextInput::make('npwp')
+                    Forms\Components\TextInput::make('npwp')
                         ->label('NPWP')
                         ->maxLength(20),
-                    TextInput::make('email')
+                    Forms\Components\TextInput::make('email')
                         ->label('Email')
                         ->email()
                         ->maxLength(100),
-                    TextInput::make('telepon')
+                    Forms\Components\TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
@@ -348,28 +364,28 @@ class ProjectResource extends Resource
     private static function getPeroranganForm(): array
     {
         return [
-            Section::make('Informasi Personal')
+            Forms\Components\Section::make('Informasi Personal')
                 ->schema([
-                    TextInput::make('nama')
+                    Forms\Components\TextInput::make('nama')
                         ->label('Nama Lengkap')
                         ->required()
                         ->maxLength(100),
-                    TextInput::make('nik')
+                    Forms\Components\TextInput::make('nik')
                         ->label('NIK')
                         ->length(16)
                         ->numeric()
                         ->unique(ignoreRecord: true),
-                    TextInput::make('email')
+                    Forms\Components\TextInput::make('email')
                         ->label('Email')
                         ->email()
                         ->maxLength(100),
-                    TextInput::make('telepon')
+                    Forms\Components\TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
 
-            Section::make('Alamat')
+            Forms\Components\Section::make('Alamat')
                 ->schema(self::getAddressFields())
                 ->columns(2),
 
@@ -419,13 +435,13 @@ class ProjectResource extends Resource
     private static function getKategoriForm(): array
     {
         return [
-            Section::make('Informasi Kategori')
+            Forms\Components\Section::make('Informasi Kategori')
                 ->schema([
-                    TextInput::make('nama')
+                    Forms\Components\TextInput::make('nama')
                         ->label('Nama Kategori')
                         ->required()
                         ->maxLength(100),
-                    Textarea::make('deskripsi')
+                    Forms\Components\Textarea::make('deskripsi')
                         ->label('Deskripsi')
                         ->maxLength(500)
                         ->nullable(),

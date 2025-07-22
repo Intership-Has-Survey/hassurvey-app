@@ -2,14 +2,16 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
-use Filament\Actions;
-use App\Models\Corporate;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\ProjectResource;
+use App\Models\Corporate;
+use Filament\Actions;
+use Filament\Resources\Pages\EditRecord;
 
 class EditProject extends EditRecord
 {
     protected static string $resource = ProjectResource::class;
+
+    public ?string $customerFlowType = null;
 
     protected function getHeaderActions(): array
     {
@@ -17,6 +19,7 @@ class EditProject extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         if (filled($data['corporate_id'])) {
@@ -30,31 +33,25 @@ class EditProject extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (filled($data['corporate_id'])) {
-            $data['customer_flow_type'] = 'corporate';
-        } else {
-            $data['customer_flow_type'] = 'perorangan';
+        $this->customerFlowType = $data['customer_flow_type'] ?? null;
+
+        if ($this->customerFlowType === 'perorangan') {
+            $data['corporate_id'] = null;
         }
+
+        unset($data['customer_flow_type']);
 
         return $data;
     }
 
     protected function afterSave(): void
     {
-        $this->syncPicsToCorporate();
-    }
-
-    protected function syncPicsToCorporate(): void
-    {
-        $project = $this->getRecord();
-        $data = $this->form->getState();
-
-        if (($data['customer_flow_type'] ?? null) === 'corporate' && !empty($data['corporate_id'])) {
-            $corporate = Corporate::find($data['corporate_id']);
-            $picIds = $project->perorangans()->pluck('id');
-
-            if ($corporate && $picIds->isNotEmpty()) {
-                $corporate->perorangans()->syncWithoutDetaching($picIds);
+        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
+            $corporate = $this->record->corporate;
+            if ($corporate) {
+                $corporate->perorangan()->syncWithoutDetaching([
+                    $this->record->perorangan_id => ['user_id' => auth()->id()]
+                ]);
             }
         }
     }

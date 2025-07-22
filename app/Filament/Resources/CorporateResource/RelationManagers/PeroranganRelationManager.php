@@ -3,23 +3,24 @@
 namespace App\Filament\Resources\CorporateResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\DB;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use App\Models\TrefRegion;
+use Filament\Forms\Form;
 use App\Models\Perorangan;
+use App\Models\TrefRegion;
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\AttachAction;
+use Illuminate\Database\Eloquent\Builder;
 
 // Import Action yang dibutuhkan
-use Filament\Tables\Actions\AttachAction;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class PeroranganRelationManager extends RelationManager
 {
@@ -145,22 +146,20 @@ class PeroranganRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-
-                // Mengganti CreateAction menjadi AttachAction
                 AttachAction::make()
                     ->label('Tambahkan/Pilih PIC')
+
                     ->form(fn(AttachAction $action): array => [
-                        // Form untuk memilih PIC yang sudah ada
                         $action->getRecordSelect()
                             ->label('Pilih PIC')
                             ->createOptionForm(fn(Form $form) => $this->form($form))
                             ->createOptionAction(fn(Forms\Components\Actions\Action $action) => $action->label('Buat PIC Baru'))
-                            // FIX: Tambahkan closure ini untuk menangani pembuatan record baru
                             ->createOptionUsing(function (array $data): string {
-                                // Tambahkan user_id secara otomatis
                                 $data['user_id'] = auth()->id();
                                 return Perorangan::create($data)->getKey();
                             }),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
                     ]),
             ])
             ->actions([

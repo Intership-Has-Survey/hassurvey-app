@@ -37,7 +37,7 @@ class Perorangan extends Model
      */
     public function corporates(): BelongsToMany
     {
-        return $this->belongsToMany(Corporate::class, 'perorangan_corporate');
+        return $this->belongsToMany(Corporate::class, 'perorangan_corporate')->withPivot('user_id');
     }
 
     /**
