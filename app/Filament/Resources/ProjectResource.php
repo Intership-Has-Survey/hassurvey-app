@@ -80,11 +80,19 @@ class ProjectResource extends Resource
                         ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                         ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                         ->addActionLabel('Tambah PIC')
-                        // ->simple()
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $ids = array_map(fn($item) => $item['perorangan_id'], $state);
                             $record->perorangan()->sync($ids);
+
+                            if ($record->corporate_id) {
+                                $corporate = $record->corporate;
+                                foreach ($ids as $peroranganId) {
+                                    if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
+                                        $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                                    }
+                                }
+                            }
                         }),
                 ]),
 
@@ -425,7 +433,9 @@ class ProjectResource extends Resource
         if ($flowType === 'corporate' && $corporateId) {
             $corporate = Corporate::find($corporateId);
             if ($corporate) {
-                $corporate->perorangan()->attach($perorangan->id);
+                if (!$corporate->perorangan()->wherePivot('perorangan_id', $perorangan->id)->exists()) {
+                    $corporate->perorangan()->attach($perorangan->id);
+                }
             }
         }
 

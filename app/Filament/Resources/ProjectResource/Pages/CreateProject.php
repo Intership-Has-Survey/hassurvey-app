@@ -32,12 +32,16 @@ class CreateProject extends CreateRecord
 
     protected function afterCreate(): void
     {
-        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
+        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id)) {
             $corporate = $this->record->corporate;
             if ($corporate) {
-                $corporate->perorangan()->syncWithoutDetaching([
-                    $this->record->perorangan_id => ['user_id' => auth()->id()]
-                ]);
+                $peroranganIds = $this->record->perorangan()->pluck('id')->toArray();
+                foreach ($peroranganIds as $peroranganId) {
+                    // Attach perorangan to corporate if not already attached
+                    if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
+                        $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                    }
+                }
             }
         }
     }
