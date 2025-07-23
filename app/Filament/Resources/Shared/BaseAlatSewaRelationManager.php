@@ -3,10 +3,13 @@
 namespace App\Filament\Resources\Shared;
 
 use App\Models\DaftarAlat;
+use App\Models\JenisAlat;
+use App\Models\Merk;
 use App\Models\Sewa;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Support\RawJs;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,9 +32,19 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Alat Keluar')->disabled()->dehydrated(),
-                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->live()->required()->maxDate(now()),
-                Forms\Components\TextInput::make('harga_perhari')->numeric()->prefix('Rp')->required(),
-                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live(),
+                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->live()->required(),
+
+                // --- PERBAIKAN DI SINI ---
+                Forms\Components\TextInput::make('harga_perhari')
+                    ->label('Harga Per Hari')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->required()
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(','),
+
+                Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->placeholder('Masukkan diskon berapa hari jika ada')->postfix(' Hari')->minValue(0),
+                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated(),
                 Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
                 Forms\Components\Textarea::make('keterangan')->label('Keterangan')->columnSpanFull(),
                 FileUpload::make('foto_bukti')->label('Foto Bukti')->image()->directory('bukti-pengembalian')->required()->columnSpanFull(),
@@ -84,19 +97,62 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         $sewa = $this->getSewaRecord();
                         $alreadyAttachedAlatIds = $sewa->daftarAlat()->pluck('daftar_alat.id');
                         return [
-                            Forms\Components\Select::make('jenis_alat_filter')->label('Pilih Jenis Alat')->options(DaftarAlat::pluck('jenis_alat', 'jenis_alat')->unique())->live()->required()->dehydrated(false),
+                            Forms\Components\Select::make('jenis_alat_id_filter')->label('Filter Berdasarkan Jenis Alat')->options(JenisAlat::pluck('nama', 'id'))->live()->dehydrated(false),
                             Forms\Components\Select::make('recordId')->label('Pilih Nomor Seri')->options(function (Get $get) use ($alreadyAttachedAlatIds): array {
-                                $jenisAlat = $get('jenis_alat_filter');
-                                if (!$jenisAlat)
+                                $jenisAlatId = $get('jenis_alat_id_filter');
+                                if (!$jenisAlatId) {
                                     return [];
-                                return DaftarAlat::query()->where('jenis_alat', $jenisAlat)->where('status', true)->where('kondisi', true)->whereNotIn('id', $alreadyAttachedAlatIds)->pluck('nomor_seri', 'id')->all();
-                            })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
-                            Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Keluar')->default(now())->required()->minDate(now()->subDays(3))->maxDate(now())->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
-                            Forms\Components\TextInput::make('harga_perhari')->label('Harga Sewa Per Hari')->numeric()->prefix('Rp')->required()->visible(fn(Get $get) => filled($get('jenis_alat_filter'))),
+                                }
+                                $query = DaftarAlat::query()->where('status', true)->where('kondisi', true)->whereNotIn('id', $alreadyAttachedAlatIds);
+                                if ($jenisAlatId) {
+                                    $query->where('jenis_alat_id', $jenisAlatId);
+                                }
+                                return $query->pluck('nomor_seri', 'id')->all();
+                            })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+
+                            Forms\Components\DatePicker::make('tgl_keluar')
+                                ->label('Tanggal Keluar')
+                                ->default(now())
+                                ->required()
+                                ->minDate(now()->subDays(3))
+                                //->maxDate(now())
+                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+
+                            // --- PERBAIKAN DI SINI JUGA ---
+                            Forms\Components\TextInput::make('harga_perhari')
+                                ->label('Harga Sewa Per Hari')
+                                ->numeric()
+                                ->prefix('Rp')
+                                ->required()
+                                ->mask(RawJs::make('$money($input)'))
+                                ->stripCharacters(',')
+                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
                         ];
                     })
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Lihat Detail')
+                    ->visible(fn(Model $record): bool => !is_null($record->pivot->tgl_masuk))
+                    ->form([
+                        Forms\Components\TextInput::make('nomor_seri')->label('Nomor Seri Alat')->disabled(),
+                        Forms\Components\TextInput::make('tgl_keluar')->label('Tanggal Keluar')->disabled(),
+                        Forms\Components\TextInput::make('tgl_masuk')->label('Tanggal Kembali')->disabled(),
+                        Forms\Components\TextInput::make('kondisi_kembali')->label('Kondisi Saat Kembali')->disabled(),
+                        Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->disabled()->postfix(' Hari'),
+                        Forms\Components\TextInput::make('biaya_sewa_alat')->label('Pendapatan Kotor')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+                        Forms\Components\TextInput::make('pendapataninv')->label('Pendapatan Investor')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+                        Forms\Components\TextInput::make('pendapatanhas')->label('Pendapatan Has Survey')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+                    ]),
                 Tables\Actions\EditAction::make()
                     ->label('Kembalikan')
                     ->visible(fn(Model $record): bool => is_null($record->pivot->tgl_masuk) && !$this->getSewaRecord()->is_locked)
@@ -105,21 +161,84 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             $tglKeluar = Carbon::parse($record->pivot->tgl_keluar);
                             $tglMasuk = Carbon::parse($data['tgl_masuk']);
                             $durasiSewa = $tglKeluar->diffInDays($tglMasuk) + 1;
-                            $biayaSewa = $durasiSewa * $data['harga_perhari'];
+                            $diskon = $data['diskon_hari'] ?? 0;
+                            $hargaPerHari = (float) $data['harga_perhari'];
+
+                            // 1. Hitung Pendapatan Kotor
+                            $pendapatanKotor = ($durasiSewa - $diskon) * $hargaPerHari;
+
+                            // 2. Inisialisasi pendapatan
+                            $pendapatanInvestor = 0;
+                            $pendapatanHasSurvey = $pendapatanKotor;
+
+                            // 3. Lakukan bagi hasil jika ada pemilik dan persentase
+                            if ($record->pemilik && $record->pemilik->persen_bagihasil) {
+                                $persentasePemilik = $record->pemilik->persen_bagihasil / 100;
+                                $pendapatanInvestor = $pendapatanKotor * $persentasePemilik;
+                                $pendapatanHasSurvey = $pendapatanKotor - $pendapatanInvestor;
+                            }
+
+                            // 4. Simpan data ke tabel pivot (riwayat_sewa)
                             $record->pivot->tgl_masuk = $data['tgl_masuk'];
-                            $record->pivot->harga_perhari = $data['harga_perhari'];
-                            $record->pivot->biaya_sewa_alat = $biayaSewa;
+                            $record->pivot->harga_perhari = $hargaPerHari;
+                            $record->pivot->diskon_hari = $diskon;
+                            $record->pivot->biaya_sewa_alat = $pendapatanKotor;
+                            $record->pivot->pendapataninv = $pendapatanInvestor;
+                            $record->pivot->pendapatanhas = $pendapatanHasSurvey;
                             $record->pivot->keterangan = $data['keterangan'];
                             $record->pivot->foto_bukti = $data['foto_bukti'];
+                            $record->pivot->kondisi_kembali = $data['kondisi_kembali'];
                             $record->pivot->needs_replacement = $data['needs_replacement'] ?? false;
                             $record->pivot->save();
-                            $kondisiBaru = ($data['kondisi_kembali'] === 'Bermasalah') ? false : true;
-                            $record->update(['status' => true, 'kondisi' => $kondisiBaru]);
                         }
+                        return $record;
+                    })
+                    ->after(function (Model $record, array $data): void {
+                        if (empty($data['tgl_masuk'])) {
+                            return;
+                        }
+
+                        $alat = DaftarAlat::find($record->id);
+                        if ($alat) {
+                            $isGoodCondition = ($data['kondisi_kembali'] === 'Baik');
+                            $alat->update([
+                                'kondisi' => $isGoodCondition,
+                                'status' => true, // Always set status to 'Tersedia' upon return
+                            ]);
+                        }
+                    }),
+                Tables\Actions\EditAction::make('edit_diskon')
+                    ->label('Edit Diskon')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('warning')
+                    ->visible(fn(Model $record): bool => !is_null($record->pivot->tgl_masuk) && !$this->getSewaRecord()->is_locked)
+                    ->form([
+                        Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->postfix(' Hari')->default(0)->minValue(0)->required(),
+                    ])
+                    ->fillForm(fn(Model $record): array => ['diskon_hari' => $record->pivot->diskon_hari])
+                    ->using(function (Model $record, array $data): Model {
+                        $tglKeluar = Carbon::parse($record->pivot->tgl_keluar);
+                        $tglMasuk = Carbon::parse($record->pivot->tgl_masuk);
+                        $hargaPerHari = $record->pivot->harga_perhari;
+                        $diskonHariBaru = $data['diskon_hari'] ?? 0;
+                        $durasiSewa = $tglKeluar->diffInDays($tglMasuk) + 1;
+
+                        $biayaSewaBaru = ($durasiSewa - $diskonHariBaru) * $hargaPerHari;
+                        $pendapatanKotorBaru = $biayaSewaBaru;
+
+                        $persentasePemilik = $record->pemilik->persen_bagi_hasil / 100;
+                        $pendapatanInvestorBaru = $pendapatanKotorBaru * $persentasePemilik;
+                        $pendapatanHasSurveyBaru = $pendapatanKotorBaru - $pendapatanInvestorBaru;
+
+                        $record->pivot->diskon_hari = $diskonHariBaru;
+                        $record->pivot->biaya_sewa_alat = $pendapatanKotorBaru;
+                        $record->pivot->pendapataninv = $pendapatanInvestorBaru;
+                        $record->pivot->pendapatanhas = $pendapatanHasSurveyBaru;
+                        $record->pivot->save();
                         return $record;
                     }),
                 Tables\Actions\DetachAction::make()
-                    ->label('batalkan')
+                    ->label('Batalkan')
                     ->visible(function (Model $record): bool {
                         if ($this->getSewaRecord()->is_locked || !is_null($record->pivot->tgl_masuk)) {
                             return false;
@@ -135,7 +254,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DetachBulkAction::make(),
                 ])
-                    ->visible(fn(): bool => !$this->getSewaRecord()->is_locked),
+                    ->visible(fn(): bool => !$this->getSewaRecord()->is_locked && $this->getSewaRecord()->canAddTools()),
             ]);
     }
 }

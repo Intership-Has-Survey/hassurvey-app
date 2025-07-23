@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use App\Models\Sewa;
-use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
+use App\Filament\Resources\SewaResource\Pages;
+use App\Filament\Resources\SewaResource\RelationManagers;
+use Filament\Notifications\Notification; // Tambahkan ini di atas
+use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
+use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
 use App\Models\Corporate;
+use Filament\Support\Exceptions\Halt;
+use Filament\Support\RawJs;
 use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
@@ -142,16 +143,15 @@ class SewaResource extends Resource
                             ->label('')
                             ->content('Informasi Harga akan muncul ketika kontrak sudah dibuat dan alat sudah ditambahkan.'),
 
+                        // PERBAIKAN 1: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
                         Forms\Components\Placeholder::make('harga_perkiraan')
                             ->label('Harga Total Perkiraan (Total Nilai Kontrak)')
-                            ->visibleOn('edit')
+                            ->hiddenOn('create')
                             ->content(function (Get $get, ?Sewa $record): string|HtmlString {
                                 $tglSelesaiKontrak = $get('tgl_selesai');
-
                                 if ($record && $tglSelesaiKontrak) {
                                     $tglSelesaiKontrak = Carbon::parse($tglSelesaiKontrak);
                                     $totalPerkiraan = 0;
-
                                     foreach ($record->daftarAlat as $alat) {
                                         $pivotData = $alat->pivot;
                                         if ($pivotData && $pivotData->tgl_keluar && $pivotData->harga_perhari) {
@@ -162,7 +162,6 @@ class SewaResource extends Resource
                                             }
                                         }
                                     }
-
                                     if ($totalPerkiraan > 0) {
                                         return 'Rp ' . number_format($totalPerkiraan, 0, ',', '.');
                                     }
@@ -170,9 +169,10 @@ class SewaResource extends Resource
                                 return new HtmlString('<i>Tambahkan Alat terlebih dahulu</i>');
                             }),
 
+                        // PERBAIKAN 2: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
                         Forms\Components\Placeholder::make('harga_real')
                             ->label('Harga Total Alat yang sudah dikembalikan')
-                            ->visibleOn('edit')
+                            ->hiddenOn('create')
                             ->content(function (?Sewa $record): string|HtmlString {
                                 if ($record) {
                                     $total = $record->daftarAlat()
@@ -185,18 +185,26 @@ class SewaResource extends Resource
                                 return new HtmlString('<i>Belum ada alat yang dikembalikan</i>');
                             }),
 
+                        // PERBAIKAN 3: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
                         Forms\Components\TextInput::make('harga_fix')
-                            ->label('Harga Fix (Harga Setelah Negosiasi)')
-                            ->visibleOn('edit')
+                            ->label('Harga Final (Harga Setelah Negosiasi)')
+                            ->hiddenOn('create')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->maxlength(20)
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
                             ->numeric()
                             ->prefix('Rp')
                             ->live(),
 
+                        // PERBAIKAN 4: Tambahkan logika untuk menyembunyikan toggle jika sewa sudah terkunci
                         Toggle::make('tutup_sewa')
                             ->label('Tutup dan Kunci Transaksi Sewa')
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
-                            ->visible(fn(Get $get): bool => filled($get('harga_fix')))
+                            ->visible(function (Get $get, ?Sewa $record): bool {
+                                // Hanya tampil jika harga fix sudah diisi DAN sewa belum terkunci
+                                return filled($get('harga_fix')) && !$record?->is_locked;
+                            })
                     ])->columns(1),
             ])
             ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
@@ -248,7 +256,23 @@ class SewaResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        // Tambahkan hook 'before' untuk validasi sebelum hapus
+                        ->before(function (Collection $records, BulkAction $action) {
+                            foreach ($records as $record) {
+                                // Cek jika salah satu record sudah punya riwayat alat
+                                if ($record->daftarAlat()->exists()) {
+                                    // Kirim notifikasi error
+                                    Notification::make()
+                                        ->title('Gagal Menghapus')
+                                        ->body("Sewa '{$record->judul}' tidak dapat dihapus karena sudah memiliki riwayat penyewaan alat.")
+                                        ->danger()
+                                        ->send();
+                                    // Hentikan aksi hapus
+                                    $action->halt();
+                                }
+                            }
+                        }),
                 ]),
             ]);
     }

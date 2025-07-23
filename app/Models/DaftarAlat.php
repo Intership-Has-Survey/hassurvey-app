@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth; // <-- Import class Auth
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 class DaftarAlat extends Model
 {
@@ -15,16 +17,7 @@ class DaftarAlat extends Model
     protected $primaryKey = 'id';
     protected $table = 'daftar_alat';
 
-    protected $fillable = [
-        'user_id',
-        'jenis_alat',
-        'merk',
-        'kondisi',
-        'status',
-        'keterangan',
-        'nomor_seri',
-        'pemilik_id',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'kondisi' => 'boolean',
@@ -56,6 +49,15 @@ class DaftarAlat extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function jenisAlat()
+    {
+        return $this->belongsTo(JenisAlat::class, 'jenis_alat_id');
+    }
+    public function merk()
+    {
+        return $this->belongsTo(Merk::class, 'merk_id');
     }
 
     public function scopeTersedia($query)
