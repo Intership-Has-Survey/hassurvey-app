@@ -48,7 +48,9 @@ class Project extends Model
 
     public function perorangan(): BelongsToMany
     {
-        return $this->belongsToMany(Perorangan::class, 'project_perorangan');
+        return $this->belongsToMany(Perorangan::class, 'project_perorangan')
+            ->withPivot('perorangan_id', 'project_id')
+            ->withTimestamps();
     }
 
     public function statusPekerjaan()

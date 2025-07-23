@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Iluminate\Database\Eloquent\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class Sewa extends Model
@@ -43,9 +44,16 @@ class Sewa extends Model
         return $this->hasMany(Project::class, 'sewa_id');
     }
 
-    public function customer()
+    public function corporate(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Corporate::class, 'corporate_id');
+    }
+
+    public function perorangan(): BelongsToMany
+    {
+        return $this->belongsToMany(Perorangan::class, 'sewa_perorangan')
+            ->withPivot('perorangan_id', 'sewa_id')
+            ->withTimestamps();
     }
 
     public function pengajuanDanas(): HasMany

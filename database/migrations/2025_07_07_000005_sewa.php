@@ -32,7 +32,8 @@ return new class extends Migration {
 
             $table->timestamps();
 
-            $table->uuidMorphs('customer');
+            $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
+            // $table->foreignUuid('perorangan_id')->nullable()->constrained('perorangan');
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
         });

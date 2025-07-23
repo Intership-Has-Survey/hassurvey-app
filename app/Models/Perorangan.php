@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Perorangan extends Model
 {
@@ -35,26 +34,11 @@ class Perorangan extends Model
     /**
      * The corporate entities that this person is associated with.
      */
-    public function corporates(): BelongsToMany
+    public function corporates()
     {
-        return $this->belongsToMany(Corporate::class, 'perorangan_corporate')->withPivot('user_id');
-    }
-
-    /**
-     * Get all of the perorangan's rentals.
-     */
-    public function sewa(): MorphMany
-    {
-        return $this->morphMany(Sewa::class, 'customer');
-    }
-
-    /**
-     * Get all of the projects for the Perorangan.
-     *
-     * SOLUSI: Mengubah relasi menjadi morphMany agar sesuai dengan struktur polimorfik.
-     */
-    public function projects(): BelongsToMany
-    {
-        return $this->belongsToMany(Project::class, 'project_perorangan');
+        return $this->belongsToMany(Corporate::class, 'perorangan_corporate')
+            ->using(PeroranganCorporate::class)
+            ->withPivot('user_id')
+            ->withTimestamps();
     }
 }

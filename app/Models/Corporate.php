@@ -30,14 +30,13 @@ class Corporate extends Model
         return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')->withPivot('user_id');
     }
 
-    public function sewa(): MorphMany
+    public function project(): HasMany
     {
-        // Logikanya sama persis dengan di model Perorangan
-        return $this->morphMany(Sewa::class, 'customer');
+        return $this->hasMany(Project::class, 'corporate_id');
     }
 
-    public function projects(): HasMany
+    public function sewa(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->HasMany(Sewa::class, 'sewa_id');
     }
 }

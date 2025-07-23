@@ -2,31 +2,50 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SewaResource\Pages;
-use App\Filament\Resources\SewaResource\RelationManagers;
-use Filament\Notifications\Notification; // Tambahkan ini di atas
-use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
-use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
+use App\Models\Sewa;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
 use App\Models\Corporate;
-use Filament\Support\Exceptions\Halt;
-use Filament\Support\RawJs;
 use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Grid;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Support\Exceptions\Halt;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
 use function Livewire\Volt\placeholder;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\SewaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\SewaResource\Pages\EditSewa;
+use App\Filament\Resources\SewaResource\Pages\ListSewa;
+use App\Filament\Resources\SewaResource\Pages\CreateSewa;
 use App\Filament\Resources\SewaResource\RelationManagers;
+use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
+use Filament\Notifications\Notification; // Tambahkan ini di atas
+use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 
@@ -89,19 +108,19 @@ class SewaResource extends Resource
             ->schema([
                 Section::make('Informasi Kontrak')
                     ->schema([
-                        Forms\Components\TextInput::make('judul')
+                        TextInput::make('judul')
                             ->required()
                             ->placeholder('Masukkan Judul Penyewaan')
                             ->label('Judul Penyewaan')
                             ->columnSpanFull(),
                         Grid::make(2)
                             ->schema([
-                                Forms\Components\DatePicker::make('tgl_mulai')
+                                DatePicker::make('tgl_mulai')
                                     ->required()
                                     ->label('Tanggal Mulai')
                                     ->live(onBlur: true)
                                     ->afterStateUpdated($calculateRentang),
-                                Forms\Components\DatePicker::make('tgl_selesai')
+                                DatePicker::make('tgl_selesai')
                                     ->required()
                                     ->label('Tanggal Selesai')
                                     ->minDate(fn(Get $get) => $get('tgl_mulai'))
@@ -132,19 +151,63 @@ class SewaResource extends Resource
 
                 Section::make('Informasi Customer')
                     ->schema([
-                        Select::make('customer_type')->label('Tipe Customer')->options([Perorangan::class => 'Perorangan', Corporate::class => 'Corporate'])->live()->required()->placeholder('Pilih tipe customer terlebih dahulu'),
-                        Select::make('customer_id')->label('Pilih Customer')->placeholder('Pilih customer')->options(fn(Get $get): array => $get('customer_type') ? $get('customer_type')::pluck('nama', 'id')->all() : [])->searchable()->required()->createOptionForm(fn(Get $get) => [])->createOptionUsing(fn(array $data, Get $get): ?string => null)->visible(fn(Get $get) => filled($get('customer_type'))),
+                        Select::make('customer_flow_type')
+                            ->label('Tipe Customer')
+                            ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
+                            ->live()->required()->dehydrated(false)
+                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
+
+
+                        Select::make('corporate_id')
+                            ->relationship('corporate', 'nama')
+                            ->label('Pilih Perusahaan')
+                            ->live()
+                            ->createOptionForm(self::getCorporateForm())
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+                        Repeater::make('perorangan')
+                            ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
+                            ->relationship()
+                            ->schema([
+                                Select::make('perorangan_id')
+                                    ->label(false)
+                                    ->options(function (Get $get, $state): array {
+                                        $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
+                                        $selectedPicIds = array_diff($selectedPicIds, [$state]);
+                                        return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
+                                    })
+                                    ->searchable()->required()
+                                    ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
+                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                            ])
+                            ->minItems(1)
+                            ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
+                            ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
+                            ->addActionLabel('Tambah PIC')
+                            ->visible(fn(Get $get) => filled($get('customer_flow_type')))
+                            ->saveRelationshipsUsing(function (Model $record, array $state): void {
+                                $ids = array_map(fn($item) => $item['perorangan_id'], $state);
+                                $record->perorangan()->sync($ids);
+
+                                if ($record->corporate_id) {
+                                    $corporate = $record->corporate;
+                                    foreach ($ids as $peroranganId) {
+                                        if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
+                                            $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                                        }
+                                    }
+                                }
+                            }),
                     ]),
 
                 Section::make('Informasi Harga Penyewaan')
                     ->schema([
-                        Forms\Components\Placeholder::make('info_harga')
+                        Placeholder::make('info_harga')
                             ->visibleOn('create')
                             ->label('')
                             ->content('Informasi Harga akan muncul ketika kontrak sudah dibuat dan alat sudah ditambahkan.'),
 
-                        // PERBAIKAN 1: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
-                        Forms\Components\Placeholder::make('harga_perkiraan')
+                        Placeholder::make('harga_perkiraan')
                             ->label('Harga Total Perkiraan (Total Nilai Kontrak)')
                             ->hiddenOn('create')
                             ->content(function (Get $get, ?Sewa $record): string|HtmlString {
@@ -169,8 +232,7 @@ class SewaResource extends Resource
                                 return new HtmlString('<i>Tambahkan Alat terlebih dahulu</i>');
                             }),
 
-                        // PERBAIKAN 2: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
-                        Forms\Components\Placeholder::make('harga_real')
+                        Placeholder::make('harga_real')
                             ->label('Harga Total Alat yang sudah dikembalikan')
                             ->hiddenOn('create')
                             ->content(function (?Sewa $record): string|HtmlString {
@@ -185,8 +247,7 @@ class SewaResource extends Resource
                                 return new HtmlString('<i>Belum ada alat yang dikembalikan</i>');
                             }),
 
-                        // PERBAIKAN 3: Diubah dari visibleOn('edit') menjadi hiddenOn('create')
-                        Forms\Components\TextInput::make('harga_fix')
+                        TextInput::make('harga_fix')
                             ->label('Harga Final (Harga Setelah Negosiasi)')
                             ->hiddenOn('create')
                             ->mask(RawJs::make('$money($input)'))
@@ -197,7 +258,6 @@ class SewaResource extends Resource
                             ->prefix('Rp')
                             ->live(),
 
-                        // PERBAIKAN 4: Tambahkan logika untuk menyembunyikan toggle jika sewa sudah terkunci
                         Toggle::make('tutup_sewa')
                             ->label('Tutup dan Kunci Transaksi Sewa')
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
@@ -214,16 +274,16 @@ class SewaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('judul')
+                TextColumn::make('judul')
                     ->label('Judul Penyewaan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('customer.nama')
+                TextColumn::make('customer.nama')
                     ->label('Customer')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tgl_mulai')
+                TextColumn::make('tgl_mulai')
                     ->date('d-m-Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_selesai')
+                TextColumn::make('tgl_selesai')
                     ->date('d-m-Y')
                     ->sortable(),
 
@@ -241,10 +301,10 @@ class SewaResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
 
-                Tables\Actions\Action::make('selesaikan_sewa')
+                Action::make('selesaikan_sewa')
                     ->label('Selesaikan Sewa')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -255,20 +315,16 @@ class SewaResource extends Resource
                     ->visible(fn(Sewa $record): bool => $record->status === 'Konfirmasi Selesai' || $record->status === 'Jatuh Tempo'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        // Tambahkan hook 'before' untuk validasi sebelum hapus
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->before(function (Collection $records, BulkAction $action) {
                             foreach ($records as $record) {
-                                // Cek jika salah satu record sudah punya riwayat alat
                                 if ($record->daftarAlat()->exists()) {
-                                    // Kirim notifikasi error
                                     Notification::make()
                                         ->title('Gagal Menghapus')
                                         ->body("Sewa '{$record->judul}' tidak dapat dihapus karena sudah memiliki riwayat penyewaan alat.")
                                         ->danger()
                                         ->send();
-                                    // Hentikan aksi hapus
                                     $action->halt();
                                 }
                             }
@@ -291,6 +347,146 @@ class SewaResource extends Resource
             'index' => Pages\ListSewa::route('/'),
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
+        ];
+    }
+
+    private static function getPeroranganForm(): array
+    {
+        return [
+            Section::make('Informasi Personal')
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Lengkap')
+                        ->required()
+                        ->maxLength(100),
+                    TextInput::make('nik')
+                        ->label('NIK')
+                        ->length(16)
+                        ->numeric()
+                        ->unique(ignoreRecord: true),
+                    TextInput::make('email')
+                        ->label('Email')
+                        ->email()
+                        ->maxLength(100),
+                    TextInput::make('telepon')
+                        ->label('Telepon')
+                        ->tel()
+                        ->maxLength(15),
+                ])->columns(2),
+
+            Section::make('Alamat')
+                ->schema(self::getAddressFields())
+                ->columns(2),
+
+            Hidden::make('user_id')
+                ->default(auth()->id()),
+        ];
+    }
+    private static function getCorporateForm(): array
+    {
+        return [
+            Section::make('Informasi Perusahaan')
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Perusahaan')
+                        ->required()
+                        ->maxLength(200),
+                    TextInput::make('npwp')
+                        ->label('NPWP')
+                        ->maxLength(20),
+                    TextInput::make('email')
+                        ->label('Email')
+                        ->email()
+                        ->maxLength(100),
+                    TextInput::make('telepon')
+                        ->label('Telepon')
+                        ->tel()
+                        ->maxLength(15),
+                ])->columns(2),
+
+            Hidden::make('user_id')
+                ->default(auth()->id()),
+        ];
+    }
+    private static function getAddressFields(): array
+    {
+        return [
+            Select::make('provinsi')
+                ->label('Provinsi')
+                ->required()
+                ->placeholder('Pilih provinsi')
+                ->options(TrefRegion::query()
+                    ->where(DB::raw('LENGTH(code)'), 2)
+                    ->pluck('name', 'code'))
+                ->live()
+                ->searchable()
+                ->afterStateUpdated(function (Set $set) {
+                    $set('kota', null);
+                    $set('kecamatan', null);
+                    $set('desa', null);
+                }),
+
+            Select::make('kota')
+                ->label('Kota/Kabupaten')
+                ->required()
+                ->placeholder('Pilih kota/kabupaten')
+                ->options(function (Get $get) {
+                    $provinceCode = $get('provinsi');
+                    if (!$provinceCode) return [];
+
+                    return TrefRegion::query()
+                        ->where('code', 'like', $provinceCode . '.%')
+                        ->where(DB::raw('LENGTH(code)'), 5)
+                        ->pluck('name', 'code');
+                })
+                ->live()
+                ->searchable()
+                ->afterStateUpdated(function (Set $set) {
+                    $set('kecamatan', null);
+                    $set('desa', null);
+                }),
+
+            Select::make('kecamatan')
+                ->label('Kecamatan')
+                ->required()
+                ->placeholder('Pilih kecamatan')
+                ->options(function (Get $get) {
+                    $regencyCode = $get('kota');
+                    if (!$regencyCode) return [];
+
+                    return TrefRegion::query()
+                        ->where('code', 'like', $regencyCode . '.%')
+                        ->where(DB::raw('LENGTH(code)'), 8)
+                        ->pluck('name', 'code');
+                })
+                ->live()
+                ->searchable()
+                ->afterStateUpdated(function (Set $set) {
+                    $set('desa', null);
+                }),
+
+            Select::make('desa')
+                ->label('Desa/Kelurahan')
+                ->required()
+                ->placeholder('Pilih desa/kelurahan')
+                ->options(function (Get $get) {
+                    $districtCode = $get('kecamatan');
+                    if (!$districtCode) return [];
+
+                    return TrefRegion::query()
+                        ->where('code', 'like', $districtCode . '.%')
+                        ->where(DB::raw('LENGTH(code)'), 13)
+                        ->pluck('name', 'code');
+                })
+                ->live()
+                ->searchable(),
+
+            Textarea::make('detail_alamat')
+                ->required()
+                ->placeholder('Masukkan detail alamat lengkap')
+                ->label('Detail Alamat')
+                ->rows(3)
+                ->columnSpanFull(),
         ];
     }
 }

@@ -19,9 +19,12 @@ use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
@@ -37,40 +40,54 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Informasi Proyek')
+            Section::make('Informasi Proyek')
                 ->schema([
-                    Forms\Components\TextInput::make('nama_project')->required()->columnSpanFull(),
-                    Forms\Components\Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required(),
-                    Forms\Components\Select::make('sales_id')->relationship('sales', 'nama')->searchable()->preload()->required(),
-                    Forms\Components\DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
-                    Forms\Components\Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
+                    TextInput::make('nama_project')->required()->columnSpanFull(),
+                    Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required()
+                        ->createOptionForm(self::getKategoriForm()),
+                    Select::make('sales_id')
+                        ->label('Sales')
+                        ->options(function () {
+                            return Sales::query()
+                                ->select('id', 'nama', 'nik')
+                                ->get()
+                                ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
+                        })
+                        ->placeholder('Pilih sales')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->createOptionForm(self::getSalesForm()),
+                    DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
+                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Informasi Customer')
+            Section::make('Informasi Customer')
                 ->schema([
-                    Forms\Components\Select::make('customer_flow_type')
+                    Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                         ->live()->required()->dehydrated(false)
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
-                    Forms\Components\Select::make('corporate_id')
+
+                    Select::make('corporate_id')
                         ->relationship('corporate', 'nama')
                         ->label('Pilih Perusahaan')
                         ->live()
                         ->createOptionForm(self::getCorporateForm())
                         ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
-                    Forms\Components\Repeater::make('perorangan')
+                    Repeater::make('perorangan')
                         ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                         ->relationship()
                         ->schema([
-                            Forms\Components\Select::make('perorangan_id')
+                            Select::make('perorangan_id')
                                 ->label(false)
                                 ->options(function (Get $get, $state): array {
                                     $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
                                     $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                    return Perorangan::whereNotIn('id', $selectedPicIds)->pluck('nama', 'id')->all();
+                                    return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                 })
                                 ->searchable()->required()
                                 ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
@@ -96,9 +113,9 @@ class ProjectResource extends Resource
                         }),
                 ]),
 
-            Forms\Components\Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2),
-            Forms\Components\Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2),
-            Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+            Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2),
+            Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2),
+            Hidden::make('user_id')->default(auth()->id()),
         ]);
     }
 
@@ -134,7 +151,7 @@ class ProjectResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'Prospect' => 'Prospect',
                         'Follow up 1' => 'Follow up 1',
@@ -142,11 +159,11 @@ class ProjectResource extends Resource
                         'Follow up 3' => 'Follow up 3',
                         'Closing' => 'Closing'
                     ]),
-                Tables\Filters\SelectFilter::make('kategori')
+                SelectFilter::make('kategori')
                     ->relationship('kategori', 'nama')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\SelectFilter::make('status_pembayaran')
+                SelectFilter::make('status_pembayaran')
                     ->options([
                         'Lunas' => 'Lunas',
                         'Belum Lunas' => 'Belum Lunas',
@@ -295,14 +312,6 @@ class ProjectResource extends Resource
                 ])
                 ->required()
                 ->native(false),
-            // Hidden::make('status_pembayaran')
-            //     ->label('Status Pembayaran')
-            //     ->options([
-            //         'Lunas' => 'Lunas',
-            //         'Belum Lunas' => 'Belum Lunas',
-            //     ])
-            //     // ->required()
-            //     ->native(false),
         ];
     }
 
@@ -400,46 +409,6 @@ class ProjectResource extends Resource
             Hidden::make('user_id')
                 ->default(auth()->id()),
         ];
-    }
-
-    private static function getPeroranganOptions(Get $get): array
-    {
-        $flowType = $get('../../customer_flow_type');
-        $corporateId = $get('../../corporate_id');
-
-        if ($flowType === 'corporate' && $corporateId) {
-            $corporate = Corporate::find($corporateId);
-            // return $corporate ?
-            //     $corporate->perorangan()->pluck('nama', 'id')->all() :
-            //     [];
-            return Perorangan::pluck('nama', 'id')->all();
-        }
-
-        if ($flowType === 'perorangan') {
-            return Perorangan::pluck('nama', 'id')->all();
-        }
-
-        return [];
-    }
-
-    private static function createPeroranganOption(array $data, Get $get): string
-    {
-        $data['user_id'] = auth()->id();
-        $perorangan = Perorangan::create($data);
-
-        $flowType = $get('../../customer_flow_type');
-        $corporateId = $get('../../corporate_id');
-
-        if ($flowType === 'corporate' && $corporateId) {
-            $corporate = Corporate::find($corporateId);
-            if ($corporate) {
-                if (!$corporate->perorangan()->wherePivot('perorangan_id', $perorangan->id)->exists()) {
-                    $corporate->perorangan()->attach($perorangan->id);
-                }
-            }
-        }
-
-        return $perorangan->id;
     }
 
     private static function getKategoriForm(): array

@@ -12,6 +12,14 @@ return new class extends Migration
             $table->foreignUuid('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->primary(['project_id', 'perorangan_id']);
+            $table->timestamps();
+        });
+
+        Schema::create('sewa_perorangan', function (Blueprint $table) {
+            $table->foreignUuid('sewa_id')->constrained('sewa')->cascadeOnDelete();
+            $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
+            $table->primary(['sewa_id', 'perorangan_id']);
+            $table->timestamps();
         });
     }
 
