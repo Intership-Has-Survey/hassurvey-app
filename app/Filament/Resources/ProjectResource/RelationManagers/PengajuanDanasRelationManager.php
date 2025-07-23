@@ -8,11 +8,14 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\BankAccount;
+use App\Models\Level;
+use Illuminate\Database\Eloquent\Model;
 
 
 class PengajuanDanasRelationManager extends RelationManager
@@ -28,21 +31,16 @@ class PengajuanDanasRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
+                Forms\Components\Textarea::make('deskripsi_pengajuan')
+                    ->label('Deskripsi Umum')
+                    ->columnSpanFull(),
 
                 Forms\Components\Hidden::make('tipe_pengajuan')
                     ->default('project'),
                 Forms\Components\Hidden::make('nilai')
                     ->default('0'),
-                Forms\Components\Hidden::make('nilai')
-                    ->default('0'),
                 Forms\Components\Hidden::make('user_id')
                     ->default(auth()->id()),
-
-                Forms\Components\Textarea::make('deskripsi_pengajuan')
-                    ->label('Deskripsi Umum')
-                    ->columnSpanFull(),
-
-                // Forms\Components\Select::make('nama_bank')->maxLength(255),
                 Select::make('bank_id')
                     ->relationship('bank', 'nama_bank')
                     ->placeholder('Pilih Bank')
@@ -66,6 +64,7 @@ class PengajuanDanasRelationManager extends RelationManager
                         if (!$bankId) {
                             return [];
                         }
+
                         return \App\Models\BankAccount::where('bank_id', $bankId)
                             ->get()
                             ->mapWithKeys(function ($account) {
@@ -94,6 +93,31 @@ class PengajuanDanasRelationManager extends RelationManager
                     })
                     ->required(),
 
+
+                Repeater::make('detailPengajuans') // nama relasi
+                    ->relationship()
+                    ->columnSpanFull()
+                    ->label('Rincian Pengajuan Dana')
+                    ->schema([
+                        TextInput::make('deskripsi')
+                            ->label('Nama Item')
+                            ->required(),
+                        TextInput::make('qty')
+                            ->label('Jumlah')
+                            ->required(),
+
+                        TextInput::make('harga_satuan')
+                            ->label('Harga Satuan')
+                            ->numeric()
+                            ->required(),
+                    ])
+                    ->defaultItems(1)
+                    ->createItemButtonLabel('Tambah Rincian')
+                    ->columns(3),
+
+                // Forms\Components\Select::make('nama_bank')->maxLength(255),
+
+
             ]);
     }
 
@@ -114,20 +138,43 @@ class PengajuanDanasRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->after(function ($livewire, $record) {
+                        $pengajuan = $record;
+                        $nilai = $pengajuan->nilai;
+                        // dd($pengajuan);
+                        $pengajuan->updateTotalHarga();
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            // Ambil step pertama berdasarkan urutan step
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+
+                            // Ambil nama role dari relasi role di levelStep
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $pengajuan->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                            ]);
+                        }
+                    }),
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('editPengajuanDana')
-                    ->label('Edit')
-                    ->icon('heroicon-o-pencil')
-                    ->color('warning')
-                    ->url(
-                        fn($record) => $record->project()
-                            ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
-                            : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
-                    ),
+                // Tables\Actions\Action::make('editPengajuanDana')
+                //     ->label('Edit')
+                //     ->icon('heroicon-o-pencil')
+                //     ->color('warning')
+                //     ->url(
+                //         fn($record) => $record->project()
+                //             ? route('filament.admin.resources.pengajuan-danas.edit', $record->id)
+                //             : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
+                //     ),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
