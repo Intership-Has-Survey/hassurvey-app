@@ -55,7 +55,7 @@ class DaftarAlatResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: false)
+                    ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -127,7 +127,7 @@ class DaftarAlatResource extends Resource
                     ->required()
                     ->options([
                         true => 'Baik',
-                        false => 'Bermasalah',
+                        false => 'Dipakai',
                     ])
                     ->visibleOn('edit'),
             ]);
@@ -162,7 +162,7 @@ class DaftarAlatResource extends Resource
                     }),
 
                 BadgeColumn::make('status')
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Tidak Tersedia')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Dipakai')
                     ->color(fn(bool $state): string => match ($state) {
                         true => 'success',
                         false => 'warning',
