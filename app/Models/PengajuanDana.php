@@ -82,46 +82,69 @@ class PengajuanDana extends Model
     {
         $userRole = auth()->user()->roles;
         $roleName = auth()->user()->roles->first()?->name;
-        // dd($userRole);
-        // dd($roleName);
-        // Cari level
         $level = $this->level;
         $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
 
         $currentIndex = array_search(auth()->user()->roles->first()?->id, $steps);
-        // dd($currentIndex);
-        // dd($steps);
-        // dd($userRole);
-
         if ($currentIndex !== false && isset($steps[$currentIndex + 1])) {
             // Masih ada step berikutnya
             $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
+            $this->update(['disetujui' => $roleName]);
         } else {
             // Sudah final step
             $this->update([
-                'dalam_review' => null,
-                'disetujui' => 'approved',
+                'dalam_review' => 'approved',
+                'disetujui' => $roleName,
             ]);
         }
     }
-    // public function approve()
+
+    public function reject($alasan = null)
+    {
+        $roleName = auth()->user()->roles->first()?->name;
+        $level = $this->level;
+        $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
+
+        $currentIndex = array_search(auth()->user()->roles->first()?->id, $steps);
+
+        if ($currentIndex !== false && isset($steps[$currentIndex - 1])) {
+            // Masih ada step sebelumnya → rollback ke step sebelumnya
+            $this->update([
+                'dalam_review' => $steps[$currentIndex - 1],
+                'disetujui' => null, // Reset approval
+                'alasan' => $alasan,
+            ]);
+        } else {
+            // Sudah di step pertama → final reject
+            $this->update([
+                'dalam_review' => 'rejected',
+                'disetujui' => null,
+                'alasan' => $alasan,
+            ]);
+        }
+    }
+
+
+    // public function tolak()
     // {
-    //     $userRole = auth()->user()->role;
-    //     // Cari level
+    //     $userRole = auth()->user()->roles;
+    //     $roleName = auth()->user()->roles->first()?->name;
     //     $level = $this->level;
     //     $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
 
-    //     $currentIndex = array_search($userRole, $steps);
-
+    //     $currentIndex = array_search(auth()->user()->roles->first()?->id, $steps);
     //     if ($currentIndex !== false && isset($steps[$currentIndex + 1])) {
     //         // Masih ada step berikutnya
     //         $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
+    //         $this->update(['disetujui' => $roleName]);
     //     } else {
     //         // Sudah final step
     //         $this->update([
-    //             'dalam_review' => null,
-    //             'disetujui' => 'approved',
+    //             'dalam_review' => 'approved',
+    //             'disetujui' => $roleName,
     //         ]);
     //     }
     // }
+
+
 }

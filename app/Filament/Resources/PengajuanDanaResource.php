@@ -105,10 +105,24 @@ class PengajuanDanaResource extends Resource
                 Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-o-check-circle')
+                    // ->button()
                     ->color('success')
                     ->visible(fn($record) => $record->dalam_review == auth()->user()->roles->first()?->id)
-                    // ->requiresConfirmation()
+                    ->requiresConfirmation()
                     ->action(fn($record) => $record->approve()),
+                Action::make('reject')
+                    ->label('Reject')
+                    ->color('danger')
+                    ->icon('heroicon-o-x-circle')
+                    ->form([
+                        \Filament\Forms\Components\Textarea::make('alasan')
+                            ->label('Alasan Penolakan')
+                            ->required(),
+                    ])
+                    ->requiresConfirmation()
+                    ->action(function ($record, array $data) {
+                        $record->reject($data['alasan']);
+                    }),
                 Tables\Actions\Action::make('export_pdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -119,45 +133,6 @@ class PengajuanDanaResource extends Resource
                             echo $pdf->stream();
                         }, 'sales-' . $record->id . '.pdf');
                     }),
-                // Action::make('approve')
-                //     ->label('Approve')
-                //     ->color('primary')
-                //     ->button()
-                //     ->requiresConfirmation()
-                //     ->visible(fn() => auth()->user()->role !== 'operasional')
-                //     ->disabled(function (Model $record) {
-                //         return auth()->user()->role !== $record->dalam_review;
-                //     })
-                //     ->action(function (Model $record) {
-                //         $review = ['dirops', 'keuangan', 'direktur', 'approved'];
-
-                //         // Hitung total pengajuan dari detail
-                //         $total = $record->detailPengajuans->reduce(function ($carry, $item) {
-                //             return $carry + ($item->qty * $item->harga_satuan);
-                //         }, 0);
-
-                //         $currentIndex = array_search($record->dalam_review, $review);
-
-                //         if ($currentIndex !== false) {
-                //             // Jika keuangan dan total <= 2 juta, langsung approved
-                //             if ($record->dalam_review === 'keuangan' && $total <= 2000000) {
-                //                 $record->update([
-                //                     'dalam_review' => 'approved',
-                //                     'disetujui' => auth()->user()->role,
-                //                     'ditolak' => null,
-                //                     'alasan' => null,
-                //                 ]);
-                //             } elseif ($currentIndex < count($review) - 1) {
-                //                 // Normal flow
-                //                 $record->update([
-                //                     'dalam_review' => $review[$currentIndex + 1],
-                //                     'disetujui' => auth()->user()->role,
-                //                     'ditolak' => null,
-                //                     'alasan' => null,
-                //                 ]);
-                //             }
-                //         }
-                //     }),
 
                 // Action::make('Tolak')
                 // ->label('Tolak')
@@ -215,23 +190,4 @@ class PengajuanDanaResource extends Resource
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
         ];
     }
-
-    // public static function canEdit(Model $record): bool
-    // {
-    //     $userRole = auth()->user()?->role;
-
-    //     return match ($userRole) {
-    //         'admin'     => true,
-    //         'operasional'  => $record->dalam_review === 'dirops',
-    //         'dirops'  => $record->dalam_review === 'dirops',
-    //         'keuangan'  => $record->dalam_review === 'keuangan',
-    //         'direktur'  => $record->dalam_review === 'direktur',
-
-    //         // 'keuangan'  => $record->dalam_review === 'bronze',
-    //         // 'direktur'  => $record->dalam_review === 'silver',
-    //         default     => false, // selain itu tidak boleh edit
-    //     };
-    // }
-
-
 }

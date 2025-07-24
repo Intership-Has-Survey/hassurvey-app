@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('dalam_review')->nullable();
             $table->string('ditolak')->nullable();
             $table->string('disetujui')->nullable();
+            $table->string('alasan')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->foreignUuid('level_id')->nullable();
             $table->timestamps();
