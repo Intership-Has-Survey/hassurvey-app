@@ -15,6 +15,6 @@ class ProjectSeeder extends Seeder
     {
         // Membuat 150 data project dummy menggunakan factory.
         // Anda bisa ubah jumlahnya sesuai kebutuhan.
-        Project::factory()->count(25)->create();
+        Project::factory()->count(10)->create();
     }
 }

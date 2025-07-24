@@ -116,6 +116,16 @@ class PengajuanDanaResource extends Resource
                     ->visible(fn($record) => $record->dalam_review == auth()->user()->roles->first()?->id)
                     // ->requiresConfirmation()
                     ->action(fn($record) => $record->approve()),
+                Tables\Actions\Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function ($record) {
+                        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pengajuan', ['record' => $record]);
+
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->stream();
+                        }, 'sales-' . $record->id . '.pdf');
+                    }),
                 // Action::make('approve')
                 //     ->label('Approve')
                 //     ->color('primary')
