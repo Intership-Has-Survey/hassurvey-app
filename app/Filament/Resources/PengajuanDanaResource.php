@@ -227,7 +227,7 @@ class PengajuanDanaResource extends Resource
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->approve()),
                 Action::make('reject')
-                    ->label('Reject')
+                    ->label('Tolak')
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
 
@@ -251,40 +251,6 @@ class PengajuanDanaResource extends Resource
                             echo $pdf->stream();
                         }, 'sales-' . $record->id . '.pdf');
                     }),
-
-                // Action::make('Tolak')
-                // ->label('Tolak')
-                // ->color('danger')
-                // ->visible(fn() => auth()->user()->role !== 'operasional')
-                // ->form([
-                //     Forms\Components\Textarea::make('alasan')
-                //         ->label('Alasan Penolakan')
-                //         ->required(),
-                // ])
-                // ->requiresConfirmation()
-                // ->disabled(function (Model $record) {
-                //     return auth()->user()->role !== $record->dalam_review;
-                // })
-                // ->action(function (Model $record, array $data) {
-                //     $review = ['dirops', 'keuangan', 'direktur', 'approved'];
-                //     $currentIndex = array_search($record->dalam_review, $review);
-
-                //     if ($currentIndex !== false) {
-                //         // Turunkan level jika bisa (misal dari gold → silver)
-                //         $newStatus = $record->dalam_review;
-                //         if ($currentIndex > 0) {
-                //             $newStatus = $review[$currentIndex - 1];
-                //         }
-
-                //         // Simpan status baru + alasan
-                //         $record->update([
-                //             'dalam_review' => $newStatus,
-                //             'ditolak' => auth()->user()->role,
-                //             'disetujui' => null,
-                //             'alasan' => $data['alasan'], // pastikan kolom ini ada di tabel
-                //         ]);
-                //     }
-                // }),
                 ActivityLogTimelineTableAction::make('Log'),
             ]);
     }
@@ -307,5 +273,10 @@ class PengajuanDanaResource extends Resource
             // 'view' => Pages\ViewPengajuanDana::route('/{record}'),
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola pengajuan dana'); // atau permission spesifik
     }
 }

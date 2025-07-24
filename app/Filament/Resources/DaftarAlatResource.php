@@ -234,4 +234,9 @@ class DaftarAlatResource extends Resource
             'edit' => Pages\EditDaftarAlat::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola daftar alat'); // atau permission spesifik
+    }
 }

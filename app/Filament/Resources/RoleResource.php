@@ -196,4 +196,9 @@ class RoleResource extends Resource
             'view' => Pages\ViewRole::route('/{record}'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola jabatan'); // atau permission spesifik
+    }
 }

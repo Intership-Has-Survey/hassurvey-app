@@ -431,8 +431,8 @@ class ProjectResource extends Resource
         ];
     }
 
-    // public static function canAccess(): bool
-    // {
-    //     return auth()->user()->can('view-any Project'); // atau permission spesifik
-    // }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola layanan pemetaan'); // atau permission spesifik
+    }
 }

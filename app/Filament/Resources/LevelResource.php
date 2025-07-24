@@ -21,7 +21,7 @@ class LevelResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $pluralModelLabel ='Jenis Tingkatan Pengajuan';
+    protected static ?string $pluralModelLabel = 'Jenis Tingkatan Pengajuan';
 
     protected static ?string $navigationLabel = 'Jenis Tingkatan Pengajuan';
 
@@ -75,5 +75,10 @@ class LevelResource extends Resource
             'create' => Pages\CreateLevel::route('/create'),
             'edit' => Pages\EditLevel::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola tingkatan pengajuan'); // atau permission spesifik
     }
 }
