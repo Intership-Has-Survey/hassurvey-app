@@ -22,11 +22,11 @@ return new class extends Migration
             $table->decimal('nilai', 15, 2);
             // $table->string('nomor_rekening')->nullable();
             // $table->string('nama_pemilik_rekening')->nullable();
-            $table->string('dalam_review');
-            $table->string('ditolak');
-            $table->string('disetujui');
+            $table->string('dalam_review')->nullable();
+            $table->string('ditolak')->nullable();
+            $table->string('disetujui')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
-            $table->foreignUuid('level_id');
+            $table->foreignUuid('level_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

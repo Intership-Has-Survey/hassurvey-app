@@ -141,27 +141,25 @@ class PengajuanDanasRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->after(function ($livewire, $record) {
-                        $pengajuan = $record;
-                        $nilai = $pengajuan->nilai;
-                        // dd($pengajuan);
-                        $pengajuan->updateTotalHarga();
+                        $record->updateTotalHarga();
+
+                        $nilai = $record->nilai;
+
                         $level = Level::where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
                         if ($level) {
-                            // Ambil step pertama berdasarkan urutan step
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-
-                            // Ambil nama role dari relasi role di levelStep
                             $roleName = optional($firstStep?->roles)->id;
 
-                            $pengajuan->update([
+                            $record->update([
                                 'level_id'     => $level->id,
-                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                                'dalam_review' => $roleName,
                             ]);
                         }
                     }),
+
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
@@ -190,6 +188,31 @@ class PengajuanDanasRelationManager extends RelationManager
             \App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager::class,
         ];
     }
+
+    protected function afterCreate(): void
+    {
+        $pengajuan = $this->record;
+
+        // Hitung ulang total nilai jika kamu punya relasi detail
+        $pengajuan->updateTotalHarga();
+
+        $nilai = $pengajuan->nilai;
+
+        $level = Level::where('max_nilai', '>=', $nilai)
+            ->orderBy('max_nilai')
+            ->first();
+
+        if ($level) {
+            $firstStep = $level->levelSteps()->orderBy('step')->first();
+            $roleName = optional($firstStep?->roles)->id;
+
+            $pengajuan->update([
+                'level_id'     => $level->id,
+                'dalam_review' => $roleName,
+            ]);
+        }
+    }
+
 
     // protected function canCreate(): bool
     // {

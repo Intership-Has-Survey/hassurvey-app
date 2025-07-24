@@ -18,14 +18,12 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             KategoriSeeder::class,
             PemilikSeeder::class,
-            JenisAlatSeeder::class,
-            MerkSeeder::class,
-            DaftarAlatSeeder::class,
             CorporateSeeder::class,
             PeroranganSeeder::class,
             PersonelSeeder::class,
             SalesSeeder::class,
-            //ProjectSeeder::class,
+            DaftarAlatSeeder::class,
+            ProjectSeeder::class,
             //SewaSeeder::class,
         ]);
     }
