@@ -87,6 +87,15 @@ class PengajuanDanaResource extends Resource
                 Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
                     ->label('Dalam Review')
+                    ->getStateUsing(function ($record) {
+                        if ($record->dalam_review === 'approved') {
+                            return 'approved';
+                        }
+
+                        // Jika dalam_review adalah angka (role_id), ambil nama role
+                        $role = \Spatie\Permission\Models\Role::find($record->dalam_review);
+                        return $role ? $role->name : '-';
+                    })
                     ->color(fn(string $state): string => match ($state) {
                         'Baru', 'Menunggu Persetujuan DO', 'Menunggu Persetujuan DK', 'Menunggu Persetujuan DU' => 'warning',
                         'operasional' => 'gray',
@@ -121,6 +130,8 @@ class PengajuanDanaResource extends Resource
                     ->label('Reject')
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
+
+                    ->visible(fn($record) => $record->dalam_review == auth()->user()->roles->first()?->id)
                     ->form([
                         \Filament\Forms\Components\Textarea::make('alasan')
                             ->label('Alasan Penolakan')
@@ -183,7 +194,7 @@ class PengajuanDanaResource extends Resource
         return [
             RelationManagers\DetailPengajuansRelationManager::class,
             RelationManagers\TransaksiPembayaransRelationManager::class,
-                // \Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager::class,
+            // \Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager::class,
             ActivitylogRelationManager::class,
         ];
     }

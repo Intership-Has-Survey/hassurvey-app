@@ -90,11 +90,15 @@ class PengajuanDana extends Model
             // Masih ada step berikutnya
             $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
             $this->update(['disetujui' => $roleName]);
+            $this->update(['ditolak' => null]);
+            $this->update(['alasan' => null]);
         } else {
             // Sudah final step
             $this->update([
                 'dalam_review' => 'approved',
                 'disetujui' => $roleName,
+                'ditolak' => null,
+                'alasan' => null,
             ]);
         }
     }
@@ -112,6 +116,7 @@ class PengajuanDana extends Model
             $this->update([
                 'dalam_review' => $steps[$currentIndex - 1],
                 'disetujui' => null, // Reset approval
+                'ditolak' => $roleName, // Reset approval
                 'alasan' => $alasan,
             ]);
         } else {
@@ -119,6 +124,7 @@ class PengajuanDana extends Model
             $this->update([
                 'dalam_review' => 'rejected',
                 'disetujui' => null,
+                'ditolak' => $roleName,
                 'alasan' => $alasan,
             ]);
         }
