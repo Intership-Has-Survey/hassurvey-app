@@ -430,4 +430,9 @@ class ProjectResource extends Resource
                 ->default(auth()->id()),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Project'); // atau permission spesifik
+    }
 }

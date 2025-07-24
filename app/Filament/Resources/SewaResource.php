@@ -303,7 +303,6 @@ class SewaResource extends Resource
             ->actions([
                 EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
-
                 Action::make('selesaikan_sewa')
                     ->label('Selesaikan Sewa')
                     ->icon('heroicon-o-check-circle')
@@ -348,6 +347,11 @@ class SewaResource extends Resource
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Sewa'); // atau permission spesifik
     }
 
     private static function getPeroranganForm(): array

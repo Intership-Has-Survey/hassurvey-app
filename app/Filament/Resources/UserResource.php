@@ -46,16 +46,12 @@ class UserResource extends Resource
                 TextInput::make('password')
                     ->label('Password')
                     ->required(),
-                Select::make('sumber')
-                    ->options([
-                        'operasional' => 'Operasional',
-                        'dirops' => 'Direktur Operasional',
-                        'keuangan' => 'Direktur Keuangan',
-                        'direktur' => 'Direktur Utama',
-                    ])
-                    ->label('Role')
-                    ->required()
-                    ->native(false),
+                Select::make('roles')
+                    ->multiple()
+                    ->relationship('roles', 'name')
+                    ->preload()
+                    ->label('Assign Roles'),
+                // Select::make('roles')->multiple()->relationship('roles', 'name')
             ]);
     }
 
@@ -64,12 +60,16 @@ class UserResource extends Resource
         return $table
             ->columns([
                 //
+                TextColumn::make('nama')->sortable()->searchable(),
+                TextColumn::make('email')->sortable()->searchable(),
+                TextColumn::make('roles.name')->sortable()->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -7,6 +7,10 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use App\Models\Level;
 
 class DetailPengajuansRelationManager extends RelationManager
 {
@@ -36,11 +40,81 @@ class DetailPengajuansRelationManager extends RelationManager
                     ->money('IDR'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make()
+                    ->after(function ($livewire, $record) {
+                        $pengajuan = $livewire->getOwnerRecord();
+                        $pengajuan->updateTotalHarga();
+
+                        $nilai = $pengajuan->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            // Ambil step pertama berdasarkan urutan step
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+
+                            // Ambil nama role dari relasi role di levelStep
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $pengajuan->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                            ]);
+                        }
+                    })
+
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make()
+                    ->after(function ($livewire, $record) {
+                        $pengajuan = $livewire->getOwnerRecord();
+                        $pengajuan->updateTotalHarga();
+
+                        $nilai = $pengajuan->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            // Ambil step pertama berdasarkan urutan step
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+
+                            // Ambil nama role dari relasi role di levelStep
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $pengajuan->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                            ]);
+                        }
+                    }),
+                DeleteAction::make()
+                    ->after(function ($livewire, $record) {
+                        $pengajuan = $livewire->getOwnerRecord();
+                        $pengajuan->updateTotalHarga();
+
+                        $nilai = $pengajuan->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            // Ambil step pertama berdasarkan urutan step
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+
+                            // Ambil nama role dari relasi role di levelStep
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $pengajuan->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                            ]);
+                        }
+                    })
             ]);
     }
 }
