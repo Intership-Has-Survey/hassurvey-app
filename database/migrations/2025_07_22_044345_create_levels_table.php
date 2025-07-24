@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('levels', function (Blueprint $table) {
             $table->Uuid('id');
             $table->string('nama');
-            $table->decimal('max_nilai');
+            $table->decimal('max_nilai', 15, 2);
             $table->timestamps();
         });
     }
