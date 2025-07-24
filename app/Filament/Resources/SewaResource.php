@@ -257,7 +257,6 @@ class SewaResource extends Resource
                             ->numeric()
                             ->prefix('Rp')
                             ->live(),
-                            ->live(),
 
                         Toggle::make('tutup_sewa')
                             ->label('Tutup dan Kunci Transaksi Sewa')
@@ -302,9 +301,8 @@ class SewaResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
-
                 Action::make('selesaikan_sewa')
                     ->label('Selesaikan Sewa')
                     ->icon('heroicon-o-check-circle')
@@ -496,4 +494,3 @@ class SewaResource extends Resource
         ];
     }
 }
-
