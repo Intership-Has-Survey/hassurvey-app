@@ -28,6 +28,15 @@ use Spatie\Permission\Models\Role;
 
 class PermissionResource extends Resource
 {
+    protected static ?string $navigationLabel = 'Hak Akses';
+
+    protected static ?string $navigationGroup = 'Jabatan dan Hak Akses';
+
+    protected static ?string $pluralModelLabel = 'Hak Akses';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?int $navigationGroupSort = 1;
     public static function isScopedToTenant(): bool
     {
         return config('filament-spatie-roles-permissions.scope_premissions_to_tenant', config('filament-spatie-roles-permissions.scope_to_tenant', true));
@@ -46,26 +55,6 @@ class PermissionResource extends Resource
     public static function getModel(): string
     {
         return config('permission.models.permission', Permission::class);
-    }
-
-    public static function getLabel(): string
-    {
-        return __('filament-spatie-roles-permissions::filament-spatie.section.permission');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __(config('filament-spatie-roles-permissions.navigation_section_group', 'filament-spatie-roles-permissions::filament-spatie.section.roles_and_permissions'));
-    }
-
-    public static function getNavigationSort(): ?int
-    {
-        return  config('filament-spatie-roles-permissions.sort.permission_navigation');
-    }
-
-    public static function getPluralLabel(): string
-    {
-        return __('filament-spatie-roles-permissions::filament-spatie.section.permissions');
     }
 
     public static function getCluster(): ?string
@@ -188,11 +177,14 @@ class PermissionResource extends Resource
                     ])->deselectRecordsAfterCompletion(),
             ])
             ->emptyStateActions(
-                config('filament-spatie-roles-permissions.should_remove_empty_state_actions.permissions') ? [] :
-                    [
-                        Tables\Actions\CreateAction::make()
-                    ]
-            );
+                config('filament-spatie-roles-permissions.should_remove_empty_state_actions.roles') ? [] :
+                [
+                    Tables\Actions\CreateAction::make()
+                        ->label('Tambah JHak Akses')
+                ]
+            )
+            ->emptyStateHeading('Belum Ada Hak Akses yang dibuat')
+            ->emptyStateDescription('Silahkan buat hak akses baru untuk memulai.');
     }
 
     public static function getRelations(): array

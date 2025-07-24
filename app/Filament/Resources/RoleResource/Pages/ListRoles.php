@@ -15,7 +15,7 @@ class ListRoles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Tambah Jenis Jabatan Baru')
                 ->icon('heroicon-o-plus')
                 ->color('primary'),

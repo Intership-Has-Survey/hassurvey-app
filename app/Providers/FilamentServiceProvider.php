@@ -22,11 +22,6 @@ class FilamentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Filament::serving(function () {
-            Filament::registerResources([
-                RoleResource::class, // daftarkan versi milikmu
-                PermissionResource::class
-            ]);
-        });
+        
     }
 }

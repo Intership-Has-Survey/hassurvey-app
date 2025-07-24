@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             // ->registration()
             ->login()
             ->passwordReset()
+
             // ->emailVerification()
             ->colors([
                 'primary' => Color::Amber,
@@ -60,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
+                'Jabatan dan Hak Akses',
                 'Manajemen Data Master',
                 'Customer',
                 'Keuangan',
@@ -68,7 +70,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 ActivitylogPlugin::make(),
-                FilamentSpatieRolesPermissionsPlugin::make()
-            ]);
+
+            ])
+            ;
     }
 }

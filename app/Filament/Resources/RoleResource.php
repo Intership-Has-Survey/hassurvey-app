@@ -1,11 +1,8 @@
 <?php
 
-namespace Althinect\FilamentSpatieRolesPermissions\Resources;
+namespace App\Filament\Resources;
 
-use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\Pages\CreateRole;
-use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\Pages\EditRole;
-use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\Pages\ListRoles;
-use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\Pages\ViewRole;
+use App\Filament\Resources\RoleResource\Pages;
 use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\RelationManager\PermissionRelationManager;
 use Althinect\FilamentSpatieRolesPermissions\Resources\RoleResource\RelationManager\UserRelationManager;
 use Filament\Facades\Filament;
@@ -15,7 +12,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Unique;
@@ -26,6 +27,10 @@ use Illuminate\Database\Eloquent\Model;
 class RoleResource extends Resource
 {
 
+
+    protected static ?string $navigationLabel = 'Jabatan';
+
+    protected static ?string $pluralModelLabel = 'Jabatan';
 
     public static function isScopedToTenant(): bool
     {
@@ -52,10 +57,7 @@ class RoleResource extends Resource
         return __('filament-spatie-roles-permissions::filament-spatie.section.role');
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        return __(config('filament-spatie-roles-permissions.navigation_section_group', 'filament-spatie-roles-permissions::filament-spatie.section.roles_and_permissions'));
-    }
+    protected static ?string $navigationGroup = 'Jabatan dan Hak Akses';
 
     public static function getNavigationSort(): ?int
     {
@@ -147,18 +149,18 @@ class RoleResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                EditAction::make(),
+                ViewAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions(
                 config('filament-spatie-roles-permissions.should_remove_empty_state_actions.roles') ? [] :
                     [
-                        Tables\Actions\CreateAction::make()
+                        CreateAction::make()
                     ]
             );
     }
@@ -183,15 +185,15 @@ class RoleResource extends Resource
     {
         if (config('filament-spatie-roles-permissions.should_use_simple_modal_resource.roles')) {
             return [
-                'index' => ListRoles::route('/'),
+                'index' => Pages\ListRoles::route('/'),
             ];
         }
 
         return [
-            'index' => ListRoles::route('/'),
-            'create' => CreateRole::route('/create'),
-            'edit' => EditRole::route('/{record}/edit'),
-            'view' => ViewRole::route('/{record}'),
+            'index' => Pages\ListRoles::route('/'),
+            'create' => Pages\CreateRole::route('/create'),
+            'edit' => Pages\EditRole::route('/{record}/edit'),
+            'view' => Pages\ViewRole::route('/{record}'),
         ];
     }
 }
