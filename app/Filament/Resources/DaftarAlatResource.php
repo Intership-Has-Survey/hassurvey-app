@@ -55,7 +55,7 @@ class DaftarAlatResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique()
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -94,11 +94,19 @@ class DaftarAlatResource extends Resource
                                 Forms\Components\TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
+                                    ->unique()
+                                    ->validationMessages([
+                                        'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ])
                                     ->minLength(16)
                                     ->maxLength(16)
                                     ->required(),
                                 Forms\Components\TextInput::make('email')
                                     ->label('Email')
+                                    ->unique()
+                                    ->validationMessages([
+                                        'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ])
                                     ->email()
                                     ->required(),
                                 Forms\Components\TextInput::make('telepon')

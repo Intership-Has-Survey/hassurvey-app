@@ -42,10 +42,18 @@ class PemilikResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('NIK')
                             ->label('Nomor Induk Kependudukan (NIK)')
+                            ->unique()
+                            ->validationMessages([
+                                'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
                             ->length(16)
                             ->required(),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
+                            ->unique()
+                            ->validationMessages([
+                                'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
                             ->email()
                             ->required(),
                         Forms\Components\TextInput::make('telepon')
