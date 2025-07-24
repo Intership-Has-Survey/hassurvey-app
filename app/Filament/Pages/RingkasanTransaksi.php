@@ -20,7 +20,7 @@ class RingkasanTransaksi extends Page implements HasTable
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pengeluaran';
     protected static ?string $navigationGroup = 'Keuangan';
-    protected static ?string $title = 'Ringkasan Pembayaran';
+    protected static ?string $title = 'Pengeluaran';
     protected static string $view = 'filament.pages.ringkasan-transaksi';
     protected static ?int $navigationSort = 3;
 
@@ -83,6 +83,8 @@ class RingkasanTransaksi extends Page implements HasTable
                     ->url(fn(PengajuanDana $record): string => TransaksiPembayaranResource::getUrl('index', [
                         'pengajuan_dana_id' => $record->id,
                     ])),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pengeluaran Tercatat')
+            ->defaultSort('created_at', 'desc');
     }
 }

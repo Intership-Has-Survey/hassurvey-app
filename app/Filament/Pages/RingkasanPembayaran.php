@@ -21,7 +21,7 @@ class RingkasanPembayaran extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Pemasukan';
-    protected static ?string $title = 'Daftar Pembayaran';
+    protected static ?string $title = 'Pemasukan';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
@@ -60,7 +60,7 @@ class RingkasanPembayaran extends Page implements HasTable
                     ->label('Nama Layanan')
                     ->getStateUsing(function ($record) {
                         if ($record->payable_type === 'App\\Models\\Project') {
-                            return \App\Models\Project::find($record->id)?->nama_project ?? '-';
+                            return Project::find($record->id)?->nama_project ?? '-';
                         } elseif ($record->payable_type === 'App\\Models\\Sewa') {
                             return \App\Models\Sewa::find($record->id)?->judul ?? '-';
                         }
@@ -71,7 +71,7 @@ class RingkasanPembayaran extends Page implements HasTable
                     ->money('IDR')
                     ->getStateUsing(function ($record) {
                         if ($record->payable_type === 'App\\Models\\Project') {
-                            return \App\Models\Project::find($record->id)?->nilai_project ?? '-';
+                            return Project::find($record->id)?->nilai_project ?? '-';
                         } elseif ($record->payable_type === 'App\\Models\\Sewa') {
                             return \App\Models\Sewa::find($record->id)?->harga_real ?? '-';
                         }
@@ -107,6 +107,9 @@ class RingkasanPembayaran extends Page implements HasTable
                 // )
 
                 // ->openUrlInNewTab(),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pemasukan Tercatat')
+            ->defaultSort('created_at', 'desc');
+
     }
 }

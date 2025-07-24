@@ -21,6 +21,9 @@ use App\Models\TrefRegion;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Actions;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 
 
 class DaftarAlatResource extends Resource
@@ -33,7 +36,9 @@ class DaftarAlatResource extends Resource
 
     protected static ?string $navigationGroup = 'Manajemen Data Master';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?string $pluralModelLabel = 'Daftar Alat';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?int $navigationGroupSort = 1;
 
@@ -55,7 +60,7 @@ class DaftarAlatResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique()
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -94,11 +99,19 @@ class DaftarAlatResource extends Resource
                                 Forms\Components\TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
+                                    ->unique()
+                                    ->validationMessages([
+                                        'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ])
                                     ->minLength(16)
                                     ->maxLength(16)
                                     ->required(),
                                 Forms\Components\TextInput::make('email')
                                     ->label('Email')
+                                    ->unique()
+                                    ->validationMessages([
+                                        'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ])
                                     ->email()
                                     ->required(),
                                 Forms\Components\TextInput::make('telepon')
@@ -200,7 +213,10 @@ class DaftarAlatResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Alat Terdaftar')
+            ->emptyStateDescription('Silahkan buat data alat baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

@@ -32,6 +32,8 @@ class PersonelResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Personel';
     protected static ?string $navigationGroup = 'Manajemen Data Master';
+
+    protected static ?string $pluralModelLabel = 'Personel';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -228,7 +230,10 @@ class PersonelResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Personel Terdaftar')
+            ->emptyStateDescription('Silahkan buat personel baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
 

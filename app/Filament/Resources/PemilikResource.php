@@ -22,8 +22,11 @@ class PemilikResource extends Resource
     protected static ?string $model = Pemilik::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationLabel = 'Pemilik Alat';
+    protected static ?string $navigationLabel = 'Pemilik/Investor Alat';
     protected static ?string $navigationGroup = 'Manajemen Data Master';
+
+    protected static ?string $pluralModelLabel = 'Pemilik Alat';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -42,10 +45,18 @@ class PemilikResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('NIK')
                             ->label('Nomor Induk Kependudukan (NIK)')
+                            ->unique()
+                            ->validationMessages([
+                                'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
                             ->length(16)
                             ->required(),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
+                            ->unique()
+                            ->validationMessages([
+                                'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
                             ->email()
                             ->required(),
                         Forms\Components\TextInput::make('telepon')
@@ -126,7 +137,10 @@ class PemilikResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pemilik/Investor Alat yang Terdaftar')
+            ->emptyStateDescription('Silahkan buat data pemilik/investor baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

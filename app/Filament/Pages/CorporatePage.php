@@ -56,6 +56,8 @@ class CorporatePage extends Page implements HasTable
                     // Arahkan ke halaman EDIT dari CustomerResource.
                     // Di halaman inilah kita akan menampilkan riwayat proyeknya.
                     ->url(fn(Corporate $record): string => CorporateResource::getUrl('edit', ['record' => $record])),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pelanggan bertipe Perusahaan yang Terdaftar')
+            ->defaultSort('created_at', 'desc');
     }
 }
