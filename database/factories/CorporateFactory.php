@@ -29,8 +29,8 @@ class CorporateFactory extends Factory
 
         // 2. Pecah kodenya untuk mendapatkan ID induk.
         $villageCode = $randomVillage->code;
-        $districtCode = substr($villageCode, 0, 7);
-        $cityCode = substr($villageCode, 0, 4);
+        $districtCode = substr($villageCode, 0, 8);
+        $cityCode = substr($villageCode, 0, 5);
         $provinceCode = substr($villageCode, 0, 2);
 
         return [

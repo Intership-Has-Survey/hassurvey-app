@@ -41,25 +41,4 @@ class Perorangan extends Model
             ->withPivot('user_id')
             ->withTimestamps();
     }
-
-    /**
-     * Get all of the perorangan's rentals.
-     */
-    public function sewa(): MorphMany
-    {
-        return $this->morphMany(Sewa::class, 'customer');
-    }
-
-    /**
-     * Get all of the projects for the Perorangan.
-     *
-     * SOLUSI: Mengubah relasi menjadi morphMany agar sesuai dengan struktur polimorfik.
-     */
-    public function projects(): MorphMany
-    {
-        // A Perorangan can have many projects.
-        // The 'customer' parameter refers to the 'customer_type' and 'customer_id' columns
-        // on the 'projects' table.
-        return $this->morphMany(Project::class, 'customer');
-    }
 }

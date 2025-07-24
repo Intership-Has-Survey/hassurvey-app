@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use \Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 // PERBAIKAN: Nama kelas diubah menjadi PascalCase (Corporate)
 class Corporate extends Model
@@ -23,26 +25,18 @@ class Corporate extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function perorangan()
+    public function perorangan(): BelongsToMany
     {
-        // PERBAIKAN: Menggunakan nama kelas Perorangan yang sudah diperbaiki
-        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')
-            ->using(PeroranganCorporate::class) // Memberitahu Eloquent untuk menggunakan model pivot kustom
-            ->withPivot('user_id')
-            ->withTimestamps();
+        return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')->withPivot('user_id');
     }
 
-    public function sewa(): MorphMany
+    public function project(): HasMany
     {
-        // Logikanya sama persis dengan di model Perorangan
-        return $this->morphMany(Sewa::class, 'customer');
+        return $this->hasMany(Project::class, 'corporate_id');
     }
 
-    public function projects(): MorphMany
+    public function sewa(): HasMany
     {
-        // A Perorangan can have many projects.
-        // The 'customer' parameter refers to the 'customer_type' and 'customer_id' columns
-        // on the 'projects' table.
-        return $this->morphMany(Project::class, 'customer');
+        return $this->HasMany(Sewa::class, 'sewa_id');
     }
 }

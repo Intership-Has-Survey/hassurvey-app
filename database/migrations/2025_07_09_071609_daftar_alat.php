@@ -10,11 +10,33 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        Schema::create('jenis_alat', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('nama')->unique();
+            $table->text('keterangan')->nullable();
+            $table->timestamps();
+
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->softDeletes();
+        });
+
+        Schema::create('merk', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('nama')->unique();
+
+            $table->timestamps();
+
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->softDeletes();
+
+        });
+
         Schema::create('daftar_alat', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nomor_seri')->unique();
-            $table->string('jenis_alat');
-            $table->string('merk');
+
+            $table->foreignUuid('jenis_alat_id')->constrained('jenis_alat');
+            $table->foreignUuid('merk_id')->constrained('merk');
 
             // Mengubah kolom 'kondisi' menjadi boolean
             // true: Baik, false: Bermasalah
@@ -27,8 +49,8 @@ return new class extends Migration {
             $table->text('keterangan')->nullable();
             $table->timestamps();
 
-            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignUuid('pemilik_id')->constrained('pemilik')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('pemilik_id')->constrained('pemilik');
             $table->softDeletes();
         });
     }
@@ -39,5 +61,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('daftar_alat');
+        Schema::dropIfExists('jenis_alat');
+        Schema::dropIfExists('merk');
     }
 };

@@ -24,6 +24,7 @@ class SalesSeeder extends Seeder
             'nama' => 'Syahrial',
             'email' => 'syahrial@gmail.com',
             'telepon' => '085161648713',
+            'nik' => '3327081234560001',
             'provinsi' => '33', // Jawa Tengah
             'kota' => '33.27', // Kab. Pemalang
             'kecamatan' => '33.27.08', // Kec. Pemalang
@@ -36,6 +37,7 @@ class SalesSeeder extends Seeder
             'nama' => 'Hipdi',
             'email' => 'hipdi@gmail.com',
             'telepon' => '085161648714',
+            'nik' => '3327081234560002',
             'provinsi' => '33', // Jawa Tengah
             'kota' => '33.27', // Kab. Pemalang
             'kecamatan' => '33.27.08', // Kec. Pemalang
@@ -48,6 +50,7 @@ class SalesSeeder extends Seeder
             'nama' => 'Ahmad',
             'email' => 'ahmad@gmail.com',
             'telepon' => '085161648715',
+            'nik' => '3327081234560003',
             'provinsi' => '33', // Jawa Tengah
             'kota' => '33.27', // Kab. Pemalang
             'kecamatan' => '33.27.08', // Kec. Pemalang
@@ -60,6 +63,7 @@ class SalesSeeder extends Seeder
             'nama' => 'Diaz',
             'email' => 'diaz@gmail.com',
             'telepon' => '085161648716',
+            'nik' => '3327081234560004',
             'provinsi' => '33', // Jawa Tengah
             'kota' => '33.27', // Kab. Pemalang
             'kecamatan' => '33.27.08', // Kec. Pemalang
@@ -72,6 +76,7 @@ class SalesSeeder extends Seeder
             'nama' => 'Karel',
             'email' => 'karel@gmail.com',
             'telepon' => '085161648717',
+            'nik' => '3327081234560005',
             'provinsi' => '33', // Jawa Tengah
             'kota' => '33.27', // Kab. Pemalang
             'kecamatan' => '33.27.08', // Kec. Pemalang

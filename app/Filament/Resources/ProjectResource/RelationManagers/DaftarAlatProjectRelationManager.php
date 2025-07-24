@@ -26,7 +26,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
         $newSewa = Sewa::create([
             'judul' => 'Sewa untuk Proyek: ' . ($project->nama_project ?? 'Tanpa Nama'),
             'tgl_mulai' => $project->tgl_mulai ?? now(),
-            'tgl_selesai' => $project->tgl_selesai ?? now()->addDays(30), 
+            'tgl_selesai' => $project->tgl_selesai ?? now()->addDays(30),
             'provinsi' => $project->provinsi ?? '',
             'kota' => $project->kota ?? '',
             'kecamatan' => $project->kecamatan ?? '',

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class Project extends Model
@@ -40,9 +41,16 @@ class Project extends Model
         return $this->belongsTo(Sales::class);
     }
 
-    public function perorangan(): BelongsTo
+    public function corporate(): BelongsTo
     {
-        return $this->belongsTo(Perorangan::class);
+        return $this->belongsTo(Corporate::class);
+    }
+
+    public function perorangan(): BelongsToMany
+    {
+        return $this->belongsToMany(Perorangan::class, 'project_perorangan')
+            ->withPivot('perorangan_id', 'project_id')
+            ->withTimestamps();
     }
 
     public function statusPekerjaan()
@@ -65,10 +73,10 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function customer()
-    {
-        return $this->morphTo();
-    }
+    // public function customer()
+    // {
+    //     return $this->morphTo();
+    // }
 
     public function pengajuanDanas(): HasMany
     {

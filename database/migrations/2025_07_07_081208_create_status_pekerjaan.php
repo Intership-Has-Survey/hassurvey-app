@@ -17,6 +17,7 @@ return new class extends Migration
 
             $table->string('jenis_pekerjaan');
             $table->string('status');
+            $table->string('bukti_pekerjaan_path')->nullable();
 
             $table->text('keterangan')->nullable();
             $table->foreignUuid('user_id')->constrained('users');

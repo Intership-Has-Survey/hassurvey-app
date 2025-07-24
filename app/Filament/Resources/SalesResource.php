@@ -41,6 +41,11 @@ class SalesResource extends Resource
                             ->label('Nama Sales')
                             ->required()
                             ->maxLength(50),
+                        TextInput::make('nik')
+                            ->label('NIK')
+                            ->required()
+                            ->maxLength(16)
+                            ->unique(ignoreRecord: true),
                         TextInput::make('email')
                             ->label('Email')
                             ->required()

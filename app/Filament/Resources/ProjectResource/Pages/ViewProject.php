@@ -9,4 +9,15 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewProject extends ViewRecord
 {
     protected static string $resource = ProjectResource::class;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        if (filled($data['corporate_id'])) {
+            $data['customer_flow_type'] = 'corporate';
+        } else {
+            $data['customer_flow_type'] = 'perorangan';
+        }
+
+        return $data;
+    }
 }
