@@ -63,7 +63,10 @@ class PersonelsRelationManager extends RelationManager
                 Tables\Actions\AttachAction::make()
                     ->preloadRecordSelect()
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
-                        $action->getRecordSelect(),
+                        Forms\Components\Placeholder::make('label_personel')
+                            ->label('Pilih Personel'),
+                        $action
+                            ->getRecordSelect(),
                         Forms\Components\Select::make('peran')
                             ->options([
                                 'surveyor' => 'Surveyor',
@@ -81,6 +84,10 @@ class PersonelsRelationManager extends RelationManager
                         Hidden::make('user_id')
                             ->default(auth()->id()),
                     ])
+                    ->successNotificationTitle('Personel berhasil ditambahkan.')
+                    ->label('Tambah Personel')
+                    ->modalHeading('Tambah Personel ke Proyek')
+
 
             ])
             ->actions([

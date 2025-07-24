@@ -65,8 +65,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 ActivitylogPlugin::make(),
-            ]);
+            ])
 
-
+            ->sidebarCollapsibleOnDesktop();
     }
 }
