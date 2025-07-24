@@ -16,9 +16,13 @@ use Filament\Tables\Actions\Action;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Level;
 
 class PengajuanDanaResource extends Resource
 {
@@ -48,14 +52,86 @@ class PengajuanDanaResource extends Resource
                         Forms\Components\Textarea::make('deskripsi_pengajuan')
                             ->label('Deskripsi Umum')
                             ->columnSpanFull(),
+                        Select::make('bank_id')
+                            ->relationship('bank', 'nama_bank')
+                            ->placeholder('Pilih Bank')
+                            ->searchable()
+                            ->preload()
+                            ->label('Daftar Bank')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null))
+                            ->createOptionForm([
+                                TextInput::make('nama_bank')
+                                    ->label('Nama Bank')
+                                    ->required(),
+                                Hidden::make('user_id')
+                                    ->default(auth()->id()),
+                            ]),
+                        Forms\Components\Select::make('bank_account_id')
+                            ->label('Nomor Rekening')
+                            ->options(function (callable $get) {
+                                $bankId = $get('bank_id');
+                                if (!$bankId) {
+                                    return [];
+                                }
+
+                                return \App\Models\BankAccount::where('bank_id', $bankId)
+                                    ->get()
+                                    ->mapWithKeys(function ($account) {
+                                        return [$account->id => "{$account->no_rek} ({$account->nama_pemilik})"];
+                                    });
+                            })
+                            ->reactive()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('no_rek')
+                                    ->label('Nomor Rekening')
+                                    ->required(),
+                                Forms\Components\TextInput::make('nama_pemilik')
+                                    ->label('Nama Pemilik')
+                                    ->required(),
+                                Forms\Components\Hidden::make('bank_id')
+                                    ->default(fn(callable $get) => $get('bank_id')), // ambil dari select bank
+                                Forms\Components\Hidden::make('user_id')
+                                    ->default(auth()->id()),
+                            ])
+                            ->createOptionUsing(function (array $data, callable $get): string {
+                                // Ambil bank_id dari form utama
+                                $data['bank_id'] = $get('bank_id');
+
+                                $account = \App\Models\BankAccount::create($data);
+                                return $account->id; // UUID
+                            })
+                            ->required(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Informasi Pembayaran (Rekening Tujuan)')
-                    ->schema([
-                        Forms\Components\TextInput::make('nama_bank')->maxLength(255),
-                        Forms\Components\TextInput::make('nomor_rekening')->maxLength(255),
-                        Forms\Components\TextInput::make('nama_pemilik_rekening')->maxLength(255),
-                    ])->columns(3),
+
+
+                // Repeater::make('detailPengajuans') // nama relasi
+                //     ->relationship()
+                //     ->columnSpanFull()
+                //     ->label('Rincian Pengajuan Dana')
+                //     ->schema([
+                //         TextInput::make('deskripsi')
+                //             ->label('Nama Item')
+                //             ->required(),
+                //         TextInput::make('qty')
+                //             ->label('Jumlah')
+                //             ->required(),
+
+                //         TextInput::make('harga_satuan')
+                //             ->label('Harga Satuan')
+                //             ->numeric()
+                //             ->required(),
+                //     ])
+                //     ->defaultItems(1)
+                //     ->createItemButtonLabel('Tambah Rincian')
+                //     ->columns(3),
+                Forms\Components\Hidden::make('nilai')
+                    ->default('0'),
+                Forms\Components\Hidden::make('dalam_review')
+                    ->default('0'),
+
 
                 Forms\Components\Hidden::make('user_id')->default(auth()->id()),
             ]);
@@ -117,7 +193,31 @@ class PengajuanDanaResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->after(function ($livewire, $record) {
+                        // Hitung total harga dulu
+                        $record->updateTotalHarga();
+
+                        // Refresh record agar data terbaru terbaca
+                        $record->refresh();
+
+                        $nilai = $record->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+                            $roleId = optional($firstStep?->roles)->id;
+
+                            $record->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleId, // Pastikan ini role_id
+                            ]);
+                        }
+                    }),
+
                 Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-o-check-circle')

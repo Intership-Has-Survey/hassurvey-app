@@ -173,7 +173,26 @@ class PengajuanDanasRelationManager extends RelationManager
                 //             : route('filament.admin.resources.pengajuan-danas.create', ['project_id' => $record->id])
                 //     ),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->after(function ($livewire, $record) {
+                        $record->updateTotalHarga();
+
+                        $nilai = $record->nilai;
+
+                        $level = Level::where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+                            $roleName = optional($firstStep?->roles)->id;
+
+                            $record->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName,
+                            ]);
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
