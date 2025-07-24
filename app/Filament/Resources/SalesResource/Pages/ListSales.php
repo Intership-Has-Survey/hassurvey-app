@@ -10,10 +10,19 @@ class ListSales extends ListRecords
 {
     protected static string $resource = SalesResource::class;
 
+    protected static ?string $title = 'Daftar Sales';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Sales')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
+    }
+    public function getBreadcrumb(): string
+    {
+        return 'Daftar';
     }
 }

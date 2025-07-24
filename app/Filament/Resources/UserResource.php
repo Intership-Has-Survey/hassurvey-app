@@ -23,11 +23,13 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationLabel = 'Manajemen User';
+    protected static ?string $navigationLabel = 'Kelola Akun Pengguna';
+
+    protected static ?string $pluralModelLabel = 'Akun Pengguna';
 
     protected static ?string $navigationGroup = 'Manajemen Data Master';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static ?int $navigationGroupSort = 1;
 
@@ -75,7 +77,10 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pengguna Terdaftar')
+            ->emptyStateDescription('Silahkan buat pengguna baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

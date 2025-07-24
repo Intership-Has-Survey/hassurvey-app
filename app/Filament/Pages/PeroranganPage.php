@@ -57,6 +57,8 @@ class PeroranganPage extends Page implements HasTable
                     // Arahkan ke halaman EDIT dari CustomerResource.
                     // Di halaman inilah kita akan menampilkan riwayat proyeknya.
                     ->url(fn(Perorangan $record): string => PeroranganResource::getUrl('edit', ['record' => $record])),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Pelanggan bertipe Perorangan yang Terdaftar')
+            ->defaultSort('created_at', 'desc');
     }
 }

@@ -28,7 +28,10 @@ class SalesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Manajemen Data Master';
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 5;
+    protected static ?string $pluralModelLabel = 'Sales';
+
+
 
 
     public static function form(Form $form): Form
@@ -153,7 +156,10 @@ class SalesResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Sales Terdaftar')
+            ->emptyStateDescription('Silahkan buat data sales baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

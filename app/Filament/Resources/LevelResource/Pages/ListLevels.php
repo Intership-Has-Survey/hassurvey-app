@@ -10,10 +10,22 @@ class ListLevels extends ListRecords
 {
     protected static string $resource = LevelResource::class;
 
+    protected static ?string $title = 'Jenis Tingkatan Pengajuan';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Jenis Baru')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
     }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Daftar Jenis';
+    }
+
+
 }

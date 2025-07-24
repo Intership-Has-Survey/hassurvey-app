@@ -9,11 +9,18 @@ use Filament\Resources\Pages\ListRecords;
 class ListPemiliks extends ListRecords
 {
     protected static string $resource = PemilikResource::class;
-
+    protected static ?string $title = 'Daftar Pemilik/Investor Alat';
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Pemilik Alat')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
+    }
+    public function getBreadcrumb(): string
+    {
+        return 'Daftar';
     }
 }

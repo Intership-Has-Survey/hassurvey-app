@@ -21,7 +21,7 @@ class TransaksiPembayaranResource extends Resource
 
     // protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     // protected static ?string $navigationGroup = 'Keuangan';
-    // protected static ?string $navigationLabel = 'Riwayat Transaksi Keluar';
+    // static ?string $navigationLabel = 'Riwayat Transaksi Keluar';
 
     protected static bool $shouldRegisterNavigation = false;
 

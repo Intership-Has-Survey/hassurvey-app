@@ -10,10 +10,20 @@ class ListPengajuanDanas extends ListRecords
 {
     protected static string $resource = PengajuanDanaResource::class;
 
+    protected static ?string $title = 'Daftar Pengajuan Dana';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Ajukan Pengajuan Dana')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
     }
+    public function getBreadcrumb(): string
+    {
+        return 'Daftar';
+    }
+
 }

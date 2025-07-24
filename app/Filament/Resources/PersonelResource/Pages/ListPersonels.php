@@ -10,10 +10,18 @@ class ListPersonels extends ListRecords
 {
     protected static string $resource = PersonelResource::class;
 
+    protected static ?string $title = 'Personel Pekerja';
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Personel')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
+    }
+    public function getBreadcrumb(): string
+    {
+        return 'Daftar';
     }
 }

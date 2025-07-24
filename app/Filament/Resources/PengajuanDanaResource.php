@@ -27,6 +27,10 @@ class PengajuanDanaResource extends Resource
     protected static ?string $navigationGroup = 'Keuangan';
     protected static ?string $navigationLabel = 'Pengajuan Dana';
 
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $pluralModelLabel = 'Pengajuan Dana';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -99,6 +103,9 @@ class PengajuanDanaResource extends Resource
                 Tables\Columns\TextColumn::make('level.nama')->label('Level'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime('d M Y')->sortable(),
             ])
+            ->emptyStateHeading('Belum Ada Pengajuan Dana Terdaftar')
+            ->emptyStateDescription('Silahkan buat pengajuan dana untuk memulai.')
+            ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -191,7 +198,7 @@ class PengajuanDanaResource extends Resource
         return [
             RelationManagers\DetailPengajuansRelationManager::class,
             RelationManagers\TransaksiPembayaransRelationManager::class,
-            // \Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager::class,
+                // \Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager::class,
             ActivitylogRelationManager::class,
         ];
     }
