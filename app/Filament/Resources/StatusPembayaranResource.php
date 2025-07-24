@@ -126,4 +126,9 @@ class StatusPembayaranResource extends Resource
             'edit' => Pages\EditStatusPembayaran::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Project'); // atau permission spesifik
+    }
 }

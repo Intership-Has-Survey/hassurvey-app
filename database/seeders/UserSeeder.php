@@ -2,58 +2,62 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-
     public function run(): void
     {
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        // Buat roles
+        $adminRole    = Role::firstOrCreate(['name' => 'Admin']);
+        $financeRole  = Role::firstOrCreate(['name' => 'Keuangan']);
+        $directorRole = Role::firstOrCreate(['name' => 'Direktur Utama']);
+        $operasionalRole = Role::firstOrCreate(['name' => 'Operasional']);
 
-        User::create([
-            'name' => 'Karel Riyan',
-            'email' => 'karelriyan@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        // Buat users & assign role
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            ['name' => 'Admin', 'password' => Hash::make('12345')]
+        );
+        $admin->assignRole($adminRole);
 
-        User::create([
-            'name' => 'Syahrial Hipdi',
-            'email' => 'syahrial@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        $karel = User::firstOrCreate(
+            ['email' => 'karelriyan@gmail.com'],
+            ['name' => 'Karel Riyan', 'password' => Hash::make('12345')]
+        );
+        $karel->assignRole($operasionalRole);
 
-        User::create([
-            'name' => 'Diaz',
-            'email' => 'diaz@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        $hipdi = User::firstOrCreate(
+            ['email' => 'syahrial@gmail.com'],
+            ['name' => 'Syahrial Hipdi', 'password' => Hash::make('12345')]
+        );
+        $hipdi->assignRole($operasionalRole);
 
-        User::create([
-            'name' => 'Direktur Operasional',
-            'email' => 'dirops@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        $diaz = User::firstOrCreate(
+            ['email' => 'diaz@gmail.com'],
+            ['name' => 'Diaz', 'password' => Hash::make('12345')]
+        );
+        $diaz->assignRole($financeRole);
 
-        User::create([
-            'name' => 'Keuangan',
-            'email' => 'keuangan@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        $dirops = User::firstOrCreate(
+            ['email' => 'dirops@gmail.com'],
+            ['name' => 'Direktur Operasional', 'password' => Hash::make('12345')]
+        );
+        $dirops->assignRole($directorRole);
 
-        User::create([
-            'name' => 'Direktur Utama',
-            'email' => 'direktur@gmail.com',
-            'password' => bcrypt('12345'),
-        ]);
+        $keuangan = User::firstOrCreate(
+            ['email' => 'keuangan@gmail.com'],
+            ['name' => 'Keuangan', 'password' => Hash::make('12345')]
+        );
+        $keuangan->assignRole($financeRole);
+
+        $direktur = User::firstOrCreate(
+            ['email' => 'direktur@gmail.com'],
+            ['name' => 'Direktur Utama', 'password' => Hash::make('12345')]
+        );
+        $direktur->assignRole($directorRole);
     }
 }

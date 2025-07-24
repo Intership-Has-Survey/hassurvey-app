@@ -40,7 +40,7 @@ class PermissionResource extends Resource
     public static function isScopedToTenant(): bool
     {
         return config('filament-spatie-roles-permissions.scope_premissions_to_tenant', config('filament-spatie-roles-permissions.scope_to_tenant', true));
-    }   
+    }
 
     public static function getNavigationIcon(): ?string
     {
@@ -178,10 +178,10 @@ class PermissionResource extends Resource
             ])
             ->emptyStateActions(
                 config('filament-spatie-roles-permissions.should_remove_empty_state_actions.roles') ? [] :
-                [
-                    Tables\Actions\CreateAction::make()
-                        ->label('Tambah JHak Akses')
-                ]
+                    [
+                        Tables\Actions\CreateAction::make()
+                            ->label('Tambah JHak Akses')
+                    ]
             )
             ->emptyStateHeading('Belum Ada Hak Akses yang dibuat')
             ->emptyStateDescription('Silahkan buat hak akses baru untuk memulai.');
@@ -212,5 +212,10 @@ class PermissionResource extends Resource
             'edit' => PermissionResource\Pages\EditPermission::route('/{record}/edit'),
             'view' => PermissionResource\Pages\ViewPermission::route('/{record}'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola hak akses'); // atau permission spesifik
     }
 }

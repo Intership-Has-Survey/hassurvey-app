@@ -349,10 +349,6 @@ class SewaResource extends Resource
         ];
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('view-any Sewa'); // atau permission spesifik
-    }
 
     private static function getPeroranganForm(): array
     {
@@ -492,5 +488,10 @@ class SewaResource extends Resource
                 ->rows(3)
                 ->columnSpanFull(),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola layanan sewa'); // atau permission spesifik
     }
 }

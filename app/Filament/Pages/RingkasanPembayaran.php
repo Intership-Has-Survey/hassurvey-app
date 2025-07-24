@@ -110,6 +110,10 @@ class RingkasanPembayaran extends Page implements HasTable
             ])
             ->emptyStateHeading('Belum Ada Pemasukan Tercatat')
             ->defaultSort('created_at', 'desc');
+    }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola pembayaran'); // atau permission spesifik
     }
 }

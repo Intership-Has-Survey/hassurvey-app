@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Pages;
 
 use App\Models\Corporate;
@@ -59,5 +60,10 @@ class CorporatePage extends Page implements HasTable
             ])
             ->emptyStateHeading('Belum Ada Pelanggan bertipe Perusahaan yang Terdaftar')
             ->defaultSort('created_at', 'desc');
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola customer'); // atau permission spesifik
     }
 }
