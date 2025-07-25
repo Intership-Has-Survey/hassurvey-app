@@ -8,7 +8,7 @@ class GrafikPesanan extends ChartWidget
 {
     protected static ?string $heading = 'Pesanan per-bulan';
 
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 3;
 
     protected function getType(): string
     {

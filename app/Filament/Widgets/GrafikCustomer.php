@@ -5,8 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\Corporate;
 use App\Models\Perorangan;
 use Carbon\Carbon;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\ChartWidget;
@@ -16,9 +14,9 @@ class GrafikCustomer extends ChartWidget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $heading = 'Total customers';
+    protected static ?string $heading = 'Total Customer Kumulatif Per Tahun';
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 1;
 
     protected function getFormSchema(): array
     {
@@ -51,7 +49,7 @@ class GrafikCustomer extends ChartWidget implements HasForms
                     'borderColor' => '#10B981',
                 ],
                 [
-                    'label' => 'Corporate',
+                    'label' => 'Perusahaan',
                     'data' => array_values($data['corporate']),
                     'fill' => 'start',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.3)', // Blue 500 with 30% opacity
@@ -77,13 +75,14 @@ class GrafikCustomer extends ChartWidget implements HasForms
             $earliestDate = $earliestCorporate;
         }
 
-        $startDate = Carbon::parse($earliestDate)->startOfMonth();
-        $endDate = now()->endOfMonth();
-
-        // Ensure we only go back 12 months from the end date
-        if ($startDate->diffInMonths($endDate) >= 12) {
-            $startDate = $endDate->copy()->subMonths(11)->startOfMonth();
+        if (is_null($earliestDate)) {
+            // If no data, default to the last 12 months for a meaningful chart
+            $startDate = now()->subMonths(11)->startOfMonth();
+        } else {
+            $startDate = Carbon::parse($earliestDate)->startOfMonth();
         }
+
+        $endDate = now()->endOfMonth();
 
         $allCustomers = [];
         $peroranganCustomers = [];
@@ -92,7 +91,7 @@ class GrafikCustomer extends ChartWidget implements HasForms
 
         $currentMonth = $startDate->copy();
         while ($currentMonth->lessThanOrEqualTo($endDate)) {
-            $formattedMonth = $currentMonth->format('M Y');
+            $formattedMonth = $currentMonth->format('Y-m-01'); // Use Y-m-01 for time scale
             $labels[] = $formattedMonth;
             $allCustomers[$formattedMonth] = 0;
             $peroranganCustomers[$formattedMonth] = 0;
@@ -100,13 +99,13 @@ class GrafikCustomer extends ChartWidget implements HasForms
             $currentMonth->addMonth();
         }
 
-        $peroranganData = Perorangan::select(DB::raw('DATE_FORMAT(created_at, "%b %Y") as month'), DB::raw('count(*) as total'))
+        $peroranganData = Perorangan::select(DB::raw('DATE_FORMAT(created_at, "%Y-%m-01") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
-        $corporateData = Corporate::select(DB::raw('DATE_FORMAT(created_at, "%b %Y") as month'), DB::raw('count(*) as total'))
+        $corporateData = Corporate::select(DB::raw('DATE_FORMAT(created_at, "%Y-%m-01") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
@@ -143,5 +142,67 @@ class GrafikCustomer extends ChartWidget implements HasForms
         ];
     }
 
+    protected function getOptions(): array
+    {
+        $data = $this->getChartData();
+        $maxAll = empty($data['all']) ? 0 : max(array_values($data['all']));
+        $maxPerorangan = empty($data['perorangan']) ? 0 : max(array_values($data['perorangan']));
+        $maxCorporate = empty($data['corporate']) ? 0 : max(array_values($data['corporate']));
 
+        $overallMax = max($maxAll, $maxPerorangan, $maxCorporate);
+
+        if ($overallMax == 0) {
+            $overallMax = 10;
+        }
+
+        $stepSize = ceil($overallMax / 4);
+        $yAxisMax = $stepSize * 4;
+
+        if ($yAxisMax < $overallMax) {
+            $yAxisMax = $stepSize * (floor($overallMax / $stepSize) + 1);
+        }
+
+        if ($yAxisMax < 10 && $overallMax > 0) {
+            $yAxisMax = 10;
+            $stepSize = 2;
+        } elseif ($yAxisMax == 0 && $overallMax == 0) {
+            $yAxisMax = 10;
+            $stepSize = 2;
+        }
+
+        return [
+            'scales' => [
+                'x' => [
+                    'type' => 'time',
+                    'time' => [
+                        'unit' => 'month',
+                        'tooltipFormat' => 'MMM YYYY',
+                        'displayFormats' => [
+                            'month' => 'MMM YYYY',
+                            'year' => 'YYYY',
+                        ],
+                    ],
+                    'ticks' => [
+                        'source' => 'auto',
+                        'autoSkip' => true,
+                        'maxRotation' => 0,
+                        'minRotation' => 0,
+                        'callback' => 'function(value, index, values) {
+                            if (index === 0 || index === values.length - 1) {
+                                return this.getLabelForValue(value);
+                            }
+                            return "";
+                        }',
+                    ],
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                    'max' => $yAxisMax,
+                    'ticks' => [
+                        'stepSize' => $stepSize,
+                    ],
+                ],
+            ],
+        ];
+    }
 }
