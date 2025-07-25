@@ -28,6 +28,13 @@ class EditProject extends EditRecord
             $data['customer_flow_type'] = 'perorangan';
         }
 
+        $data['assignedPersonels'] = $this->record->personels->map(function ($personel) {
+            return [
+                'personel_id' => $personel->nama,
+                'peran' => $personel->pivot->peran ?? null,
+            ];
+        })->toArray();
+
         return $data;
     }
 
@@ -53,6 +60,20 @@ class EditProject extends EditRecord
                     $this->record->perorangan_id => ['user_id' => auth()->id()]
                 ]);
             }
+        }
+
+        $project = $this->getRecord();
+        $assignedPersonels = $this->form->getState()['assignedPersonels'] ?? [];
+
+        $syncData = [];
+        foreach ($assignedPersonels as $item) {
+            if (!empty($item['personel_id']) && !empty($item['peran'])) {
+                $syncData[$item['personel_id']] = ['peran' => $item['peran']];
+            }
+        }
+
+        if (!empty($syncData)) {
+            $project->personels()->sync($syncData);
         }
     }
 }

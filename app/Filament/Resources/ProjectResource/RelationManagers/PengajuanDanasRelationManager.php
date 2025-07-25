@@ -50,14 +50,7 @@ class PengajuanDanasRelationManager extends RelationManager
                     ->label('Daftar Bank')
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null))
-                    ->createOptionForm([
-                        TextInput::make('nama_bank')
-                            ->label('Nama Bank')
-                            ->required(),
-                        Hidden::make('user_id')
-                            ->default(auth()->id()),
-                    ]),
+                    ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
                 Forms\Components\Select::make('bank_account_id')
                     ->label('Nomor Rekening')
                     ->options(function (callable $get) {
@@ -92,6 +85,8 @@ class PengajuanDanasRelationManager extends RelationManager
                         $account = \App\Models\BankAccount::create($data);
                         return $account->id; // UUID
                     })
+                    ->searchable()
+                    ->native(false)
                     ->required(),
 
 
