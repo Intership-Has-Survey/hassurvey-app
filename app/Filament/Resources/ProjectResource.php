@@ -61,14 +61,16 @@ class ProjectResource extends Resource
                         ->createOptionForm(self::getSalesForm()),
                     DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
                     Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
-                ])->columns(2),
+                ])
+                ->columns(2)
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
             Section::make('Informasi Customer')
                 ->schema([
                     Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                        ->live()->required()->dehydrated(false)
+                        ->live()->required()->dehydrated(false)->native(false)
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
 
@@ -76,6 +78,8 @@ class ProjectResource extends Resource
                         ->relationship('corporate', 'nama')
                         ->label('Pilih Perusahaan')
                         ->live()
+                        ->searchable()
+                        ->preload()
                         ->createOptionForm(self::getCorporateForm())
                         ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
@@ -91,7 +95,7 @@ class ProjectResource extends Resource
                                     return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                 })
                                 ->searchable()->required()
-                                ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
+                                ->createOptionForm(self::getPeroranganForm())
                                 ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                         ])
                         ->minItems(1)
@@ -112,10 +116,12 @@ class ProjectResource extends Resource
                                 }
                             }
                         }),
-                ]),
+                ])
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
-            Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2),
-            Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2),
+            Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+            Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+
             Hidden::make('user_id')->default(auth()->id()),
         ]);
     }
@@ -142,7 +148,16 @@ class ProjectResource extends Resource
                     ->label('PIC')
                     ->listWithLineBreaks()
                     ->limitList(2),
-                Tables\Columns\TextColumn::make('status')->sortable()->badge(),
+                Tables\Columns\TextColumn::make('status')->sortable()
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Prospect' => 'primary',
+                        'Follow up 1' => 'info',
+                        'Follow up 2' => 'warning',
+                        'Follow up 3' => 'warning',
+                        'Closing' => 'success',
+                        default => 'danger'
+                    }),
                 Tables\Columns\TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()->color(fn(string $state): string => match ($state) {
                     'Lunas' => 'success',
                     'Belum Lunas' => 'danger',
@@ -307,7 +322,7 @@ class ProjectResource extends Resource
                 ->prefix('Rp ')
                 ->mask(RawJs::make('$money($input)'))
                 ->stripCharacters(',')
-                ->maxlength(20),
+                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
             Select::make('status')
                 ->label('Status Proyek')
                 ->options([
@@ -316,6 +331,7 @@ class ProjectResource extends Resource
                     'Follow up 2' => 'Follow up 2',
                     'Follow up 3' => 'Follow up 3',
                     'Closing' => 'Closing',
+                    'Failed' => 'Failed',
                 ])
                 ->required()
                 ->native(false),

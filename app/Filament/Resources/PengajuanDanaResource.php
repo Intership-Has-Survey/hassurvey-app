@@ -60,14 +60,10 @@ class PengajuanDanaResource extends Resource
                             ->label('Daftar Bank')
                             ->required()
                             ->reactive()
-                            ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null))
-                            ->createOptionForm([
-                                TextInput::make('nama_bank')
-                                    ->label('Nama Bank')
-                                    ->required(),
-                                Hidden::make('user_id')
-                                    ->default(auth()->id()),
-                            ]),
+                            ->live()
+                            ->native(false)
+                            ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
+
                         Forms\Components\Select::make('bank_account_id')
                             ->label('Nomor Rekening')
                             ->options(function (callable $get) {
@@ -83,6 +79,8 @@ class PengajuanDanaResource extends Resource
                                     });
                             })
                             ->reactive()
+                            ->native(false)
+                            ->placeholder('Pilih Nomor Rekening')
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('no_rek')
                                     ->label('Nomor Rekening')
@@ -90,8 +88,8 @@ class PengajuanDanaResource extends Resource
                                 Forms\Components\TextInput::make('nama_pemilik')
                                     ->label('Nama Pemilik')
                                     ->required(),
-                                Forms\Components\Hidden::make('bank_id')
-                                    ->default(fn(callable $get) => $get('bank_id')), // ambil dari select bank
+                                // Forms\Components\Hidden::make('bank_id')
+                                //     ->default(fn(callable $get) => $get('bank_id')),
                                 Forms\Components\Hidden::make('user_id')
                                     ->default(auth()->id()),
                             ])
@@ -100,7 +98,7 @@ class PengajuanDanaResource extends Resource
                                 $data['bank_id'] = $get('bank_id');
 
                                 $account = \App\Models\BankAccount::create($data);
-                                return $account->id; // UUID
+                                return $account->id;
                             })
                             ->required(),
                     ])->columns(2),
@@ -227,7 +225,7 @@ class PengajuanDanaResource extends Resource
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->approve()),
                 Action::make('reject')
-                    ->label('Tolak')
+                    ->label('Reject')
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
 
@@ -251,6 +249,40 @@ class PengajuanDanaResource extends Resource
                             echo $pdf->stream();
                         }, 'sales-' . $record->id . '.pdf');
                     }),
+
+                // Action::make('Tolak')
+                // ->label('Tolak')
+                // ->color('danger')
+                // ->visible(fn() => auth()->user()->role !== 'operasional')
+                // ->form([
+                //     Forms\Components\Textarea::make('alasan')
+                //         ->label('Alasan Penolakan')
+                //         ->required(),
+                // ])
+                // ->requiresConfirmation()
+                // ->disabled(function (Model $record) {
+                //     return auth()->user()->role !== $record->dalam_review;
+                // })
+                // ->action(function (Model $record, array $data) {
+                //     $review = ['dirops', 'keuangan', 'direktur', 'approved'];
+                //     $currentIndex = array_search($record->dalam_review, $review);
+
+                //     if ($currentIndex !== false) {
+                //         // Turunkan level jika bisa (misal dari gold → silver)
+                //         $newStatus = $record->dalam_review;
+                //         if ($currentIndex > 0) {
+                //             $newStatus = $review[$currentIndex - 1];
+                //         }
+
+                //         // Simpan status baru + alasan
+                //         $record->update([
+                //             'dalam_review' => $newStatus,
+                //             'ditolak' => auth()->user()->role,
+                //             'disetujui' => null,
+                //             'alasan' => $data['alasan'], // pastikan kolom ini ada di tabel
+                //         ]);
+                //     }
+                // }),
                 ActivityLogTimelineTableAction::make('Log'),
             ]);
     }
@@ -273,10 +305,5 @@ class PengajuanDanaResource extends Resource
             // 'view' => Pages\ViewPengajuanDana::route('/{record}'),
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
         ];
-    }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola pengajuan dana'); // atau permission spesifik
     }
 }
