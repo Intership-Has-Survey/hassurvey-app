@@ -8,6 +8,7 @@ use App\Models\Sales;
 use App\Models\Project;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use App\Models\Personel;
 use Filament\Forms\Form;
 use App\Models\Corporate;
 use App\Models\Perorangan;
@@ -73,7 +74,6 @@ class ProjectResource extends Resource
                         ->live()->required()->dehydrated(false)->native(false)
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
-
                     Select::make('corporate_id')
                         ->relationship('corporate', 'nama')
                         ->label('Pilih Perusahaan')
@@ -99,6 +99,7 @@ class ProjectResource extends Resource
                                 ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                         ])
                         ->minItems(1)
+                        ->distinct()
                         ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                         ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                         ->addActionLabel('Tambah PIC')
@@ -118,6 +119,62 @@ class ProjectResource extends Resource
                         }),
                 ])
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+            Section::make('Tim Personel Proyek')
+                ->schema([
+                    Repeater::make('assignedPersonels')
+                        ->label(false)
+                        ->schema([
+                            Select::make('personel_id')
+                                ->label('Pilih Personel')
+                                ->options(function (Get $get) {
+                                    $currentProjectId = $get('id');
+                                    return Personel::query()
+                                        ->whereDoesntHave('projects', function (Builder $query) use ($currentProjectId) {
+                                            $query->where('status_pekerjaan', '!=', 'Selesai')
+                                                ->where('project_id', '!=', $currentProjectId);
+                                        })
+                                        ->pluck('nama', 'id');
+                                })
+                                ->searchable()
+                                ->required()
+                                ->createOptionUsing(fn(array $data): string => Personel::create(collect($data)->except('personel_id')->all())->id)
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->createOptionForm(self::getPersonelForm()),
+                            Select::make('peran')
+                                ->label('Peran di Proyek')
+                                ->options([
+                                    'Surveyor' => 'Surveyor',
+                                    'Asisten Surveyor' => 'Asisten Surveyor',
+                                    'Driver' => 'Driver',
+                                    'Drafter' => 'Drafter',
+                                ])
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->columns(2)
+                        ->addActionLabel('Tambah Personel ke Tim')
+                        ->itemLabel(function (array $state): ?string {
+                            if (empty($state['personel_id'])) {
+                                return null;
+                            }
+                            return Personel::find($state['personel_id'])?->nama;
+                        })
+                        ->saveRelationshipsUsing(function (Model $record, array $state): void {
+                            $syncData = [];
+                            foreach ($state as $item) {
+                                if (!empty($item['personel_id']) && !empty($item['peran'])) {
+                                    $syncData[$item['personel_id']] = [
+                                        'peran' => $item['peran'],
+                                        'tanggal_mulai' => now(),
+                                        'user_id' => auth()->id()
+                                    ];
+                                }
+                            }
+                            $record->personels()->sync($syncData);
+                        })
+                        ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+
+                ]),
 
             Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
             Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
@@ -308,6 +365,38 @@ class ProjectResource extends Resource
                 ->label('Detail Alamat')
                 ->rows(3)
                 ->columnSpanFull(),
+        ];
+    }
+
+    private static function getPersonelForm(): array
+    {
+        return [
+            Forms\Components\Section::make('Informasi Personel')
+                ->schema([
+                    Forms\Components\TextInput::make('nama')
+                        ->label('Nama Lengkap')
+                        ->required()
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('nik')
+                        ->label('NIK')
+                        ->length(16)
+                        ->numeric()
+                        ->unique(ignoreRecord: true),
+                    Forms\Components\TextInput::make('email')
+                        ->label('Email')
+                        ->email()
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('telepon')
+                        ->label('Telepon')
+                        ->tel()
+                        ->maxLength(15),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Alamat Personel')
+                ->schema(self::getAddressFields())
+                ->columns(2),
+
+            Hidden::make('user_id')->default(auth()->id()),
         ];
     }
 
