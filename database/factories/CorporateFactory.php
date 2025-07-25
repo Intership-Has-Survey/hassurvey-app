@@ -50,6 +50,8 @@ class CorporateFactory extends Factory
             // Mengambil user_id secara acak dari tabel users yang sudah ada
             // atau membuat user baru jika tabel user kosong.
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            'created_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
+            'updated_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
         ];
     }
 }

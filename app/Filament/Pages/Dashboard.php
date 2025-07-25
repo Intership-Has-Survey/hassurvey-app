@@ -20,10 +20,19 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         Select::make('businessCustomersOnly')
-                            ->boolean(),
+                            ->label('Jenis Layanan')
+                            ->options([
+                                'Semua' => 'Semua',
+                                'Layanan Pemetaan' => 'Layanan Pemetaan',
+                                'Layanan Sewa' => 'Layanan Sewa',
+                                'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
+                                'Layanan Penjualan Alat' => 'Layanan Penjualan Alat',
+                            ]),
                         DatePicker::make('startDate')
+                            ->label('Tanggal Mulai')
                             ->maxDate(fn(Get $get) => $get('endDate') ?: now()),
                         DatePicker::make('endDate')
+                            ->label('Tanggal Akhir')
                             ->minDate(fn(Get $get) => $get('startDate') ?: now())
                             ->maxDate(now()),
                     ])
