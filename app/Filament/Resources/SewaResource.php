@@ -26,6 +26,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Ramsey\Uuid\Type\Integer;
 use function Livewire\Volt\placeholder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -60,6 +61,8 @@ class SewaResource extends Resource
     protected static ?string $modelLabel = 'Penyewaan';
     protected static ?string $pluralModelLabel = 'Penyewaan';
 
+    protected static ?int $navigationSort = 2;
+    
     public static function form(Form $form): Form
     {
         $calculateRentang = function (Set $set, Get $get) {
@@ -329,7 +332,10 @@ class SewaResource extends Resource
                             }
                         }),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Belum Ada Kontrak Sewa yang Pernah Dibuat')
+            ->emptyStateDescription('Silahkan buat penyewaan baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

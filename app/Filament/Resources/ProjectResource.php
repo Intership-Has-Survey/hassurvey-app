@@ -35,6 +35,7 @@ class ProjectResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-map';
     protected static ?string $navigationLabel = 'Layanan Pemetaan';
     protected static ?string $navigationGroup = 'Layanan';
+    protected static ?string $pluralModelLabel = 'Proyek Pemetaan';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -181,7 +182,10 @@ class ProjectResource extends Resource
             ])
             ->defaultSort('tanggal_informasi_masuk', 'desc')
             ->striped()
-            ->paginated([10, 25, 50]);
+            ->paginated([10, 25, 50])
+            ->emptyStateHeading('Belum Ada Proyek Pemetaan yang Pernah Dibuat')
+            ->emptyStateDescription('Silahkan buat proyek pemetaan baru untuk memulai.')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -231,7 +235,8 @@ class ProjectResource extends Resource
                 ->placeholder('Pilih kota/kabupaten')
                 ->options(function (Get $get) {
                     $provinceCode = $get('provinsi');
-                    if (!$provinceCode) return [];
+                    if (!$provinceCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $provinceCode . '.%')
@@ -251,7 +256,8 @@ class ProjectResource extends Resource
                 ->placeholder('Pilih kecamatan')
                 ->options(function (Get $get) {
                     $regencyCode = $get('kota');
-                    if (!$regencyCode) return [];
+                    if (!$regencyCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $regencyCode . '.%')
@@ -270,7 +276,8 @@ class ProjectResource extends Resource
                 ->placeholder('Pilih desa/kelurahan')
                 ->options(function (Get $get) {
                     $districtCode = $get('kecamatan');
-                    if (!$districtCode) return [];
+                    if (!$districtCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $districtCode . '.%')
