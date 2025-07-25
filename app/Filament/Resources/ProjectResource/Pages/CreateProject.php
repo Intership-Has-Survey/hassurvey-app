@@ -10,7 +10,25 @@ class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
 
+    protected static ?string $title = 'Tambah Project';
+
     public ?string $customerFlowType = null;
+
+    public function getBreadcrumb(): string
+    {
+        return 'Buat';
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()->label('Simpan'),
+            ...(static::canCreateAnother()
+                ? [$this->getCreateAnotherFormAction()->label('Simpan & tambah lagi')]
+                : []),
+            $this->getCancelFormAction()->label('Batal'),
+        ];
+    }
 
     protected function getRedirectUrl(): string
     {
