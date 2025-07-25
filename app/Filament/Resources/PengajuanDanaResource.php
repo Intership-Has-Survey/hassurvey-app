@@ -79,6 +79,7 @@ class PengajuanDanaResource extends Resource
                                     });
                             })
                             ->reactive()
+                            ->searchable()
                             ->native(false)
                             ->placeholder('Pilih Nomor Rekening')
                             ->createOptionForm([
