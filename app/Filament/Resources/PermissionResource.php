@@ -213,9 +213,4 @@ class PermissionResource extends Resource
             'view' => PermissionResource\Pages\ViewPermission::route('/{record}'),
         ];
     }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola hak akses'); // atau permission spesifik
-    }
 }

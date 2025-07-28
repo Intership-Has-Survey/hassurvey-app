@@ -76,9 +76,4 @@ class LevelResource extends Resource
             'edit' => Pages\EditLevel::route('/{record}/edit'),
         ];
     }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola tingkatan pengajuan'); // atau permission spesifik
-    }
 }

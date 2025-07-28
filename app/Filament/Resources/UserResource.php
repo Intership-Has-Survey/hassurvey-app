@@ -98,9 +98,4 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola akun pengguna'); // atau permission spesifik
-    }
 }

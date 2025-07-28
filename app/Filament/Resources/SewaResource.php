@@ -62,7 +62,7 @@ class SewaResource extends Resource
     protected static ?string $pluralModelLabel = 'Penyewaan';
 
     protected static ?int $navigationSort = 2;
-    
+
     public static function form(Form $form): Form
     {
         $calculateRentang = function (Set $set, Get $get) {
@@ -494,10 +494,5 @@ class SewaResource extends Resource
                 ->rows(3)
                 ->columnSpanFull(),
         ];
-    }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola layanan sewa'); // atau permission spesifik
     }
 }

@@ -128,17 +128,4 @@ class StatusPembayaranRelationManager extends RelationManager
                 ]),
             ]);
     }
-
-
-    // protected function canEdit(Model $record): bool
-    // {
-    //     return in_array(auth()->user()?->role, ['keuangan']);
-    // }
-
-    // protected function canDelete(Model $record): bool
-    // {
-    //     return auth()->user()->role === 'keuangan';
-    // }
-
-
 }

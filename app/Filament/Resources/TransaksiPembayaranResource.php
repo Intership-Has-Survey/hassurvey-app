@@ -109,9 +109,4 @@ class TransaksiPembayaranResource extends Resource
             'edit' => Pages\EditTransaksiPembayaran::route('/{record}/edit'),
         ];
     }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('view-any Project'); // atau permission spesifik
-    }
 }
