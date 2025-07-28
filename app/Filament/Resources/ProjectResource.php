@@ -541,9 +541,4 @@ class ProjectResource extends Resource
                 ->default(auth()->id()),
         ];
     }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola layanan pemetaan'); // atau permission spesifik
-    }
 }
