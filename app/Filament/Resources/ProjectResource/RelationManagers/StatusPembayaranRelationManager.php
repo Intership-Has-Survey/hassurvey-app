@@ -120,10 +120,6 @@ class StatusPembayaranRelationManager extends RelationManager
             ]);
     }
 
-    // protected function canCreate(): bool
-    // {
-    //     return in_array(auth()->user()?->role, ['keuangan']);
-    // }
 
     protected function canEdit(Model $record): bool
     {
@@ -135,21 +131,23 @@ class StatusPembayaranRelationManager extends RelationManager
         return auth()->user()->role === 'keuangan';
     }
 
-    protected function canCreate(): bool
+    protected function canAccess(): bool
     {
-        $user = auth()->user();
-
-        // Jika role bukan 'keuangan', langsung false
-        if ($user?->role !== 'keuangan') {
-            return false;
-        }
-
-        // Ambil parent record (misalnya Project)
-        $parent = $this->getOwnerRecord();
-
-        // dd($parent);
-
-        // Jika status pembayaran parent sudah lunas, tidak bisa create
-        return $parent->status_pembayaran !== 'Lunas';
+        return auth()->user()->can('kelola bayayaya');
     }
+
+    protected function canView(Model $record): bool
+    {
+        return auth()->user()->can('boleh bayar');
+    }
+
+    // protected function canView(): bool
+    // {
+    //     return auth()->user()->can('kelola bayayaya');
+    // }
+
+    // protected function canCreate(): bool
+    // {
+    //     return auth()->user()->can('kelola bayayaya');
+    // }
 }
