@@ -476,17 +476,6 @@ class ActivitylogResource extends Resource
         return $plugin?->getNavigationItem() ?? false;
     }
 
-    public static function canAccess(): bool
-    {
-        $policy = Gate::getPolicyFor(static::getModel());
-
-        if ($policy && method_exists($policy, 'viewAny')) {
-            return static::canViewAny();
-        }
-
-        return ActivitylogPlugin::get()->isAuthorized();
-    }
-
     private static function canViewResource(Activity $record): bool
     {
         if ($record->subject_type && $record->subject_id) {
@@ -683,5 +672,10 @@ class ActivitylogResource extends Resource
                 ->danger()
                 ->send();
         }
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola Log Aktifitas'); // atau permission spesifik
     }
 }
