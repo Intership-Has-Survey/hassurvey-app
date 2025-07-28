@@ -2,21 +2,21 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Corporate;
-use App\Models\Perorangan;
+use App\Models\Project;
+use App\Models\Sewa;
 use Carbon\Carbon;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
-class GrafikCustomerBulan extends ChartWidget implements HasForms
+class GrafikPesananBulan extends ChartWidget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $heading = 'Customer Per Bulan (1 Tahun Terakhir)';
+    protected static ?string $heading = 'Pesanan Per Bulan (1 Tahun Terakhir)';
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
 
     protected function getFormSchema(): array
     {
@@ -41,14 +41,14 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
                 //     'borderSkipped' => true,
                 // ],
                 [
-                    'label' => 'Perorangan',
-                    'data' => array_values($data['perorangan']),
+                    'label' => 'Pemetaan',
+                    'data' => array_values($data['Project']),
                     'backgroundColor' => '#10B981', // Green 500
                     'borderSkipped' => true,
                 ],
                 [
                     'label' => 'Perusahaan',
-                    'data' => array_values($data['corporate']),
+                    'data' => array_values($data['Sewa']),
                     'backgroundColor' => '#3B82F6', // Blue 
                     'borderSkipped' => true,
                 ],
@@ -62,43 +62,43 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
         $endDate = now()->endOfMonth();
         $startDate = $endDate->copy()->subMonths(11)->startOfMonth();
 
-        $allCustomers = [];
-        $peroranganCustomers = [];
-        $corporateCustomers = [];
+        $allOrders = [];
+        $SewaOrders = [];
+        $ProjectOrders = [];
         $labels = [];
 
         $currentMonth = $startDate->copy();
         while ($currentMonth->lessThanOrEqualTo($endDate)) {
             $formattedMonth = $currentMonth->format('n/y');
             $labels[] = $formattedMonth;
-            $allCustomers[$formattedMonth] = 0;
-            $peroranganCustomers[$formattedMonth] = 0;
-            $corporateCustomers[$formattedMonth] = 0;
+            $allOrders[$formattedMonth] = 0;
+            $SewaOrders[$formattedMonth] = 0;
+            $ProjectOrders[$formattedMonth] = 0;
             $currentMonth->addMonth();
         }
 
-        $peroranganData = Perorangan::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $SewaData = Sewa::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
-        $corporateData = Corporate::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $ProjectData = Project::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
         foreach ($labels as $label) {
-            $peroranganCustomers[$label] = $peroranganData[$label] ?? 0;
-            $corporateCustomers[$label] = $corporateData[$label] ?? 0;
-            $allCustomers[$label] = $peroranganCustomers[$label] + $corporateCustomers[$label];
+            $SewaOrders[$label] = $SewaData[$label] ?? 0;
+            $ProjectOrders[$label] = $ProjectData[$label] ?? 0;
+            $allOrders[$label] = $SewaOrders[$label] + $ProjectOrders[$label];
         }
 
         return [
-            'all' => $allCustomers,
-            'perorangan' => $peroranganCustomers,
-            'corporate' => $corporateCustomers,
+            'all' => $allOrders,
+            'Sewa' => $SewaOrders,
+            'Project' => $ProjectOrders,
         ];
     }
 
@@ -106,10 +106,10 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
     {
         $data = $this->getChartData();
         $maxAll = empty($data['all']) ? 0 : max(array_values($data['all']));
-        $maxPerorangan = empty($data['perorangan']) ? 0 : max(array_values($data['perorangan']));
-        $maxCorporate = empty($data['corporate']) ? 0 : max(array_values($data['corporate']));
+        $maxSewa = empty($data['Sewa']) ? 0 : max(array_values($data['Sewa']));
+        $maxProject = empty($data['Project']) ? 0 : max(array_values($data['Project']));
 
-        $overallMax = max($maxAll, $maxPerorangan, $maxCorporate);
+        $overallMax = max($maxAll, $maxSewa, $maxProject);
 
         if ($overallMax == 0) {
             $overallMax = 10;

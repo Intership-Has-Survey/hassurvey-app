@@ -2,19 +2,63 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Project;
+use App\Models\Personel;
+use App\Models\Perorangan;
+use Carbon\Carbon;
 
 class ProjectSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // Membuat 150 data project dummy menggunakan factory.
-        // Anda bisa ubah jumlahnya sesuai kebutuhan.
-        Project::factory()->count(10)->create();
+        // Create 50 projects with random created_at from 2023-01-01 to now
+        $startDate = Carbon::create(2023, 1, 1);
+        $endDate = Carbon::now();
+
+        Project::factory()->count(50)->create()->each(function ($project) use ($startDate, $endDate) {
+            $project->created_at = $this->randomDate($startDate, $endDate);
+            $project->updated_at = $project->created_at;
+            $project->save();
+
+            // Assign personels with roles
+            $personelRoles = ['Surveyor', 'Asisten Surveyor', 'Driver', 'Drafter'];
+            $personels = Personel::inRandomOrder()->limit(count($personelRoles))->get();
+
+            if ($personels->count() < count($personelRoles)) {
+                // Create missing personels
+                $missingCount = count($personelRoles) - $personels->count();
+                $newPersonels = Personel::factory()->count($missingCount)->create();
+                $personels = $personels->concat($newPersonels);
+            }
+
+            $syncData = [];
+            foreach ($personels as $index => $personel) {
+                $syncData[$personel->id] = [
+                    'peran' => $personelRoles[$index],
+                    'tanggal_mulai' => now(),
+                    'user_id' => $project->user_id,
+                ];
+            }
+
+            $project->personels()->sync($syncData);
+
+            // Assign perorangan customers
+            $perorangan = Perorangan::inRandomOrder()->limit(3)->get();
+            if ($perorangan->count() < 3) {
+                $missingCount = 3 - $perorangan->count();
+                $newPerorangan = Perorangan::factory()->count($missingCount)->create();
+                $perorangan = $perorangan->concat($newPerorangan);
+            }
+            $project->perorangan()->sync($perorangan->pluck('id')->toArray());
+        });
+    }
+
+    private function randomDate($startDate, $endDate)
+    {
+        $min = $startDate->timestamp;
+        $max = $endDate->timestamp;
+        $val = mt_rand($min, $max);
+        return Carbon::createFromTimestamp($val);
     }
 }

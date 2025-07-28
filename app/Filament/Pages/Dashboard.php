@@ -13,6 +13,8 @@ class Dashboard extends BaseDashboard
 {
     use BaseDashboard\Concerns\HasFiltersForm;
 
+    protected static bool $isLazy = false;
+
     public function filtersForm(Form $form): Form
     {
         return $form

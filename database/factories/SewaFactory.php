@@ -5,7 +5,6 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
-use App\Models\Perorangan;
 use App\Models\Corporate;
 
 /**
@@ -20,14 +19,6 @@ class SewaFactory extends Factory
      */
     public function definition(): array
     {
-        // --- Logika untuk Relasi Polimorfik (Customer) ---
-        $customerType = $this->faker->randomElement([Perorangan::class, Corporate::class]);
-        $customer = $customerType::inRandomOrder()->first();
-        if (!$customer) {
-            $customer = $customerType::factory()->create();
-        }
-        // --- Akhir Logika Polimorfik ---
-
         // --- Logika Pengambilan Alamat ---
         $randomVillage = DB::table('tref_regions')->inRandomOrder()->first();
         if (!$randomVillage) {
@@ -56,11 +47,11 @@ class SewaFactory extends Factory
             'desa' => $villageCode,
             'detail_alamat' => 'Lokasi di ' . $this->faker->streetAddress(),
 
-            'total_biaya' => $this->faker->numberBetween(500000, 50000000),
+            'harga_perkiraan' => $this->faker->numberBetween(500000, 50000000),
+            'harga_real' => $this->faker->numberBetween(500000, 50000000),
+            'harga_fix' => $this->faker->numberBetween(500000, 50000000),
 
-            // Mengisi kolom polimorfik
-            'customer_id' => $customer->id,
-            'customer_type' => $customerType,
+            'corporate_id' => Corporate::inRandomOrder()->first()->id ?? Corporate::factory(),
 
             // Mengambil user_id secara acak
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),

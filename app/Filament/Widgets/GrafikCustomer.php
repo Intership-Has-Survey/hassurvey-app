@@ -14,7 +14,7 @@ class GrafikCustomer extends ChartWidget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $heading = 'Total Customer Kumulatif Per Tahun';
+    protected static ?string $heading = 'Total Customer Kumulatif';
 
     protected static ?int $sort = 1;
 

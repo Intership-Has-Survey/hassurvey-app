@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Kategori;
 use App\Models\Sales;
 use App\Models\User;
-use App\Models\Perorangan;
-use App\Models\Corporate;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,22 +20,6 @@ class ProjectFactory extends Factory
      */
     public function definition(): array
     {
-        // --- Logika untuk Relasi Polimorfik (Customer) ---
-        // 1. Pilih secara acak tipe customer: Perorangan atau Corporate.
-        $customerType = $this->faker->randomElement([
-            Perorangan::class,
-            Corporate::class
-        ]);
-
-        // 2. Ambil satu customer secara acak dari tipe yang terpilih.
-        $customer = $customerType::inRandomOrder()->first();
-
-        // Jika tabel customer (perorangan/corporate) masih kosong, buat satu.
-        if (!$customer) {
-            $customer = $customerType::factory()->create();
-        }
-        // --- Akhir Logika Polimorfik ---
-
         $randomVillage = DB::table('tref_regions')->inRandomOrder()->first();
         if (!$randomVillage) {
             throw new \Exception('Tabel wilayah (villages) kosong. Jalankan TrefRegionSeeder terlebih dahulu.');
@@ -48,7 +30,7 @@ class ProjectFactory extends Factory
         $provinceCode = substr($villageCode, 0, 2);
 
         return [
-            'nama_project' => 'Proyek ' . $this->faker->bs(),
+            'nama_project' => 'Proyek ' . $this->faker->words(3, true),
 
             // Mengambil ID dari tabel relasi secara acak.
             // Pastikan seeder untuk Kategori, Sales, dan User sudah dijalankan.
@@ -68,10 +50,6 @@ class ProjectFactory extends Factory
 
             // Status-status yang mungkin terjadi
             'status' => $this->faker->randomElement(['Prospect', 'Follow up', 'Closing']),
-
-            // Mengisi kolom polimorfik
-            'customer_id' => $customer->id,
-            'customer_type' => $customerType,
         ];
     }
 }
