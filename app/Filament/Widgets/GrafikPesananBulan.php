@@ -47,7 +47,7 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
                     'borderSkipped' => true,
                 ],
                 [
-                    'label' => 'Perusahaan',
+                    'label' => 'Sewa',
                     'data' => array_values($data['Sewa']),
                     'backgroundColor' => '#3B82F6', // Blue 
                     'borderSkipped' => true,

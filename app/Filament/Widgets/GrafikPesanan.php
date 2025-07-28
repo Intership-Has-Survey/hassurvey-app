@@ -49,7 +49,7 @@ class GrafikPesanan extends ChartWidget implements HasForms
                     'borderColor' => '#10B981',
                 ],
                 [
-                    'label' => 'Perusahaan',
+                    'label' => 'Sewa',
                     'data' => array_values($data['Sewa']),
                     'fill' => 'start',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.3)', // Blue 500 with 30% opacity
