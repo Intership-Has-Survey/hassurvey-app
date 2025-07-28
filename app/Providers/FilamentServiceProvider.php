@@ -22,6 +22,10 @@ class FilamentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
+        \Filament\Facades\Filament::registerResources([
+            \App\Filament\Resources\ActivitylogResource::class,
+            \App\Filament\Resources\PermissionResource::class,
+            \App\Filament\Resources\RoleResource::class,
+        ]);
     }
 }

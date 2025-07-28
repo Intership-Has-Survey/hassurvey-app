@@ -33,8 +33,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
             'desa' => $project->desa ?? '',
             'detail_alamat' => $project->detail_alamat ?? '',
             'user_id' => auth()->id(),
-            'customer_id' => $project->customer_id ?? null,
-            'customer_type' => $project->customer_type ?? null,
+            'corporate_id' => $data['corporate_id'] ?? null,
         ]);
 
         $project->update(['sewa_id' => $newSewa->id]);
