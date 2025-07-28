@@ -86,10 +86,10 @@ class StatsOverview extends BaseWidget
                 ->description('Coming Soon')
                 ->color('secondary'),
             Stat::make('Customer Baru', $formatNumber($customerBaru))
-                ->description('Unique customers in timeframe')
+                ->description('Customer Baru dalam rentang filter')
                 ->color('primary'),
             Stat::make('Pesanan Baru', $formatNumber($pesananBaru))
-                ->description('New orders in timeframe')
+                ->description('Pesanan Baru dalam rentang filter')
                 ->color('success'),
         ];
     }

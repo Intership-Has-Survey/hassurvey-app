@@ -176,10 +176,10 @@ class GrafikPesanan extends ChartWidget implements HasForms
                     'type' => 'time',
                     'time' => [
                         'unit' => 'month',
-                        'tooltipFormat' => 'MMM YYYY',
+                        'tooltipFormat' => 'MMM yyyy',
                         'displayFormats' => [
-                            'month' => 'MMM YYYY',
-                            'year' => 'YYYY',
+                            'month' => 'MMM yyyy',
+                            'year' => 'yyyy',
                         ],
                     ],
                     'ticks' => [
