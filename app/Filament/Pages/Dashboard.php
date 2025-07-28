@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Project;
+use App\Models\Sewa;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -17,26 +20,33 @@ class Dashboard extends BaseDashboard
 
     public function filtersForm(Form $form): Form
     {
+        $earliestProjectDate = Project::min('tanggal_informasi_masuk');
+        $earliestSewaDate = Sewa::min('tgl_mulai');
+        $minDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
+
         return $form
             ->schema([
                 Section::make()
                     ->schema([
-                        Select::make('businessCustomersOnly')
+                        Select::make('serviceType')
                             ->label('Jenis Layanan')
                             ->options([
                                 'Semua' => 'Semua',
                                 'Layanan Pemetaan' => 'Layanan Pemetaan',
                                 'Layanan Sewa' => 'Layanan Sewa',
-                                'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
-                                'Layanan Penjualan Alat' => 'Layanan Penjualan Alat',
+                                //'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
+                                //'Layanan Penjualan Alat' => 'Layanan Penjualan Alat', 
                             ]),
                         DatePicker::make('startDate')
                             ->label('Tanggal Mulai')
-                            ->maxDate(fn(Get $get) => $get('endDate') ?: now()),
+                            ->minDate($minDate)
+                            ->maxDate(fn(Get $get) => $get('endDate') ?: now())
+                            ->default($minDate),
                         DatePicker::make('endDate')
                             ->label('Tanggal Akhir')
-                            ->minDate(fn(Get $get) => $get('startDate') ?: now())
-                            ->maxDate(now()),
+                            ->minDate(fn(Get $get) => $get('startDate') ?: $minDate)
+                            ->maxDate(now())
+                            ->default(now()),
                     ])
                     ->columns(3),
             ]);

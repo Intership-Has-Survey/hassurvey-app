@@ -7,6 +7,8 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Number;
+use App\Models\Project;
+use App\Models\Sewa;
 
 class StatsOverview extends BaseWidget
 {
@@ -18,27 +20,15 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-
         $startDate = !is_null($this->filters['startDate'] ?? null) ?
             Carbon::parse($this->filters['startDate']) :
             null;
 
         $endDate = !is_null($this->filters['endDate'] ?? null) ?
             Carbon::parse($this->filters['endDate']) :
-            now();
+            null;
 
-        $isBusinessCustomersOnly = $this->filters['businessCustomersOnly'] ?? null;
-        $businessCustomerMultiplier = match (true) {
-            boolval($isBusinessCustomersOnly) => 2 / 3,
-            blank($isBusinessCustomersOnly) => 1,
-            default => 1 / 3,
-        };
-
-        $diffInDays = $startDate ? $startDate->diffInDays($endDate) : 0;
-
-        $pendapatanbersih = (int) (($startDate ? ($diffInDays * 137) : 192100) * $businessCustomerMultiplier);
-        $customerBaru = (int) (($startDate ? ($diffInDays * 7) : 1340) * $businessCustomerMultiplier);
-        $pesananBaru = (int) (($startDate ? ($diffInDays * 13) : 3543) * $businessCustomerMultiplier);
+        $serviceType = $this->filters['serviceType'] ?? 'Semua';
 
         $formatNumber = function (int $number): string {
             if ($number < 1000) {
@@ -52,21 +42,54 @@ class StatsOverview extends BaseWidget
             return Number::format($number / 1000000, 2) . 'm';
         };
 
+        $pendapatanBersih = 0;
+        $customerBaru = 0;
+        $pesananBaru = 0;
+
+        // Set default startDate and endDate if null
+        if (is_null($startDate)) {
+            $earliestProjectDate = Project::min('tanggal_informasi_masuk');
+            $earliestSewaDate = Sewa::min('tgl_mulai');
+            $startDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
+        }
+        if (is_null($endDate)) {
+            $endDate = now();
+        }
+
+        if ($serviceType === 'Layanan Pemetaan') {
+            $pesananBaru = Project::whereBetween('tanggal_informasi_masuk', [$startDate, $endDate])->count();
+            $customerBaru = Project::whereBetween('tanggal_informasi_masuk', [$startDate, $endDate])
+                ->distinct('corporate_id')
+                ->count('corporate_id');
+        } elseif ($serviceType === 'Layanan Sewa') {
+            $pesananBaru = Sewa::whereBetween('tgl_mulai', [$startDate, $endDate])->count();
+            $customerBaru = Sewa::whereBetween('tgl_mulai', [$startDate, $endDate])
+                ->distinct('corporate_id')
+                ->count('corporate_id');
+        } elseif ($serviceType === 'Semua') {
+            $pesananBaru = Project::whereBetween('tanggal_informasi_masuk', [$startDate, $endDate])->count()
+                + Sewa::whereBetween('tgl_mulai', [$startDate, $endDate])->count();
+            $customerBaru = Project::whereBetween('tanggal_informasi_masuk', [$startDate, $endDate])
+                ->distinct('corporate_id')
+                ->count('corporate_id')
+                + Sewa::whereBetween('tgl_mulai', [$startDate, $endDate])
+                    ->distinct('corporate_id')
+                    ->count('corporate_id');
+        } else {
+            // For other services, show zero or coming soon
+            $pesananBaru = 0;
+            $customerBaru = 0;
+        }
+
         return [
-            Stat::make('Pendapatan Bersih', '$' . $formatNumber($pendapatanbersih))
-                ->description('32k increase')
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->chart([7, 2, 10, 3, 15, 4, 17])
-                ->color('success'),
+            Stat::make('Pendapatan Bersih', 'Rp' . $formatNumber($pendapatanBersih))
+                ->description('Coming Soon')
+                ->color('secondary'),
             Stat::make('Customer Baru', $formatNumber($customerBaru))
-                ->description('3% decrease')
-                ->descriptionIcon('heroicon-m-arrow-trending-down')
-                ->chart([17, 16, 14, 15, 14, 13, 12])
-                ->color('danger'),
+                ->description('Unique customers in timeframe')
+                ->color('primary'),
             Stat::make('Pesanan Baru', $formatNumber($pesananBaru))
-                ->description('7% increase')
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->chart([15, 4, 10, 2, 12, 4, 12])
+                ->description('New orders in timeframe')
                 ->color('success'),
         ];
     }
