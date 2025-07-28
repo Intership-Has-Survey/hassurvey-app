@@ -20,7 +20,6 @@ class StatusPekerjaanObserver
 
         $allStages = $project->statusPekerjaan()->whereIn('jenis_pekerjaan', $requiredStages)->get();
 
-        // Check if all required stages exist
         $existingStages = $allStages->pluck('jenis_pekerjaan')->unique()->toArray();
 
         $missingStages = array_diff($requiredStages, $existingStages);

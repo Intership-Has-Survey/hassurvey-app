@@ -12,6 +12,15 @@ class ProjectObserver
      */
     public function updated(Project $project): void
     {
+        if ($project->wasChanged('status')) {
+            if ($project->status === 'Closing' && $project->status_pekerjaan !== 'Selesai') {
+                $project->status_pekerjaan = 'Belum Selesai';
+            } elseif ($project->status !== 'Closing' && $project->status !== 'Selesai') {
+                $project->status_pekerjaan = 'Belum Dikerjakan';
+            }
+            $project->saveQuietly(); // Use saveQuietly to avoid triggering observers again
+        }
+
         if ($project->isDirty('nilai_project')) {
             $this->updatePaymentStatus($project);
         }

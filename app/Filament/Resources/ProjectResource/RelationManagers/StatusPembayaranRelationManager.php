@@ -6,11 +6,15 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use App\Models\StatusPembayaran;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,9 +23,6 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Support\RawJs;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\StatusPembayaran;
 
 class StatusPembayaranRelationManager extends RelationManager
 {
@@ -77,6 +78,14 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->prefix('Rp')
                     ->maxlength(20),
 
+                FileUpload::make('bukti_pembayaran')
+                    ->label('Bukti Pembayaran')
+                    ->acceptedFileTypes(['image/*', 'application/pdf'])
+                    ->maxSize(1024) // 1 MB
+                    ->required()
+                    ->image()
+                    ->directory('bukti-pembayaran'),
+
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
@@ -125,31 +134,31 @@ class StatusPembayaranRelationManager extends RelationManager
     //     return in_array(auth()->user()?->role, ['keuangan']);
     // }
 
-    protected function canEdit(Model $record): bool
-    {
-        return in_array(auth()->user()?->role, ['keuangan']);
-    }
+    // protected function canEdit(Model $record): bool
+    // {
+    //     return in_array(auth()->user()?->role, ['keuangan']);
+    // }
 
-    protected function canDelete(Model $record): bool
-    {
-        return auth()->user()->role === 'keuangan';
-    }
+    // protected function canDelete(Model $record): bool
+    // {
+    //     return auth()->user()->role === 'keuangan';
+    // }
 
-    protected function canCreate(): bool
-    {
-        $user = auth()->user();
+    // protected function canCreate(): bool
+    // {
+    //     $user = auth()->user();
 
-        // Jika role bukan 'keuangan', langsung false
-        if ($user?->role !== 'keuangan') {
-            return false;
-        }
+    //     // Jika role bukan 'keuangan', langsung false
+    //     if ($user?->role !== 'keuangan') {
+    //         return false;
+    //     }
 
-        // Ambil parent record (misalnya Project)
-        $parent = $this->getOwnerRecord();
+    //     // Ambil parent record (misalnya Project)
+    //     $parent = $this->getOwnerRecord();
 
-        // dd($parent);
+    //     // dd($parent);
 
-        // Jika status pembayaran parent sudah lunas, tidak bisa create
-        return $parent->status_pembayaran !== 'Lunas';
-    }
+    //     // Jika status pembayaran parent sudah lunas, tidak bisa create
+    //     return $parent->status_pembayaran !== 'Lunas';
+    // }
 }

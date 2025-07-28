@@ -64,7 +64,7 @@ class ProjectResource extends Resource
                     Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])
                 ->columns(2)
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
 
             Section::make('Informasi Customer')
                 ->schema([
@@ -118,7 +118,7 @@ class ProjectResource extends Resource
                             }
                         }),
                 ])
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
             Section::make('Tim Personel Proyek')
                 ->schema([
                     Repeater::make('assignedPersonels')
@@ -137,6 +137,7 @@ class ProjectResource extends Resource
                                 })
                                 ->searchable()
                                 ->required()
+                                ->getOptionLabelUsing(fn($value): ?string => Personel::find($value)?->nama)
                                 ->createOptionUsing(fn(array $data): string => Personel::create(collect($data)->except('personel_id')->all())->id)
                                 ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                 ->createOptionForm(self::getPersonelForm()),
@@ -153,27 +154,21 @@ class ProjectResource extends Resource
                         ])
                         ->columns(2)
                         ->addActionLabel('Tambah Personel ke Tim')
-                        ->itemLabel(function (array $state): ?string {
-                            if (empty($state['personel_id'])) {
-                                return null;
-                            }
-                            return Personel::find($state['personel_id'])?->nama;
-                        })
+                        // ->itemLabel(function (array $state): ?string {
+                        //     if (empty($state['personel_id'])) {
+                        //         return null;
+                        //     }
+                        //     return Personel::find($state['personel_id'])?->nama;
+                        // })
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $syncData = [];
                             foreach ($state as $item) {
                                 if (!empty($item['personel_id']) && !empty($item['peran'])) {
-                                    $syncData[$item['personel_id']] = [
-                                        'peran' => $item['peran'],
-                                        'tanggal_mulai' => now(),
-                                        'user_id' => auth()->id()
-                                    ];
+                                    $syncData[$item['personel_id']] = ['peran' => $item['peran']];
                                 }
                             }
                             $record->personels()->sync($syncData);
-                        })
-                        ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
-
+                        }),
                 ]),
 
             Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
@@ -218,9 +213,13 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()->color(fn(string $state): string => match ($state) {
                     'Lunas' => 'success',
                     'Belum Lunas' => 'danger',
-                    default => 'warning'
+                    default => 'info',
                 }),
-                Tables\Columns\TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()->color(fn(string $state): string => $state === 'Selesai' ? 'success' : 'warning'),
+                Tables\Columns\TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()->color(fn(string $state): string => match ($state) {
+                    'Selesai' => 'success',
+                    'Belum Dikerjakan' => 'info',
+                    default => 'danger',
+                }),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

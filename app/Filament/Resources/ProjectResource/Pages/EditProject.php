@@ -30,7 +30,7 @@ class EditProject extends EditRecord
 
         $data['assignedPersonels'] = $this->record->personels->map(function ($personel) {
             return [
-                'personel_id' => $personel->nama,
+                'personel_id' => $personel->id,
                 'peran' => $personel->pivot->peran ?? null,
             ];
         })->toArray();
