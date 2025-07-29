@@ -24,7 +24,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
         }
 
         $newSewa = Sewa::create([
-            'judul' => 'Sewa untuk Proyek: ' . ($project->nama_project ?? 'Tanpa Nama'),
+            'judul' => ($project->nama_project ?? 'Tanpa Nama'),
             'tgl_mulai' => $project->tgl_mulai ?? now(),
             'tgl_selesai' => $project->tgl_selesai ?? now()->addDays(30),
             'provinsi' => $project->provinsi ?? '',
@@ -33,7 +33,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
             'desa' => $project->desa ?? '',
             'detail_alamat' => $project->detail_alamat ?? '',
             'user_id' => auth()->id(),
-            'corporate_id' => $data['corporate_id'] ?? null,
+            'corporate_id' => \App\Models\Corporate::where('nama', 'CV HAS Survey')->first()?->id,
         ]);
 
         $project->update(['sewa_id' => $newSewa->id]);

@@ -31,4 +31,21 @@ class Kalibrasi extends Model
             ->withPivot(['tgl_masuk', 'tgl_stiker_kalibrasi', 'tgl_keluar', 'status'])
             ->withTimestamps();
     }
+
+    public function corporate()
+    {
+        return $this->belongsTo(Corporate::class, 'corporate_id');
+    }
+
+    public function perorangan()
+    {
+        return $this->belongsToMany(Perorangan::class, 'kalibrasi_perorangan')
+            ->withPivot('perorangan_id', 'kalibrasi_id')
+            ->withTimestamps();
+    }
+
+    public function pengajuanDanas()
+    {
+        return $this->hasMany(PengajuanDana::class, 'sewa_id');
+    }
 }

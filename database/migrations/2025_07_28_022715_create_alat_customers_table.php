@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('nomor_seri')->unique();
             $table->boolean('kondisi')->default(true);
             $table->text('keterangan')->nullable();
-            $table->foreignUuid('customer_id');
+            // $table->foreignUuid('customer_id');
+            $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
             $table->timestamps();
         });
     }

@@ -38,4 +38,16 @@ class AlatCustomer extends Model
     {
         return ['nomor_seri']; // pastikan ini kolom yang valid
     }
+
+    public function corporate()
+    {
+        return $this->belongsTo(Corporate::class, 'corporate_id');
+    }
+
+    public function perorangan()
+    {
+        return $this->belongsToMany(Perorangan::class, 'alat_customer_perorangan')
+            ->withPivot('perorangan_id', 'alat_customer_id')
+            ->withTimestamps();
+    }
 }

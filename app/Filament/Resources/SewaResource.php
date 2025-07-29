@@ -280,9 +280,26 @@ class SewaResource extends Resource
                 TextColumn::make('judul')
                     ->label('Judul Penyewaan')
                     ->searchable(),
+                // TextColumn::make('perorangan.nama')
+                //     ->label('PIC/Customer')
+                //     ->searchable(),
+                TextColumn::make('customer_display')
+                    ->label('Klien Utama')
+                    ->state(function (Sewa $record): string {
+                        if ($record->corporate) {
+                            return $record->corporate->nama;
+                        }
+                        return $record->perorangan->first()?->nama ?? 'N/A';
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query
+                            ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
+                            ->orWhereHas('perorangan', fn($q) => $q->where('nama', 'like', "%{$search}%"));
+                    }),
                 TextColumn::make('perorangan.nama')
-                    ->label('PIC/Customer')
-                    ->searchable(),
+                    ->label('PIC')
+                    ->listWithLineBreaks()
+                    ->limitList(2),
                 TextColumn::make('tgl_mulai')
                     ->date('d-m-Y')
                     ->sortable(),

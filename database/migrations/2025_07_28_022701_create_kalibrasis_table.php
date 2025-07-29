@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('kalibrasis', function (Blueprint $table) {
             $table->Uuid('id')->primary();
             $table->string('nama');
-            $table->foreignUuid('customer_id');
+            $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
+            // $table->foreignUuid('customer_id');
             $table->decimal('harga', 15, 2)->nullable();
-            $table->string('status');
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }
