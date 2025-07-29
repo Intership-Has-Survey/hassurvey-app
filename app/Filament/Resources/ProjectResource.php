@@ -41,8 +41,8 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')->required()->columnSpanFull(),
-                    Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required()
+                    TextInput::make('nama_project')->columnSpanFull(),
+                    Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
                         ->label('Sales')
@@ -55,10 +55,10 @@ class ProjectResource extends Resource
                         ->placeholder('Pilih sales')
                         ->searchable()
                         ->preload()
-                        ->required()
+
                         ->createOptionForm(self::getSalesForm()),
-                    DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
-                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
+                    DatePicker::make('tanggal_informasi_masuk')->native(false)->default(now()),
+                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->native(false),
                 ])
                 ->columns(2)
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
@@ -68,7 +68,7 @@ class ProjectResource extends Resource
                     Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                        ->live()->required()->dehydrated(false)->native(false)
+                        ->live()->dehydrated(false)->native(false)
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                     Select::make('corporate_id')
@@ -91,7 +91,7 @@ class ProjectResource extends Resource
                                     $selectedPicIds = array_diff($selectedPicIds, [$state]);
                                     return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                 })
-                                ->searchable()->required()
+                                ->searchable()
                                 ->createOptionForm(self::getPeroranganForm())
                                 ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                         ])
@@ -234,7 +234,7 @@ class ProjectResource extends Resource
         return [
             Select::make('provinsi')
                 ->label('Provinsi')
-                ->required()
+
                 ->placeholder('Pilih provinsi')
                 ->options(TrefRegion::query()
                     ->where(DB::raw('LENGTH(code)'), 2)
@@ -249,7 +249,7 @@ class ProjectResource extends Resource
 
             Select::make('kota')
                 ->label('Kota/Kabupaten')
-                ->required()
+
                 ->placeholder('Pilih kota/kabupaten')
                 ->options(function (Get $get) {
                     $provinceCode = $get('provinsi');
@@ -270,7 +270,7 @@ class ProjectResource extends Resource
 
             Select::make('kecamatan')
                 ->label('Kecamatan')
-                ->required()
+
                 ->placeholder('Pilih kecamatan')
                 ->options(function (Get $get) {
                     $regencyCode = $get('kota');
@@ -290,7 +290,7 @@ class ProjectResource extends Resource
 
             Select::make('desa')
                 ->label('Desa/Kelurahan')
-                ->required()
+
                 ->placeholder('Pilih desa/kelurahan')
                 ->options(function (Get $get) {
                     $districtCode = $get('kecamatan');
@@ -306,7 +306,7 @@ class ProjectResource extends Resource
                 ->searchable(),
 
             Forms\Components\Textarea::make('detail_alamat')
-                ->required()
+
                 ->placeholder('Masukkan detail alamat lengkap')
                 ->label('Detail Alamat')
                 ->rows(3)
@@ -320,7 +320,7 @@ class ProjectResource extends Resource
             Forms\Components\TextInput::make('nilai_project')
                 ->label('Anggaran Proyek')
                 ->numeric()
-                ->required()
+
                 ->placeholder('Masukkan anggaran proyek')
                 ->prefix('Rp ')
                 ->mask(RawJs::make('$money($input)'))
@@ -336,7 +336,7 @@ class ProjectResource extends Resource
                     'Closing' => 'Closing',
                     'Failed' => 'Failed',
                 ])
-                ->required()
+
                 ->native(false),
         ];
     }
@@ -348,22 +348,22 @@ class ProjectResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Sales')
-                        ->required()
+
                         ->maxLength(100),
                     Forms\Components\TextInput::make('nik')
                         ->label('NIK')
-                        ->required()
+
                         ->length(16)
                         ->unique(ignoreRecord: true)
                         ->numeric(),
                     Forms\Components\TextInput::make('email')
                         ->label('Email')
-                        ->required()
+
                         ->email()
                         ->maxLength(100),
                     Forms\Components\TextInput::make('telepon')
                         ->label('Telepon')
-                        ->required()
+
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
@@ -384,7 +384,6 @@ class ProjectResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Perusahaan')
-                        ->required()
                         ->maxLength(200),
                     Forms\Components\TextInput::make('nib')
                         ->label('NIB')
@@ -406,6 +405,10 @@ class ProjectResource extends Resource
                         ->maxLength(15),
                 ])->columns(2),
 
+            Forms\Components\Section::make('Alamat Perusahaan')
+                ->schema(self::getAddressFields())
+                ->columns(2),
+
             Hidden::make('user_id')
                 ->default(auth()->id()),
         ];
@@ -418,7 +421,7 @@ class ProjectResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Lengkap')
-                        ->required()
+
                         ->maxLength(100),
                     Forms\Components\TextInput::make('nik')
                         ->label('NIK')
@@ -457,7 +460,7 @@ class ProjectResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Kategori')
-                        ->required()
+
                         ->maxLength(100),
                     Forms\Components\Textarea::make('deskripsi')
                         ->label('Deskripsi')
