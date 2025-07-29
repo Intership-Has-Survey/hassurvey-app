@@ -32,6 +32,17 @@ class EditSewa extends EditRecord
         return $actions;
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        if (filled($data['corporate_id'])) {
+            $data['customer_flow_type'] = 'corporate';
+        } else {
+            $data['customer_flow_type'] = 'perorangan';
+        }
+
+        return $data;
+    }
+
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         // Cek apakah toggle 'tutup_sewa' diaktifkan
