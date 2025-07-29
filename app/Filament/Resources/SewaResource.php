@@ -306,15 +306,6 @@ class SewaResource extends Resource
             ->actions([
                 EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
-                Action::make('selesaikan_sewa')
-                    ->label('Selesaikan Sewa')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Selesaikan dan Kunci Transaksi?')
-                    ->modalDescription('Aksi ini tidak dapat dibatalkan. Pastikan semua proses sudah final.')
-                    ->action(fn(Sewa $record) => $record->update(['is_locked' => true]))
-                    ->visible(fn(Sewa $record): bool => $record->status === 'Konfirmasi Selesai' || $record->status === 'Jatuh Tempo'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -438,7 +429,8 @@ class SewaResource extends Resource
                 ->placeholder('Pilih kota/kabupaten')
                 ->options(function (Get $get) {
                     $provinceCode = $get('provinsi');
-                    if (!$provinceCode) return [];
+                    if (!$provinceCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $provinceCode . '.%')
@@ -458,7 +450,8 @@ class SewaResource extends Resource
                 ->placeholder('Pilih kecamatan')
                 ->options(function (Get $get) {
                     $regencyCode = $get('kota');
-                    if (!$regencyCode) return [];
+                    if (!$regencyCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $regencyCode . '.%')
@@ -477,7 +470,8 @@ class SewaResource extends Resource
                 ->placeholder('Pilih desa/kelurahan')
                 ->options(function (Get $get) {
                     $districtCode = $get('kecamatan');
-                    if (!$districtCode) return [];
+                    if (!$districtCode)
+                        return [];
 
                     return TrefRegion::query()
                         ->where('code', 'like', $districtCode . '.%')
