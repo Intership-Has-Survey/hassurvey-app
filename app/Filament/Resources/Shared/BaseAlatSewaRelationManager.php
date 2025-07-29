@@ -46,7 +46,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->placeholder('Masukkan diskon berapa hari jika ada')->postfix(' Hari')->minValue(0),
                 Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated(),
                 Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
-                Forms\Components\Textarea::make('keterangan')->label('Keterangan')->columnSpanFull(),
+                Forms\Components\Textarea::make('catatan')->label('catatan')->columnSpanFull(),
                 FileUpload::make('foto_bukti')->label('Foto Bukti')->image()->directory('bukti-pengembalian')->required()->columnSpanFull(),
             ])
             ->disabled(fn(): bool => $this->getSewaRecord()->is_locked);
@@ -185,7 +185,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             $record->pivot->biaya_sewa_alat = $pendapatanKotor;
                             $record->pivot->pendapataninv = $pendapatanInvestor;
                             $record->pivot->pendapatanhas = $pendapatanHasSurvey;
-                            $record->pivot->keterangan = $data['keterangan'];
+                            $record->pivot->catatan = $data['catatan'];
                             $record->pivot->foto_bukti = $data['foto_bukti'];
                             $record->pivot->kondisi_kembali = $data['kondisi_kembali'];
                             $record->pivot->needs_replacement = $data['needs_replacement'] ?? false;
