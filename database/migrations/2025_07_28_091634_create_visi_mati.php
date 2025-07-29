@@ -10,18 +10,6 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('visi_mati', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('nama');
-            $table->longText('deskripsi');
-            
-            $table->foreignUuid('operasional_id')->constrained('operasional');
-            $table->foreignUuid('tabungan_id')->constrained('tabungan');
-            $table->foreignUuid('user_id')->constrained('users');
-            $table->softDeletes();
-            $table->timestamps();
-        });
-
         Schema::create('operasional', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
@@ -37,6 +25,19 @@ return new class extends Migration {
             $table->string('nama');
             $table->longText('deskripsi');
 
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
+        Schema::create('visi_mati', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('nama');
+            $table->longText('deskripsi');
+
+            
+            $table->foreignUuid('operasional_id')->constrained('operasional');
+            $table->foreignUuid('tabungan_id')->constrained('tabungan');
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
             $table->timestamps();
