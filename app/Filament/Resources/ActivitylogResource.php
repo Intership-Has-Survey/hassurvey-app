@@ -672,4 +672,9 @@ class ActivitylogResource extends Resource
                 ->send();
         }
     }
+
+    // public static function canAccess()
+    // {
+    //     return auth()->user()?->hasRole('Super Admin');
+    // }
 }

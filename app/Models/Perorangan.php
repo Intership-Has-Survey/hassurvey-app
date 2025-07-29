@@ -41,4 +41,14 @@ class Perorangan extends Model
             ->withPivot('user_id')
             ->withTimestamps();
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function sewa()
+    {
+        return $this->hasMany(Sewa::class);
+    }
 }

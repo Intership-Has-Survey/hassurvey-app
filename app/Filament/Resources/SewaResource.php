@@ -280,8 +280,8 @@ class SewaResource extends Resource
                 TextColumn::make('judul')
                     ->label('Judul Penyewaan')
                     ->searchable(),
-                TextColumn::make('customer.nama')
-                    ->label('Customer')
+                TextColumn::make('perorangan.nama')
+                    ->label('PIC/Customer')
                     ->searchable(),
                 TextColumn::make('tgl_mulai')
                     ->date('d-m-Y')

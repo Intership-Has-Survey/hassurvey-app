@@ -23,8 +23,11 @@ use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRel
 class KalibrasiResource extends Resource
 {
     protected static ?string $model = Kalibrasi::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $navigationLabel = 'Kalibrasi';
+    protected static ?string $navigationGroup = 'Layanan';
+    protected static ?string $pluralModelLabel = 'Jasa Kalibrasi';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -33,7 +36,7 @@ class KalibrasiResource extends Resource
                 TextInput::make('nama')
                     ->label('Nama Kalibrasi')
                     ->required(),
-                Select::make('Customer_id')
+                Select::make('customer_id')
                     ->relationship('customer', 'nama')
                     ->searchable()
                     ->preload()

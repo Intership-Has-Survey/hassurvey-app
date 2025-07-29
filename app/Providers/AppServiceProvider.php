@@ -30,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+
         StatusPembayaran::observe(PembayaranObserver::class);
         Project::observe(ProjectObserver::class);
         StatusPekerjaan::observe(StatusPekerjaanObserver::class);

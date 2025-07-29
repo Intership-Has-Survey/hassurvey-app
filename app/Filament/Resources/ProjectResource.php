@@ -64,7 +64,7 @@ class ProjectResource extends Resource
                     Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])
                 ->columns(2)
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
             Section::make('Informasi Customer')
                 ->schema([
@@ -118,7 +118,7 @@ class ProjectResource extends Resource
                             }
                         }),
                 ])
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
             Section::make('Tim Personel Proyek')
                 ->schema([
                     Repeater::make('assignedPersonels')
@@ -471,9 +471,16 @@ class ProjectResource extends Resource
                         ->label('Nama Perusahaan')
                         ->required()
                         ->maxLength(200),
-                    Forms\Components\TextInput::make('npwp')
-                        ->label('NPWP')
+                    Forms\Components\TextInput::make('nib')
+                        ->label('NIB')
                         ->maxLength(20),
+                    Forms\Components\Select::make('level')
+                        ->label('Level Perusahaan')
+                        ->options([
+                            'kecil' => 'Kecil',
+                            'menengah' => 'Menengah',
+                            'besar' => 'Besar',
+                        ]),
                     Forms\Components\TextInput::make('email')
                         ->label('Email')
                         ->email()
@@ -511,6 +518,12 @@ class ProjectResource extends Resource
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
+                    Forms\Components\Select::make('gender')
+                        ->label('Jenis Kelamin')
+                        ->options([
+                            'Pria' => 'Pria',
+                            'Wanita' => 'Wanita',
+                        ]),
                 ])->columns(2),
 
             Forms\Components\Section::make('Alamat')

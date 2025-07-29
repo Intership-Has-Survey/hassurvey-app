@@ -5,7 +5,6 @@ namespace App\Policies;
 // use App\Models\Spatie\Permission\Models\Role;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Auth\Access\Response;
 
 class RolePolicy
