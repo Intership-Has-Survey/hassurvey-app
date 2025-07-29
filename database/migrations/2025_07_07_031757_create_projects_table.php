@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::create('projects', function (Blueprint $table) {
             $table->uuid('id')->primary();
             // info utama
-            $table->string('nama_project');
-            $table->foreignUuid('kategori_id')->constrained('kategoris');
-            $table->uuid('sales_id')->constrained('sales');
+            $table->string('nama_project')->nullable();
+            $table->foreignUuid('kategori_id')->constrained('kategoris')->nullable();
+            $table->uuid('sales_id')->constrained('sales')->nullable();
             $table->date('tanggal_informasi_masuk');
             $table->string('sumber');
 
@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->string('kota', 5)->nullable();
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
-            $table->string('detail_alamat');
+            $table->string('detail_alamat')->nullable();
 
             // keuangan & status
             $table->decimal('nilai_project', 15, 2)->default(0);
