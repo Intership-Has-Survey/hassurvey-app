@@ -11,6 +11,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard as BaseDashboard;
+use App\Filament\Widgets\GrafikCustomer;
+use App\Filament\Widgets\GrafikCustomerBulan;
+use App\Filament\Widgets\GrafikPesanan;
+use App\Filament\Widgets\GrafikPesananBulan;
+use App\Filament\Widgets\StatsOverview;
 
 class Dashboard extends BaseDashboard
 {
@@ -50,5 +55,16 @@ class Dashboard extends BaseDashboard
                     ])
                     ->columns(3),
             ]);
+    }
+
+    public function getWidgets(): array
+    {
+        return [
+            StatsOverview::class,
+            GrafikCustomer::class,
+            GrafikCustomerBulan::class,
+            GrafikPesanan::class,
+            GrafikPesananBulan::class,
+        ];
     }
 }
