@@ -12,6 +12,7 @@ use Filament\Forms\Set;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\TextColumn;
 
 class DetailPenjualanRelationManager extends RelationManager
 {
@@ -21,54 +22,73 @@ class DetailPenjualanRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('daftar_alat_id')
-                    ->label('Alat')
-                    ->options(DaftarAlat::all()->mapWithKeys(fn($alat) => [$alat->id => $alat->nama_alat ?? 'N/A']))
+                Forms\Components\Select::make('jenis_alat_id')
+                    ->label('Jenis Alat')
+                    ->options(\App\Models\JenisAlat::all()->pluck('nama', 'id'))
                     ->searchable()
                     ->required(),
-                Forms\Components\TextInput::make('jumlah')
-                    ->numeric()
+                Forms\Components\Select::make('nomor_seri')
+                    ->label('Nomor Seri')
+                    ->options(function (Get $get) {
+                        $jenisAlatId = $get('jenis_alat_id');
+                        if (!$jenisAlatId) {
+                            return [];
+                        }
+                        return \App\Models\DaftarAlat::where('jenis_alat_id', $jenisAlatId)->pluck('nomor_seri', 'id');
+                    })
+                    ->searchable()
                     ->required()
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        $jumlah = (float) $get('jumlah');
-                        $hargaSatuan = (float) $get('harga_satuan');
-                        $set('subtotal_item', $jumlah * $hargaSatuan);
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        $daftarAlat = \App\Models\DaftarAlat::find($state);
+                        $merkNama = $daftarAlat ? $daftarAlat->merk->nama : '';
+                        $set('merk_nama', $merkNama);
+                        $set('merk_id', $daftarAlat ? $daftarAlat->merk_id : null);
+                        $set('daftar_alat_id', $state);
                     }),
-                Forms\Components\TextInput::make('harga_satuan')
+
+                Forms\Components\Select::make('merk_id')
+                    ->label('Merek Alat')
+                    ->hidden()
+                    ->disabled()
+                    ->dehydrated(true),
+
+                Forms\Components\TextInput::make('merk_nama')
+                    ->label('Merek Alat')
+                    ->disabled()
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                        // no action needed here, just to trigger reactive update
+                    })
+                    ->dehydrated(false)
+                    ->default(''),
+
+                Forms\Components\TextInput::make('harga')
+                    ->label('Harga')
                     ->numeric()
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        $jumlah = (float) $get('jumlah');
-                        $hargaSatuan = (float) $get('harga_satuan');
-                        $set('subtotal_item', $jumlah * $hargaSatuan);
-                    }),
-                Forms\Components\TextInput::make('subtotal_item')
-                    ->numeric()
-                    ->required()
-                    ->readOnly(),
+                    ->required(),
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('daftar_alat_id')
+            // ->recordTitleAttribute('daftar_alat_id')
             ->columns([
-                Tables\Columns\TextColumn::make('daftarAlat.nama_alat')
-                    ->label('Alat'),
-                Tables\Columns\TextColumn::make('jumlah'),
-                Tables\Columns\TextColumn::make('harga_satuan')
-                    ->money('IDR'),
-                Tables\Columns\TextColumn::make('subtotal_item')
-                    ->money('IDR'),
+                TextColumn::make('jenisAlat.nama')
+                    ->label('Jenis Alat'),
+                TextColumn::make('daftarAlat.nomor_seri')
+                    ->label('Nomor Seri'),
+                TextColumn::make('merk.nama')
+                    ->label('Merek Alat'),
+                TextColumn::make('harga')
+                    ->label('Harga'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

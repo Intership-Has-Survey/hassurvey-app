@@ -9,16 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detail_penjualan', function (Blueprint $table) {
-            $table->uuid('id');
-
-            $table->integer('jumlah')->default(1);
-            $table->decimal('harga_satuan', 15, 2);
-            $table->decimal('subtotal_item', 15, 2);
-
-            $table->timestamps();
+            $table->uuid('id')->primary();
 
             $table->foreignUuid('penjualan_id')->references('id')->on('penjualans')->onDelete('cascade');
+            $table->foreignUuid('jenis_alat_id')->references('id')->on('jenis_alat');
             $table->foreignUuid('daftar_alat_id')->references('id')->on('daftar_alat');
+            $table->foreignUuid('merk_id')->references('id')->on('merk');
+
+            $table->decimal('harga', 15, 2);
+
+            $table->timestamps();
         });
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Penjualan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,10 +15,10 @@ class DetailPenjualan extends Model
 
     protected $fillable = [
         'penjualan_id',
+        'jenis_alat_id',
         'daftar_alat_id',
-        'jumlah',
-        'harga_satuan',
-        'subtotal_item',
+        'merk_id',
+        'harga',
     ];
 
     public function penjualan(): BelongsTo
@@ -30,5 +29,15 @@ class DetailPenjualan extends Model
     public function daftarAlat(): BelongsTo
     {
         return $this->belongsTo(DaftarAlat::class);
+    }
+
+    public function jenisAlat(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\JenisAlat::class);
+    }
+
+    public function merk(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Merk::class);
     }
 }

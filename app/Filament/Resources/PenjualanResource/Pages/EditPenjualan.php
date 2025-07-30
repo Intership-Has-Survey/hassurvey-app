@@ -27,6 +27,12 @@ class EditPenjualan extends EditRecord
             $data['customer_flow_type'] = 'perorangan';
         }
 
+        if (isset($data['detailPenjualan']) && is_array($data['detailPenjualan'])) {
+            foreach ($data['detailPenjualan'] as &$detail) {
+                $detail['nomor_seri'] = $detail['daftar_alat_id'] ?? null;
+            }
+        }
+
         return $data;
     }
 

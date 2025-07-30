@@ -20,7 +20,6 @@ return new class extends Migration
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
 
-            $table->decimal('total', 15, 2)->default(0);
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

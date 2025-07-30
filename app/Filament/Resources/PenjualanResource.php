@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -55,7 +56,11 @@ class PenjualanResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true),
                 DatePicker::make('tanggal_penjualan')
-                    ->required(),
+                    ->required()
+                    ->default(now())
+                    ->label('Tanggal Penjualan')
+                    ->displayFormat('d/m/Y')
+                    ->native(false),
                 Select::make('customer_flow_type')
                     ->label('Tipe Customer')
                     ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
@@ -121,29 +126,79 @@ class PenjualanResource extends Resource
                     ->preload()
                     ->columnSpanFull()
                     ->createOptionForm(self::getSalesForm()),
-                
+
                 Repeater::make('detailPenjualan')
                     ->relationship()
                     ->schema([
-                        Select::make('daftar_alat_id')
-                            ->label('Alat')
-                            ->options(
-                                DaftarAlat::all()->mapWithKeys(fn($alat) => [$alat->id => $alat->nama_alat ?? 'N/A'])
-                            )
+                        Select::make('jenis_alat_id')
+                            ->label('Jenis Alat')
+                            ->options(\App\Models\JenisAlat::all()->pluck('nama', 'id'))
                             ->searchable()
-                            ->required(),
-                        TextInput::make('jumlah')
+                            ->required()
+                            ->live()
+                            ->reactive()
+                            ->afterStateHydrated(function ($state, \Filament\Forms\Set $set) {
+                                if ($state !== null) {
+                                    $set('jenis_alat_id', $state);
+                                }
+                            }),
+                        Select::make('nomor_seri')
+                            ->label('Nomor Seri')
+                            ->options(function (Get $get) {
+                                $jenisAlatId = $get('jenis_alat_id');
+                                if (!$jenisAlatId) {
+                                    return [];
+                                }
+                                return \App\Models\DaftarAlat::where('jenis_alat_id', $jenisAlatId)->pluck('nomor_seri', 'id');
+                            })
+                            ->searchable()
+                            ->required()
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->live()
+                            ->reactive()
+                            ->afterStateHydrated(function ($state, \Filament\Forms\Set $set) {
+                                if ($state !== null) {
+                                    $set('nomor_seri', $state);
+                                }
+                            })
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                $daftarAlat = \App\Models\DaftarAlat::find($state);
+                                $merkNama = $daftarAlat ? $daftarAlat->merk->nama : '';
+                                $set('merk_nama', $merkNama);
+                                $set('merk_id', $daftarAlat ? $daftarAlat->merk_id : null);
+                                $set('daftar_alat_id', $state);
+                            }),
+
+                        Select::make('merk_id')
+                            ->label('Merek Alat')
+                            ->hidden()
+                            ->disabled()
+                            ->dehydrated(false),
+
+                        TextInput::make('merk_nama')
+                            ->label('Merek Alat')
+                            ->disabled()
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $set, $state, callable $get) {
+                                // no action needed here, just to trigger reactive update
+                            })
+                            ->dehydrated(false)
+                            ->default(''),
+
+                        TextInput::make('harga')
+                            ->label('Harga')
                             ->numeric()
                             ->required(),
-                        TextInput::make('harga_satuan')
-                            ->numeric()
+
+                        Hidden::make('daftar_alat_id')
                             ->required(),
+                        Hidden::make('merk_id')
+                            ->required(),
+
                     ])->columns(4)
                     ->columnSpanFull(),
-                
+
                 Textarea::make('catatan'),
-                TextInput::make('total')
-                    ->numeric(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
@@ -183,9 +238,8 @@ class PenjualanResource extends Resource
                 TextColumn::make('total_items')
                     ->label('Total Item')
                     ->state(function (\App\Models\Penjualan $record): string {
-                        return 'Rp ' . number_format($record->detailPenjualan->sum('subtotal_item'), 0, ',', '.');
+                        return 'Rp ' . number_format($record->detailPenjualan->sum('harga'), 0, ',', '.');
                     }),
-                TextColumn::make('total')->numeric(),
             ])
             ->filters([
                 //
