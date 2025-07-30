@@ -13,7 +13,9 @@ return new class extends Migration {
         Schema::create('operasionals', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->decimal('target', 15, 2);
+
+            $table->foreignUuid('visi_mati_id')->constrained('visi_mati')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

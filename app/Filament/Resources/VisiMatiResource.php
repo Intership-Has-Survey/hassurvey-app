@@ -32,6 +32,7 @@ class VisiMatiResource extends Resource
                     ->nullable(),
                 Repeater::make('subcategorizables')
                     ->label('Sub-kategori')
+                    ->dehydrated(false)
                     ->maxItems(2)
                     ->schema([
                         Select::make('type')
@@ -49,7 +50,7 @@ class VisiMatiResource extends Resource
                             ->numeric()
                             ->required(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table

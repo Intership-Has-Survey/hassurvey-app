@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use GuzzleHttp\Promise\Create;
 use Illuminate\Database\Eloquent\Builder;
 
 class TabungansRelationManager extends RelationManager
@@ -34,6 +35,11 @@ class TabungansRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('nama')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('target')->sortable(),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->label('Tambah Data')
+                    ->form(function():array{})
             ]);
     }
 
@@ -41,4 +47,6 @@ class TabungansRelationManager extends RelationManager
     {
         return $this->getRelationship()->getQuery();
     }
+
+
 }

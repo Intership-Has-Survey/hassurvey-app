@@ -35,9 +35,8 @@ return new class extends Migration {
             $table->string('nama');
             $table->longText('deskripsi');
 
-            
-            $table->foreignUuid('operasional_id')->constrained('operasional');
-            $table->foreignUuid('tabungan_id')->constrained('tabungan');
+            $table->foreignUuid('operasional_id')->nullable()->constrained('operasional');
+            $table->foreignUuid('tabungan_id')->nullable()->constrained('tabungan');
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
             $table->timestamps();

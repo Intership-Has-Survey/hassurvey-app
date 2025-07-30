@@ -13,11 +13,13 @@ return new class extends Migration {
         Schema::create('tabungans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->decimal('target', 15, 2);
+            $table->decimal('nominal', 15, 2);
             $table->unsignedBigInteger('detailable_id');
             $table->string('detailable_type');
+            $table->softDeletes();
             $table->timestamps();
 
+            $table->foreignUuid('visi_mati_id')->constrained('visi_mati')->onDelete('cascade');
             $table->index(['detailable_id', 'detailable_type']);
         });
     }
