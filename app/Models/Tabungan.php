@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -17,19 +16,14 @@ class Tabungan extends Model
 
     protected $fillable = [
         'nama',
-        'target',
-        'detailable_id',
-        'detailable_type',
+        'target_nominal',
+        'target_tipe',
+        'visi_mati_id',
     ];
 
-    public function visiMati(): MorphToMany
+    public function visiMati(): BelongsTo
     {
-        return $this->morphToMany(VisiMati::class, 'subcategorizable', 'subcategorizables', 'subcategorizable_id', 'visi_mati_id');
-    }
-
-    public function detailable(): MorphTo
-    {
-        return $this->morphTo();
+        return $this->belongsTo(VisiMati::class);
     }
 
     public function pemasukans(): HasMany

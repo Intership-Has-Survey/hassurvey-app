@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VisiMati extends Model
 {
@@ -17,28 +18,29 @@ class VisiMati extends Model
     protected $fillable = [
         'nama',
         'deskripsi',
-        'subcategorizables',
+        'user_id',
     ];
 
-    protected $casts = [
-        'subcategorizables' => 'array',
-    ];
-
-    public function tabungans()
+    public function tabungan(): HasOne
     {
-        return $this->hasMany(Tabungan::class);
+        return $this->hasOne(Tabungan::class);
     }
 
-    public function operasionals()
+    public function operasional(): HasOne
     {
-        return $this->hasMany(Operasional::class);
+        return $this->hasOne(Operasional::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static function booted(): void
     {
-        static::creating(function ($pemilik) {
-            if (!$pemilik->user_id && Auth::check()) {
-                $pemilik->user_id = Auth::id();
+        static::creating(function ($model) {
+            if (!$model->user_id && Auth::check()) {
+                $model->user_id = Auth::id();
             }
         });
     }

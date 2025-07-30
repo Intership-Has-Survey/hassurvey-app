@@ -11,16 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('tabungans', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('nama');
-            $table->decimal('nominal', 15, 2);
-            $table->unsignedBigInteger('detailable_id');
-            $table->string('detailable_type');
+            $table->decimal('target_nominal', 15, 2);
+            $table->enum('target_tipe', ['orang', 'bangunan']);
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreignUuid('visi_mati_id')->constrained('visi_mati')->onDelete('cascade');
-            $table->index(['detailable_id', 'detailable_type']);
         });
     }
 

@@ -11,17 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('kewajiban_bayars', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('operasional_id');
-            $table->unsignedBigInteger('bangunan_id')->nullable();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('operasional_id')->constrained('operasionals')->onDelete('cascade');
+            $table->foreignUuid('penerima_operasional_id')->nullable()->constrained('penerima_operasionals')->onDelete('set null');
             $table->string('nama');
             $table->text('deskripsi')->nullable();
             $table->decimal('nominal', 15, 2);
             $table->string('bukti')->nullable();
             $table->timestamps();
-
-            $table->foreign('operasional_id')->references('id')->on('operasionals')->onDelete('cascade');
-            $table->foreign('bangunan_id')->references('id')->on('bangunans')->onDelete('set null');
         });
     }
 

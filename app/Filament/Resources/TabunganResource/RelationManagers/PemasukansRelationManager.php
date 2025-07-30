@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\VisiMatiResource\RelationManagers;
+namespace App\Filament\Resources\TabunganResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -8,37 +8,36 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class TabungansRelationManager extends RelationManager
+class PemasukansRelationManager extends RelationManager
 {
-    protected static string $relationship = 'tabungan';
+    protected static string $relationship = 'pemasukans';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('target_nominal')
+                Forms\Components\DatePicker::make('tanggal')
+                    ->required(),
+                Forms\Components\TextInput::make('jumlah')
                     ->required()
                     ->numeric(),
-                Forms\Components\Select::make('target_tipe')
-                    ->options([
-                        'orang' => 'Orang',
-                        'bangunan' => 'Bangunan',
-                    ])
-                    ->required(),
+                Forms\Components\TextInput::make('deskripsi')
+                    ->maxLength(255),
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('nama')
+            ->recordTitleAttribute('tanggal')
             ->columns([
-                Tables\Columns\TextColumn::make('nama'),
-                Tables\Columns\TextColumn::make('target_nominal')->numeric(decimalPlaces: 2),
-                Tables\Columns\TextColumn::make('target_tipe'),
+                Tables\Columns\TextColumn::make('tanggal')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('jumlah')
+                    ->numeric(decimalPlaces: 2)
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('deskripsi'),
             ])
             ->filters([
                 //

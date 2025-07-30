@@ -3,21 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class KewajibanBayar extends Model
+class PenerimaOperasional extends Model
 {
-    use HasUuids;
-    protected $table = 'kewajiban_bayars';
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'operasional_id',
-        'penerima_operasional_id',
         'nama',
-        'deskripsi',
-        'nominal',
-        'bukti',
+        'alamat',
+        'keterangan',
     ];
 
     public function operasional(): BelongsTo
@@ -25,8 +24,8 @@ class KewajibanBayar extends Model
         return $this->belongsTo(Operasional::class);
     }
 
-    public function penerimaOperasional(): BelongsTo
+    public function kewajibanBayars(): HasMany
     {
-        return $this->belongsTo(PenerimaOperasional::class);
+        return $this->hasMany(KewajibanBayar::class);
     }
 }

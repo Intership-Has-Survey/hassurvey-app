@@ -3,14 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\VisiMatiResource\Pages;
-use App\Filament\Resources\VisiMatiResource\RelationManagers\OperasionalsRelationManager;
-use App\Filament\Resources\VisiMatiResource\RelationManagers\TabungansRelationManager;
 use App\Models\VisiMati;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,34 +23,53 @@ class VisiMatiResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('nama')
-                    ->required()
-                    ->maxLength(255),
-                Textarea::make('deskripsi')
-                    ->nullable(),
-                Repeater::make('subcategorizables')
-                    ->label('Sub-kategori')
-                    ->dehydrated(false)
-                    ->maxItems(2)
-                    ->schema([
-                        Select::make('type')
-                            ->label('Tipe')
-                            ->options([
-                                'tabungan' => 'Tabungan',
-                                'operasional' => 'Operasional',
-                            ])
-                            ->required(),
-                        TextInput::make('nama')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('target')
-                            ->label('Target')
-                            ->numeric()
-                            ->required(),
-                    ]),
-            ])->columns(1);
+        return $form->schema([
+            Section::make('Detail Utama')
+                ->schema([
+                    TextInput::make('nama')->required()->maxLength(255),
+                    Textarea::make('deskripsi')->nullable(),
+                ]),
+
+            Section::make('Sub-Kategori')
+                ->schema([
+                    CheckboxList::make('sub_kategori')
+                        ->label('Pilih Sub-Kategori')
+                        ->options([
+                            'tabungan' => 'Tabungan',
+                            'operasional' => 'Operasional',
+                        ])
+                        ->minItems(1)
+                        ->live()
+                        ->disabledOn('edit'),
+                ]),
+
+            Section::make('Detail Tabungan')
+                ->schema([
+                    TextInput::make('tabungan.nama')
+                        ->label('Nama Tabungan')
+                        ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                    TextInput::make('tabungan.target_nominal')
+                        ->label('Target Nominal')
+                        ->numeric()
+                        ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                    Select::make('tabungan.target_tipe')
+                        ->label('Target Tipe')
+                        ->options([
+                            'orang' => 'Orang',
+                            'bangunan' => 'Bangunan',
+                        ])
+                        ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                ])
+                ->visible(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+
+            Section::make('Detail Operasional')
+                ->schema([
+                    TextInput::make('operasional.nama')
+                        ->label('Nama Operasional')
+                        ->required(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+                ])
+                ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -63,14 +82,6 @@ class VisiMatiResource extends Resource
             ->filters([
                 //
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            TabungansRelationManager::class,
-            OperasionalsRelationManager::class,
-        ];
     }
 
     public static function getPages(): array

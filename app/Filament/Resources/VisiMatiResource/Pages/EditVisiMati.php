@@ -3,70 +3,95 @@
 namespace App\Filament\Resources\VisiMatiResource\Pages;
 
 use App\Filament\Resources\VisiMatiResource;
-use App\Models\Operasional;
-use App\Models\Tabungan;
+use App\Filament\Widgets\KewajibanBayarTableWidget;
+use App\Filament\Widgets\PemasukanTableWidget;
+use App\Filament\Widgets\PenerimaOperasionalTableWidget;
+use App\Filament\Widgets\PengeluaranTableWidget;
+use Filament\Widgets\Tabs;
+use Filament\Actions;
+
 use Filament\Resources\Pages\EditRecord;
 
 class EditVisiMati extends EditRecord
 {
     protected static string $resource = VisiMatiResource::class;
 
-    protected function fillForm(): void
+    protected function getHeaderActions(): array
     {
-        parent::fillForm();
+        return [
+            Actions\DeleteAction::make(),
+        ];
+    }
 
-        $subcategories = [];
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['sub_kategori'] = [];
 
-        foreach ($this->record->tabungans as $tabungan) {
-            $subcategories[] = [
-                'type' => 'tabungan',
-                'nama' => $tabungan->nama,
-                'target' => $tabungan->target,
-            ];
+        if ($this->record->tabungan) {
+            $data['sub_kategori'][] = 'tabungan';
+            $data['tabungan'] = $this->record->tabungan->toArray();
         }
 
-        foreach ($this->record->operasionals as $operasional) {
-            $subcategories[] = [
-                'type' => 'operasional',
-                'nama' => $operasional->nama,
-                'target' => $operasional->target,
-            ];
+        if ($this->record->operasional) {
+            $data['sub_kategori'][] = 'operasional';
+            $data['operasional'] = $this->record->operasional->toArray();
         }
 
-        $this->form->fill([
-            ...$this->record->toArray(),
-            'subcategorizables' => $subcategories,
-        ]);
+        return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $this->subcategories = $data['subcategorizables'] ?? [];
-        unset($data['subcategorizables']);
+        // Handle Tabungan
+        if (in_array('tabungan', $data['sub_kategori'])) {
+            if ($this->record->tabungan) {
+                $this->record->tabungan->update($data['tabungan']);
+            } else {
+                $this->record->tabungan()->create($data['tabungan']);
+            }
+        } else {
+            // If tabungan was previously selected but now deselected, delete it
+            if ($this->record->tabungan) {
+                $this->record->tabungan->delete();
+            }
+        }
+
+        // Handle Operasional
+        if (in_array('operasional', $data['sub_kategori'])) {
+            if ($this->record->operasional) {
+                $this->record->operasional->update($data['operasional']);
+            } else {
+                $this->record->operasional()->create($data['operasional']);
+            }
+        } else {
+            // If operasional was previously selected but now deselected, delete it
+            if ($this->record->operasional) {
+                $this->record->operasional->delete();
+            }
+        }
+
+        // Remove sub_kategori, tabungan, and operasional from main data to prevent mass assignment issues
+        unset($data['sub_kategori']);
+        unset($data['tabungan']);
+        unset($data['operasional']);
+
         return $data;
     }
 
-    protected function afterSave(): void
+    protected function getFooterWidgets(): array
     {
-        // Hapus data lama
-        $this->record->tabungans()->delete();
-        $this->record->operasionals()->delete();
+        $widgets = [];
 
-        // Simpan ulang dari form
-        foreach ($this->subcategories as $item) {
-            if ($item['type'] === 'tabungan') {
-                $this->record->tabungans()->create([
-                    'nama' => $item['nama'],
-                    'target' => $item['target'],
-                ]);
-            }
-
-            if ($item['type'] === 'operasional') {
-                $this->record->operasionals()->create([
-                    'nama' => $item['nama'],
-                    'target' => $item['target'],
-                ]);
-            }
+        if ($this->record->tabungan) {
+            $widgets[] = PemasukanTableWidget::make(['record' => $this->record]);
+            $widgets[] = PengeluaranTableWidget::make(['record' => $this->record]);
         }
+
+        if ($this->record->operasional) {
+            $widgets[] = KewajibanBayarTableWidget::make(['record' => $this->record]);
+            $widgets[] = PenerimaOperasionalTableWidget::make(['record' => $this->record]);
+        }
+
+        return $widgets;
     }
 }

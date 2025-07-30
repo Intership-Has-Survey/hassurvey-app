@@ -2,18 +2,15 @@
 
 namespace App\Filament\Resources\VisiMatiResource\RelationManagers;
 
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class OperasionalsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'operasionals';
-
-    protected static ?string $title = 'Operasionals';
+    protected static string $relationship = 'operasional';
 
     public function form(Form $form): Form
     {
@@ -22,26 +19,30 @@ class OperasionalsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('target')
-                    ->required()
-                    ->numeric(),
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('target')->sortable(),
+                Tables\Columns\TextColumn::make('nama'),
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
-    }
-
-    public function getTableQuery(): Builder
-    {
-        return $this->getRelationship()->getQuery();
     }
 }

@@ -11,14 +11,13 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('pengeluarans', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('tabungan_id');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('tabungan_id')->constrained('tabungans')->onDelete('cascade');
             $table->date('tanggal');
             $table->decimal('jumlah', 15, 2);
-            $table->string('tujuan');
+            $table->text('deskripsi')->nullable();
+            $table->uuidMorphs('pengeluaranable'); // Adds pengeluaranable_id and pengeluaranable_type
             $table->timestamps();
-
-            $table->foreign('tabungan_id')->references('id')->on('tabungans')->onDelete('cascade');
         });
     }
 

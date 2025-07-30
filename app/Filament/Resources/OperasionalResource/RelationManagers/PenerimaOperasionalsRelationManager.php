@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\VisiMatiResource\RelationManagers;
+namespace App\Filament\Resources\OperasionalResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -8,9 +8,9 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class TabungansRelationManager extends RelationManager
+class PenerimaOperasionalsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'tabungan';
+    protected static string $relationship = 'penerimaOperasionals';
 
     public function form(Form $form): Form
     {
@@ -19,15 +19,10 @@ class TabungansRelationManager extends RelationManager
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('target_nominal')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\Select::make('target_tipe')
-                    ->options([
-                        'orang' => 'Orang',
-                        'bangunan' => 'Bangunan',
-                    ])
-                    ->required(),
+                Forms\Components\Textarea::make('alamat')
+                    ->nullable(),
+                Forms\Components\Textarea::make('keterangan')
+                    ->nullable(),
             ]);
     }
 
@@ -37,8 +32,8 @@ class TabungansRelationManager extends RelationManager
             ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama'),
-                Tables\Columns\TextColumn::make('target_nominal')->numeric(decimalPlaces: 2),
-                Tables\Columns\TextColumn::make('target_tipe'),
+                Tables\Columns\TextColumn::make('alamat'),
+                Tables\Columns\TextColumn::make('keterangan'),
             ])
             ->filters([
                 //

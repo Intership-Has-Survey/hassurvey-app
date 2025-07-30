@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Bangunan extends Model
 {
+    use HasUuids;
     protected $table = 'bangunans';
 
     protected $fillable = [
@@ -15,13 +16,8 @@ class Bangunan extends Model
         'alamat',
     ];
 
-    public function tabungans(): MorphMany
+    public function pengeluarans(): MorphMany
     {
-        return $this->morphMany(Tabungan::class, 'detailable');
-    }
-
-    public function kewajibanBayars(): HasMany
-    {
-        return $this->hasMany(KewajibanBayar::class);
+        return $this->morphMany(Pengeluaran::class, 'pengeluaranable');
     }
 }
