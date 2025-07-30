@@ -2,6 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\GrafikCustomer;
+use App\Filament\Widgets\GrafikCustomerBulan;
+use App\Filament\Widgets\GrafikPesanan;
+use App\Filament\Widgets\GrafikPesananBulan;
+use App\Filament\Widgets\StatsOverview;
 use App\Models\Project;
 use App\Models\Sewa;
 use Carbon\Carbon;
@@ -50,5 +55,26 @@ class Dashboard extends BaseDashboard
                     ])
                     ->columns(3),
             ]);
+
+
+    }
+
+    protected static array $widgets = [
+        StatsOverview::class,
+        GrafikCustomer::class,
+        GrafikCustomerBulan::class,
+        GrafikPesanan::class,
+        GrafikPesananBulan::class,
+    ];
+
+    public function getWidgets(): array
+    {
+        return [
+            StatsOverview::class,
+            GrafikCustomer::class,
+            GrafikCustomerBulan::class,
+            GrafikPesanan::class,
+            GrafikPesananBulan::class,
+        ];
     }
 }
