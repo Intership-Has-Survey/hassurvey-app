@@ -49,6 +49,7 @@ use Filament\Notifications\Notification; // Tambahkan ini di atas
 use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
+use App\Filament\Resources\SewaResource\RelationManagers\StatusPembyaranRelationManager;
 
 class SewaResource extends Resource
 {
@@ -351,6 +352,8 @@ class SewaResource extends Resource
         return [
             RiwayatSewasRelationManager::class,
             PengajuanDanasRelationManager::class,
+            StatusPembyaranRelationManager::class,
+
         ];
     }
 

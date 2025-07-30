@@ -73,7 +73,7 @@ class RingkasanPembayaran extends Page implements HasTable
                         if ($record->payable_type === 'App\\Models\\Project') {
                             return Project::find($record->id)?->nilai_project ?? '-';
                         } elseif ($record->payable_type === 'App\\Models\\Sewa') {
-                            return \App\Models\Sewa::find($record->id)?->harga_real ?? '-';
+                            return \App\Models\Sewa::find($record->id)?->harga_fix ?? '-';
                         }
                         return '-';
                     }),

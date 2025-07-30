@@ -1,42 +1,39 @@
 <?php
 
-namespace App\Filament\Resources\ProjectResource\RelationManagers;
+namespace App\Filament\Resources\SewaResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Tables;
 use Filament\Forms\Form;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Support\RawJs;
-use App\Models\StatusPembayaran;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\FileUpload;
+
+use Filament\Tables\Columns\TextColumn;
+
+use Filament\Support\RawJs;
+
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Resources\RelationManagers\RelationManager;
 
-class StatusPembayaranRelationManager extends RelationManager
+class StatusPembyaranRelationManager extends RelationManager
 {
-
     protected static string $relationship = 'StatusPembayaran';
-
-    protected static ?string $title = 'Riwayat Pembayaran';
-
-    protected static bool $isLazy = false;
 
     public function form(Form $form): Form
     {
         $project = $this->ownerRecord;
-        $nilaiProyek = (float) $project->nilai_project;
+        $nilaiProyek = (float) $project->harga_fix;
         $totalDibayar = (float) $project->statusPembayaran()->sum('nilai');
         $sisaPembayaran = $nilaiProyek - $totalDibayar;
 

@@ -60,6 +60,10 @@ class Sewa extends Model
     {
         return $this->hasMany(PengajuanDana::class, 'sewa_id');
     }
+    public function statusPembayaran()
+    {
+        return $this->morphMany(StatusPembayaran::class, 'payable');
+    }
 
     protected $casts = [
         'is_locked' => 'boolean',
