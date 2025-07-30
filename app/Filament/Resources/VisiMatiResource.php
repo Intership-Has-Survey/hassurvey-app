@@ -3,6 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\VisiMatiResource\Pages;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\KewajibanBayarsRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PemasukansRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PenerimaOperasionalsRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PengeluaransRelationManager;
 use App\Models\VisiMati;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Section;
@@ -70,6 +74,16 @@ class VisiMatiResource extends Resource
                 ])
                 ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
         ]);
+    }
+
+    public static function getRelationManagers(): array
+    {
+        return [
+            PemasukansRelationManager::class,
+            PengeluaransRelationManager::class,
+            KewajibanBayarsRelationManager::class,
+            PenerimaOperasionalsRelationManager::class,
+        ];
     }
 
     public static function table(Table $table): Table

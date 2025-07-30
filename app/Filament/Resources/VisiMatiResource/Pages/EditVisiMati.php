@@ -8,6 +8,11 @@ use App\Filament\Widgets\PemasukanTableWidget;
 use App\Filament\Widgets\PenerimaOperasionalTableWidget;
 use App\Filament\Widgets\PengeluaranTableWidget;
 use Filament\Widgets\Tabs;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\KewajibanBayarsRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PemasukansRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PenerimaOperasionalsRelationManager;
+use App\Filament\Resources\VisiMatiResource\RelationManagers\PengeluaransRelationManager;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Actions;
 
 use Filament\Resources\Pages\EditRecord;
@@ -78,20 +83,34 @@ class EditVisiMati extends EditRecord
         return $data;
     }
 
-    protected function getFooterWidgets(): array
+    public function getRelationManagers(): array
     {
-        $widgets = [];
-
-        if ($this->record->tabungan) {
-            $widgets[] = PemasukanTableWidget::make(['record' => $this->record]);
-            $widgets[] = PengeluaranTableWidget::make(['record' => $this->record]);
-        }
-
-        if ($this->record->operasional) {
-            $widgets[] = KewajibanBayarTableWidget::make(['record' => $this->record]);
-            $widgets[] = PenerimaOperasionalTableWidget::make(['record' => $this->record]);
-        }
-
-        return $widgets;
+        return [
+            RelationGroup::make('Tabungan', [
+                PemasukansRelationManager::class,
+                PengeluaransRelationManager::class,
+            ]),
+            RelationGroup::make('Operasional', [
+                KewajibanBayarsRelationManager::class,
+                PenerimaOperasionalsRelationManager::class,
+            ]),
+        ];
     }
+
+    // protected function getFooterWidgets(): array
+    // {
+    //     $widgets = [];
+
+    //     if ($this->record->tabungan) {
+    //         $widgets[] = PemasukanTableWidget::make(['record' => $this->record]);
+    //         $widgets[] = PengeluaranTableWidget::make(['record' => $this->record]);
+    //     }
+
+    //     if ($this->record->operasional) {
+    //         $widgets[] = KewajibanBayarTableWidget::make(['record' => $this->record]);
+    //         $widgets[] = PenerimaOperasionalTableWidget::make(['record' => $this->record]);
+    //     }
+
+    //     return $widgets;
+    // }
 }
