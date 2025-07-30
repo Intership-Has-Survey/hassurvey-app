@@ -101,6 +101,7 @@ class PengajuanDanasRelationManager extends RelationManager
                             ->required(),
                         TextInput::make('qty')
                             ->label('Jumlah')
+                            ->numeric()
                             ->required(),
 
                         TextInput::make('harga_satuan')
@@ -150,7 +151,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = $firstStep->role_id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -184,7 +185,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = $firstStep->role_id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -222,7 +223,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
-            $roleName = optional($firstStep?->roles)->id;
+            $roleName = $firstStep->role_id;
 
             $pengajuan->update([
                 'level_id'     => $level->id,

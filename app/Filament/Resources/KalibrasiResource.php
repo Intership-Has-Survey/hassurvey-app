@@ -40,22 +40,6 @@ class KalibrasiResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Informasi Kalibrasi')
-                    ->schema([
-                        TextInput::make('nama')
-                            ->label('Nama Kalibrasi')
-                            ->required(),
-                        TextInput::make('harga')
-                            ->label('Harga'),
-                        Select::make('status')
-                            ->options([
-                                'dalam_proses' => 'Dalam proses',
-                                'selesai' => 'Selesai'
-                            ])
-                            ->visibleOn('edit')
-                            ->default('dalam_proses')
-                            ->native(false),
-                    ]),
                 Section::make('Informasi Customer')
                     ->schema([
                         Select::make('customer_flow_type')
@@ -92,6 +76,22 @@ class KalibrasiResource extends Resource
                             ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
                             ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                             ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+                    ]),
+                Section::make('Informasi Kalibrasi')
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Nama Kalibrasi')
+                            ->required(),
+                        TextInput::make('harga')
+                            ->label('Harga'),
+                        Select::make('status')
+                            ->options([
+                                'dalam_proses' => 'Dalam proses',
+                                'selesai' => 'Selesai'
+                            ])
+                            ->visibleOn('edit')
+                            ->default('dalam_proses')
+                            ->native(false),
                     ]),
             ]);
     }

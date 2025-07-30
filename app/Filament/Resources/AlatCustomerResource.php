@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\TrefRegion;
 use Illuminate\Support\Facades\DB;
 
+use App\Filament\Resources\AlatCustomerResource\RelationManagers\DetailKalibrasiRelationManager;
+
 class AlatCustomerResource extends Resource
 {
     protected static ?string $model = AlatCustomer::class;
@@ -71,9 +73,6 @@ class AlatCustomerResource extends Resource
                             ->required(),
                     ])
                     ->required(),
-                Forms\Components\Textarea::make('keterangan')
-                    ->nullable()
-                    ->columnSpanFull(),
 
                 Forms\Components\Select::make('kondisi')
                     ->label('Kondisi Alat')
@@ -83,6 +82,9 @@ class AlatCustomerResource extends Resource
                         false => 'Dipakai',
                     ])
                     ->visibleOn('edit'),
+                Forms\Components\Textarea::make('keterangan')
+                    ->nullable()
+                    ->columnSpanFull(),
                 Section::make('Informasi Customer')
                     ->schema([
                         Select::make('customer_flow_type')
@@ -153,6 +155,7 @@ class AlatCustomerResource extends Resource
     {
         return [
             //
+            DetailKalibrasiRelationManager::class,
         ];
     }
 

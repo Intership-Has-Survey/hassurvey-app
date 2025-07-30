@@ -351,8 +351,8 @@ class SewaResource extends Resource
     {
         return [
             RiwayatSewasRelationManager::class,
-            PengajuanDanasRelationManager::class,
             StatusPembyaranRelationManager::class,
+            PengajuanDanasRelationManager::class,
 
         ];
     }
