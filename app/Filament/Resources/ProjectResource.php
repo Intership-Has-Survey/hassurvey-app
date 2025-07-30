@@ -78,6 +78,25 @@ class ProjectResource extends Resource
                         ->searchable()
                         ->preload()
                         ->createOptionForm(self::getCorporateForm())
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if (! $state) {
+                                $set('perorangan', []);
+                                return;
+                            }
+
+                            $corporate = \App\Models\Corporate::with('perorangan')->find($state);
+
+                            if (! $corporate) {
+                                $set('perorangan', []);
+                                return;
+                            }
+
+                            $perorangan = $corporate->perorangan->map(fn($p) => [
+                                'perorangan_id' => $p->id,
+                            ])->toArray();
+
+                            $set('perorangan', $perorangan);
+                        })
                         ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                     Repeater::make('perorangan')
@@ -102,18 +121,29 @@ class ProjectResource extends Resource
                         ->addActionLabel('Tambah PIC')
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                            $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                            $record->perorangan()->sync($ids);
+                            $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
+                            $record->perorangan()->sync($selectedIds); // sync dengan project
 
                             if ($record->corporate_id) {
                                 $corporate = $record->corporate;
-                                foreach ($ids as $peroranganId) {
-                                    if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
+
+                                // Ambil semua ID PIC yang terhubung sebelumnya
+                                $existingIds = $corporate->perorangan()->pluck('perorangan_id')->toArray();
+
+                                // Tambahkan PIC baru yang belum terhubung
+                                foreach ($selectedIds as $peroranganId) {
+                                    if (!in_array($peroranganId, $existingIds)) {
                                         $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
                                     }
                                 }
+
+                                // Hapus PIC yang tidak ada di list sekarang
+                                $toDetach = array_diff($existingIds, $selectedIds);
+                                if (!empty($toDetach)) {
+                                    $corporate->perorangan()->detach($toDetach);
+                                }
                             }
-                        }),
+                        })
                 ])
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
