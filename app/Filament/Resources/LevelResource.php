@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -32,8 +33,14 @@ class LevelResource extends Resource
         return $form
             ->schema([
                 //
-                TextInput::make('nama'),
-                TextInput::make('max_nilai'),
+                TextInput::make('nama')
+                    ->label('Nama tingkatan pengajuan'),
+                TextInput::make('max_nilai')
+                    ->label('Maksimal pengajuan')
+                    ->numeric()
+                    ->prefix('Rp ')
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(','),
             ]);
     }
 
@@ -43,7 +50,7 @@ class LevelResource extends Resource
             ->columns([
                 //
                 TextColumn::make('nama'),
-                TextColumn::make('max_nilai')->label('Maksimal Pengajuan'),
+                TextColumn::make('max_nilai')->label('Maksimal Pengajuan')->money('IDR'),
             ])
             ->filters([
                 //

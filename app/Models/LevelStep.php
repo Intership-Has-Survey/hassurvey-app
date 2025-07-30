@@ -20,7 +20,7 @@ class LevelStep extends Model
         return $this->belongsTo(Level::class);
     }
 
-    public function roles()
+    public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
     }

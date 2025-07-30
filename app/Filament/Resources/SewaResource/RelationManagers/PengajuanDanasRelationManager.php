@@ -9,11 +9,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Level;
+use Filament\Support\RawJs;
 
 class PengajuanDanasRelationManager extends RelationManager
 {
@@ -64,8 +65,6 @@ class PengajuanDanasRelationManager extends RelationManager
                             });
                     })
                     ->reactive()
-                    ->searchable()
-                    ->native(false)
                     ->createOptionForm([
                         Forms\Components\TextInput::make('no_rek')
                             ->label('Nomor Rekening')
@@ -84,6 +83,9 @@ class PengajuanDanasRelationManager extends RelationManager
                         $account = \App\Models\BankAccount::create($data);
                         return $account->id; // UUID
                     })
+
+                    ->searchable()
+                    ->native(false)
                     ->required(),
                 Repeater::make('detailPengajuans') // nama relasi
                     ->relationship()
@@ -95,11 +97,15 @@ class PengajuanDanasRelationManager extends RelationManager
                             ->required(),
                         TextInput::make('qty')
                             ->label('Jumlah')
+                            ->numeric()
                             ->required(),
 
                         TextInput::make('harga_satuan')
                             ->label('Harga Satuan')
                             ->numeric()
+                            ->prefix('Rp ')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
                             ->required(),
                     ])
                     ->defaultItems(1)
@@ -126,6 +132,7 @@ class PengajuanDanasRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->after(function ($livewire, $record) {
+                        // dd($record);
                         $record->updateTotalHarga();
 
                         $nilai = $record->nilai;
@@ -136,11 +143,12 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = $firstStep->role_id;
+                            // dd($firstStep->role_id);
 
                             $record->update([
                                 'level_id'     => $level->id,
-                                'dalam_review' => $roleName,
+                                'dalam_review' => $firstStep->role_id,
                             ]);
                         }
                     }),
@@ -160,8 +168,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
-
+                            $roleName = $firstStep->role_id;
                             $record->update([
                                 'level_id'     => $level->id,
                                 'dalam_review' => $roleName,
@@ -191,12 +198,19 @@ class PengajuanDanasRelationManager extends RelationManager
 
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
-            $roleName = optional($firstStep?->roles)->id;
+            $roleName = $firstStep->role_id;
 
             $pengajuan->update([
                 'level_id'     => $level->id,
                 'dalam_review' => $roleName,
             ]);
         }
+    }
+
+    protected function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager::class,
+        ];
     }
 }

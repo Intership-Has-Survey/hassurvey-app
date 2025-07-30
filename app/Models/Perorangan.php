@@ -31,9 +31,27 @@ class Perorangan extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * The corporate entities that this person is associated with.
-     */
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_perorangan')
+            ->withPivot('project_id', 'perorangan_id')
+            ->withTimestamps();
+    }
+
+    public function sewa()
+    {
+        return $this->belongsToMany(Sewa::class, 'sewa_perorangan')
+            ->withPivot('sewa_id', 'perorangan_id')
+            ->withTimestamps();
+    }
+
+    public function alatcustomer()
+    {
+        return $this->belongsToMany(AlatCustomer::class, 'alat_customers_perorangan')
+            ->withPivot('alat_customers_id', 'perorangan_id')
+            ->withTimestamps();
+    }
+
     public function corporates()
     {
         return $this->belongsToMany(Corporate::class, 'perorangan_corporate')

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\BankAccount;
 use App\Models\Level;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -100,11 +101,15 @@ class PengajuanDanasRelationManager extends RelationManager
                             ->required(),
                         TextInput::make('qty')
                             ->label('Jumlah')
+                            ->numeric()
                             ->required(),
 
                         TextInput::make('harga_satuan')
                             ->label('Harga Satuan')
                             ->numeric()
+                            ->prefix('Rp ')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
                             ->required(),
                     ])
                     ->defaultItems(1)
@@ -146,7 +151,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = $firstStep->role_id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -180,7 +185,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = $firstStep->role_id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -218,7 +223,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
-            $roleName = optional($firstStep?->roles)->id;
+            $roleName = $firstStep->role_id;
 
             $pengajuan->update([
                 'level_id'     => $level->id,

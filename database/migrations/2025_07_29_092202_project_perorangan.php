@@ -21,6 +21,20 @@ return new class extends Migration
             $table->primary(['sewa_id', 'perorangan_id']);
             $table->timestamps();
         });
+
+        Schema::create('kalibrasi_perorangan', function (Blueprint $table) {
+            $table->foreignUuid('kalibrasi_id')->constrained('kalibrasis')->cascadeOnDelete();
+            $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
+            $table->primary(['kalibrasi_id', 'perorangan_id']);
+            $table->timestamps();
+        });
+
+        Schema::create('alat_customers_perorangan', function (Blueprint $table) {
+            $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
+            $table->foreignUuid('alat_customers_id')->constrained('alat_customers')->cascadeOnDelete();
+            $table->primary(['alat_customers_id', 'perorangan_id']);
+            $table->timestamps();
+        });
     }
 
     public function down(): void

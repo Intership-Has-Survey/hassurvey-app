@@ -13,29 +13,20 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class LevelStepRelationManager extends RelationManager
 {
     protected static string $relationship = 'levelsteps';
+    protected static ?string $title = 'Urutan persetujuan';
+
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Forms\Components\TextInput::make('level_id')
-                //     ->required()
-                //     ->maxLength(255),
-                // Forms\Components\Select::make('role_id')
-                //     ->relationship('levelsteps', 'name')
-                //     ->searchable()
-                //     ->preload()  
-                //     ->label('Kategori Proyek')
-                //     ->required(),
                 Forms\Components\TextInput::make('step')
+                    ->label('urutan ke')
                     ->numeric(),
-                // Forms\Components\TextInput::make('role_id')
-                //     ->numeric(),
                 Forms\Components\Select::make('role_id')
-                    // ->multiple()
-                    ->relationship('roles', 'name')
+                    ->relationship('role', 'name')
                     ->preload()
-                // ->label('Assign Roles'),
+                    ->label('Jabatan'),
             ]);
     }
 
@@ -45,8 +36,8 @@ class LevelStepRelationManager extends RelationManager
             ->recordTitleAttribute('level_id')
             ->columns([
                 // Tables\Columns\TextColumn::make('level'),
-                Tables\Columns\TextColumn::make('step'),
-                Tables\Columns\TextColumn::make('roles.name'),
+                Tables\Columns\TextColumn::make('step')->label('urutan pengajuan')->sortable(),
+                Tables\Columns\TextColumn::make('role.name')->label('Jabatan'),
             ])
             ->filters([
                 //
