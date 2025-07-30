@@ -40,68 +40,59 @@ class KalibrasiResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nama')
-                    ->label('Nama Kalibrasi')
-                    ->required(),
+                Section::make('Informasi Kalibrasi')
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Nama Kalibrasi')
+                            ->required(),
+                        TextInput::make('harga')
+                            ->label('Harga'),
+                        Select::make('status')
+                            ->options([
+                                'dalam_proses' => 'Dalam proses',
+                                'selesai' => 'Selesai'
+                            ])
+                            ->visibleOn('edit')
+                            ->default('dalam_proses')
+                            ->native(false),
+                    ]),
                 Section::make('Informasi Customer')
                     ->schema([
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
-                            ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->required()->dehydrated(false)
-                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
-
-
-                        Select::make('corporate_id')
-                            ->relationship('corporate', 'nama')
-                            ->label('Pilih Perusahaan')
-                            ->live()
-                            ->createOptionForm(self::getCorporateForm())
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                        Repeater::make('perorangan')
-                            ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
-                            ->relationship()
-                            ->schema([
-                                Select::make('perorangan_id')
-                                    ->label(false)
-                                    ->options(function (Get $get, $state): array {
-                                        $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
-                                        $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                        return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                                    })
-                                    ->searchable()->required()
-                                    ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
-                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                            ->options([
+                                'perorangan' => 'Perorangan',
+                                'corporate' => 'Corporate'
                             ])
-                            ->minItems(1)
-                            ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
-                            ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
-                            ->addActionLabel('Tambah PIC')
-                            ->visible(fn(Get $get) => filled($get('customer_flow_type')))
-                            ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                                $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                                $record->perorangan()->sync($ids);
-
-                                if ($record->corporate_id) {
-                                    $corporate = $record->corporate;
-                                    foreach ($ids as $peroranganId) {
-                                        if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
-                                            $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
-                                        }
-                                    }
-                                }
+                            ->live()
+                            ->required()
+                            ->dehydrated(false) // karena ini bukan field database
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('corporate_id', null);
+                                $set('perorangan_id', null);
                             }),
+
+                        // Jika corporate
+                        Select::make('corporate_id')
+                            ->label('Pilih Perusahaan')
+                            ->relationship('corporate', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm(self::getCorporateForm())
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+                        // Jika perorangan
+                        Select::make('perorangan_id')
+                            ->label('Pilih Customer')
+                            ->relationship('perorangan', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm(self::getPeroranganForm())
+                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                            ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
                     ]),
-                Select::make('status')
-                    ->options([
-                        'pending' => 'pending',
-                        'progress' => 'progress',
-                        'selesai' => 'selesai'
-                    ])
-                    ->native(false),
-                Hidden::make('harga')
-                    ->default(0),
             ]);
     }
 
@@ -111,8 +102,20 @@ class KalibrasiResource extends Resource
             ->columns([
                 //
                 Tables\Columns\TextColumn::make('nama'),
-                Tables\Columns\TextColumn::make('customer_id'),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('corporate_id')
+                    ->label('Customer')
+                    ->getStateUsing(function ($record) {
+                        return optional($record->corporate)->nama
+                            ?? optional($record->perorangan)->nama
+                            ?? 'Tidak ada customer';
+                    }),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'dalam_proses' => 'primary',
+                        'selesai' => 'success',
+                        default => 'primary'
+                    }),
             ])
             ->filters([
                 //
@@ -124,7 +127,8 @@ class KalibrasiResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');;
     }
 
     public static function getRelations(): array

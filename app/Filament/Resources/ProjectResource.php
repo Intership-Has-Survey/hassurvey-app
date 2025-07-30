@@ -321,10 +321,10 @@ class ProjectResource extends Resource
                 ->label('Anggaran Proyek')
                 ->numeric()
 
-                ->placeholder('Masukkan anggaran proyek')
                 ->prefix('Rp ')
                 ->mask(RawJs::make('$money($input)'))
                 ->stripCharacters(',')
+                ->placeholder('Masukkan anggaran proyek')
                 ->disabled(fn(callable $get) => $get('status') === 'Closing'),
             Select::make('status')
                 ->label('Status Proyek')

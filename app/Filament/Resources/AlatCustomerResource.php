@@ -32,6 +32,10 @@ class AlatCustomerResource extends Resource
     protected static ?string $model = AlatCustomer::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Alat Customer';
+    protected static ?string $navigationGroup = 'Customer';
+    // protected static ?string $title = 'Customer Perusahaan';
+
 
     public static function form(Form $form): Form
     {
@@ -83,51 +87,35 @@ class AlatCustomerResource extends Resource
                     ->schema([
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
-                            ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->required()->dehydrated(false)
-                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
-
-
-                        Select::make('corporate_id')
-                            ->relationship('corporate', 'nama')
-                            ->label('Pilih Perusahaan')
-                            ->live()
-                            ->createOptionForm(self::getCorporateForm())
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                        Repeater::make('perorangan')
-                            ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
-                            ->relationship()
-                            ->schema([
-                                Select::make('perorangan_id')
-                                    ->label(false)
-                                    ->options(function (Get $get, $state): array {
-                                        $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
-                                        $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                        return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                                    })
-                                    ->searchable()->required()
-                                    ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
-                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                            ->options([
+                                'perorangan' => 'Perorangan',
+                                'corporate' => 'Corporate'
                             ])
-                            ->minItems(1)
-                            ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
-                            ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
-                            ->addActionLabel('Tambah PIC')
-                            ->visible(fn(Get $get) => filled($get('customer_flow_type')))
-                            ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                                $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                                $record->perorangan()->sync($ids);
-
-                                if ($record->corporate_id) {
-                                    $corporate = $record->corporate;
-                                    foreach ($ids as $peroranganId) {
-                                        if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
-                                            $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
-                                        }
-                                    }
-                                }
+                            ->live()
+                            ->required()
+                            ->dehydrated(false) // karena ini bukan field database
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('corporate_id', null);
+                                $set('perorangan_id', null);
                             }),
+
+                        // Jika corporate
+                        Select::make('corporate_id')
+                            ->label('Pilih Perusahaan')
+                            ->relationship('corporate', 'nama')
+                            ->createOptionForm(self::getCorporateForm())
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+                        // Jika perorangan
+                        Select::make('perorangan_id')
+                            ->label('Pilih Customer')
+                            ->relationship('perorangan', 'nama')
+                            ->searchable()
+                            ->createOptionForm(self::getPeroranganForm())
+                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                            ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
                     ]),
             ]);
     }
@@ -136,11 +124,17 @@ class AlatCustomerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('customer_id'),
-                TextColumn::make('jenis_alat_id'),
-                TextColumn::make('merk_id'),
+                TextColumn::make('corporate_id')
+                    ->label('Customer')
+                    ->getStateUsing(function ($record) {
+                        return optional($record->corporate)->nama
+                            ?? optional($record->perorangan)->nama
+                            ?? 'Tidak ada customer';
+                    }),
+                TextColumn::make('jenisalat.nama')->label('Jenis Alat'),
+                TextColumn::make('merk.nama')->label('Merek'),
                 TextColumn::make('nomor_seri'),
-                TextColumn::make('keterangan'),
+                // TextColumn::make('keterangan'),
             ])
             ->filters([
                 //
@@ -180,8 +174,8 @@ class AlatCustomerResource extends Resource
                         ->label('Nama Perusahaan')
                         ->required()
                         ->maxLength(200),
-                    TextInput::make('npwp')
-                        ->label('NPWP')
+                    TextInput::make('nib')
+                        ->label('NIB')
                         ->maxLength(20),
                     TextInput::make('email')
                         ->label('Email')

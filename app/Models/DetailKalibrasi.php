@@ -12,6 +12,10 @@ class DetailKalibrasi extends Pivot
     protected $table = 'detail_kalibrasis';
     protected $guarded = ['id'];
 
+    protected $attributes = [
+        'status' => 'belum_dikerjakan',
+    ];
+
     public function alatCustomer()
     {
         return $this->belongsTo(AlatCustomer::class, 'alat_customer_id');

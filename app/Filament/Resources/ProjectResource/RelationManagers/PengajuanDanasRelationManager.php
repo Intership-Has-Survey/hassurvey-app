@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\BankAccount;
 use App\Models\Level;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -105,6 +106,9 @@ class PengajuanDanasRelationManager extends RelationManager
                         TextInput::make('harga_satuan')
                             ->label('Harga Satuan')
                             ->numeric()
+                            ->prefix('Rp ')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
                             ->required(),
                     ])
                     ->defaultItems(1)
