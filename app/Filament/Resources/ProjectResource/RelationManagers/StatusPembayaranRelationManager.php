@@ -14,9 +14,11 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ViewAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -78,7 +80,7 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->prefix('Rp')
                     ->maxlength(20),
 
-                FileUpload::make('bukti_pembayaran')
+                FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->acceptedFileTypes(['image/*', 'application/pdf'])
                     ->maxSize(1024) // 1 MB
@@ -111,6 +113,13 @@ class StatusPembayaranRelationManager extends RelationManager
                 TextColumn::make('user.name')
                     ->label('Diinput oleh')
                     ->sortable(),
+
+                ImageColumn::make('bukti_pembayaran_path')
+                    ->disk('public')
+                    ->label('Bukti Pembayaran')
+                    ->circular()
+                // ->visible(fn($record) => $record->bukti_pembayaran_path),
+
             ])
             ->filters([
                 // TrashedFilter::make(),
@@ -119,6 +128,7 @@ class StatusPembayaranRelationManager extends RelationManager
                 CreateAction::make()->label('Buat Pembayaran Baru'),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
