@@ -12,6 +12,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectResource;
+use App\Filament\Resources\SewaResource;
 use Filament\Tables\Concerns\InteractsWithTable;
 use App\Models\StatusPembayaran;
 
@@ -98,6 +99,10 @@ class RingkasanPembayaran extends Page implements HasTable
                             return ProjectResource::getUrl('edit', [
                                 'record' => $record->id,
                             ]) . '?activeRelationManager=1#status_pembayarans';
+                        } elseif ($record->payable_type === 'App\\Models\\Sewa' && $record->id) {
+                            return SewaResource::getUrl('edit', [
+                                'record' => $record->id,
+                            ]) . '?activeRelationManager=2#status_pembayarans';
                         }
                         return null; // Jangan kembalikan URL kosong
                     })
