@@ -8,6 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Pages\RingkasanPembayaran;
 use App\Filament\Resources\StatusPembayaranResource;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class ListStatusPembayarans extends ListRecords
 {
@@ -60,6 +63,36 @@ class ListStatusPembayarans extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+        ];
+    }
+
+    public function filters(): array
+    {
+        return [
+            Filter::make('Periode')
+                ->form([
+                    DatePicker::make('start_date')->label('Dari Tanggal'),
+                    DatePicker::make('end_date')->label('Sampaikan padanya Tanggal'),
+                ])
+                ->query(function ($query, array $data) {
+                    return $query
+                        ->when($data['start_date'], fn($q) => $q->whereDate('created_at', '>=', $data['start_date']))
+                        ->when($data['end_date'], fn($q) => $q->whereDate('created_at', '<=', $data['end_date']));
+                }),
+        ];
+    }
+
+    protected function getWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\StatusPembayaranSummary::class,
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\StatusPembayaranSummary::class,
         ];
     }
 }

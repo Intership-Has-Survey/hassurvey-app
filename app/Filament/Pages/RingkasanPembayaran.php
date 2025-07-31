@@ -21,7 +21,7 @@ class RingkasanPembayaran extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $navigationLabel = 'Pemasukan';
+    protected static ?string $navigationLabel = 'Ringkasan Pembayaran';
     protected static ?string $title = 'Ringkasan Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;
@@ -53,17 +53,19 @@ class RingkasanPembayaran extends Page implements HasTable
                     ->label('Jenis Layanan')
                     ->formatStateUsing(fn($state) => match ($state) {
                         'App\\Models\\Project' => 'Jasa Pemetaan',
-                        'App\\Models\\Sewa' => 'Penyewaan',
-                        'App\\Models\\Servis' => 'Servis',
+                        'App\\Models\\Sewa' => 'Sewa',
+                        'App\\Models\\Kalibrasi' => 'Kalibrasi',
                         default => 'Lainnya'
                     }),
                 TextColumn::make('nama_layanan')
-                    ->label('Nama Layanan')
+                    ->label('Judul Layanan')
                     ->getStateUsing(function ($record) {
                         if ($record->payable_type === 'App\\Models\\Project') {
                             return Project::find($record->id)?->nama_project ?? '-';
                         } elseif ($record->payable_type === 'App\\Models\\Sewa') {
                             return \App\Models\Sewa::find($record->id)?->judul ?? '-';
+                        } elseif ($record->payable_type === 'App\\Models\\Kalibrasi') {
+                            return \App\Models\Kalibrasi::find($record->id)?->nama ?? '-';
                         }
                         return '-';
                     }),

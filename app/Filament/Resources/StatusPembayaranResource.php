@@ -17,15 +17,21 @@ use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StatusPembayaranResource\Pages;
 use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+
 
 class StatusPembayaranResource extends Resource
 {
     protected static ?string $model = StatusPembayaran::class;
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationLabel = 'Tertutup';
-    protected static ?int $navigationSort = 5;
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $navigationLabel = 'Pemasukan';
+    protected static ?string $title = 'Pemasukan';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Keuangan';
 
     public static function form(Form $form): Form
     {
@@ -73,12 +79,21 @@ class StatusPembayaranResource extends Resource
     {
         return $table
             ->columns([
+
+                TextColumn::make('payable_type')
+                    ->label('Jenis Layanan')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'App\\Models\\Project' => 'Jasa Pemetaan',
+                        'App\\Models\\Sewa' => 'Sewa',
+                        'App\\Models\\Kalibrasi' => 'Kalibrasi',
+                        default => 'Lainnya'
+                    }),
                 TextColumn::make('nama_layanan')
-                    ->label('Nama Layanan')
+                    ->label('Judul Layanan')
                     ->getStateUsing(function ($record) {
                         return match ($record->payable_type) {
                             'App\\Models\\Project' => $record->payable?->nama_project,
-                            'App\\Models\\Sewa' => $record->payable?->nama_sewa,
+                            'App\\Models\\Sewa' => $record->payable?->judul,
                             default => '-'
                         };
                     }),
@@ -98,6 +113,22 @@ class StatusPembayaranResource extends Resource
             ])
             ->filters([
                 // TrashedFilter::make(),
+                Filter::make('Periode')
+                    ->form([
+                        DatePicker::make('start_date')->label('Dari Tanggal'),
+                        DatePicker::make('end_date')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        session([
+                            'filter_start_date' => $data['start_date'] ?? null,
+                            'filter_end_date' => $data['end_date'] ?? null,
+                        ]);
+
+                        return $query
+                            ->when($data['start_date'], fn($query) => $query->whereDate('created_at', '>=', $data['start_date']))
+                            ->when($data['end_date'], fn($query) => $query->whereDate('created_at', '<=', $data['end_date']));
+                    }),
+
             ])
             ->actions([
                 // Tables\Actions\ViewAction::make(),
@@ -126,4 +157,25 @@ class StatusPembayaranResource extends Resource
             'edit' => Pages\EditStatusPembayaran::route('/{record}/edit'),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\StatusPembayaranSummary::class,
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\StatusPembayaranSummary::class,
+        ];
+    }
+
+    // public static function getWidgets(): array
+    // {
+    //     return [
+    //         \App\Filament\Resources\StatusPembayaranResource\Widgets\TotalPembayaran::class,
+    //     ];
+    // }
 }
