@@ -2,13 +2,23 @@
 
 namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Forms\Components\Placeholder;
 use Filament\Resources\RelationManagers\RelationManager;
 
 class TransaksiPembayaransRelationManager extends RelationManager
@@ -25,7 +35,7 @@ class TransaksiPembayaransRelationManager extends RelationManager
 
         return $form
             ->schema([
-                Forms\Components\Placeholder::make('sisa_tagihan')
+                Placeholder::make('sisa_tagihan')
                     ->label('Sisa Pembayaran yang Belum Dilunasi')
                     ->content(function () use ($sisaPembayaran) {
                         if ($sisaPembayaran <= 0) {
@@ -40,13 +50,13 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->numeric()
                     ->prefix('Rp')
                     ->maxlength(20),
-                Forms\Components\DatePicker::make('tanggal_transaksi')->required()->native(false),
-                Forms\Components\Select::make('metode_pembayaran')
+                DatePicker::make('tanggal_transaksi')->required()->native(false),
+                Select::make('metode_pembayaran')
                     ->options(['Transfer' => 'Transfer', 'Tunai' => 'Tunai'])->required(),
-                Forms\Components\FileUpload::make('bukti_pembayaran_path')
+                FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->directory('bukti-pembayaran'),
-                Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                Hidden::make('user_id')->default(auth()->id()),
             ]);
     }
 
@@ -55,17 +65,23 @@ class TransaksiPembayaransRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nilai')
             ->columns([
-                Tables\Columns\TextColumn::make('tanggal_transaksi')->date('d M Y'),
-                Tables\Columns\TextColumn::make('nilai')->money('IDR'),
-                Tables\Columns\TextColumn::make('metode_pembayaran')->badge(),
-                Tables\Columns\TextColumn::make('user.name')->label('Dibayar oleh'),
+                TextColumn::make('tanggal_transaksi')->date('d M Y'),
+                TextColumn::make('nilai')->money('IDR'),
+                TextColumn::make('metode_pembayaran')->badge(),
+                ImageColumn::make('bukti_pembayaran_path')
+                    ->label('Bukti Pembayaran')
+                    ->disk('public')
+                    ->square()
+                    ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
+                    ->openUrlInNewTab(),
+                TextColumn::make('user.name')->label('Dibayar oleh'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 }
