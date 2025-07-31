@@ -8,7 +8,10 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -55,10 +58,12 @@ class StatusPekerjaanRelationManager extends RelationManager
                     ->native(false),
                 FileUpload::make('bukti_pekerjaan_path')
                     ->label('Bukti Pekerjaan')
+                    ->image()
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
                     ->directory('bukti-pekerjaan')
-                    ->nullable()
-                    ->acceptedFileTypes(['image/*', 'application/pdf'])
-                    ->maxSize(2048),
+                    ->columnSpanFull(),
                 TextInput::make('keterangan')
                     ->label('Keterangan')
                     ->maxLength(255)
@@ -74,9 +79,24 @@ class StatusPekerjaanRelationManager extends RelationManager
             ->recordTitleAttribute('laporan')
             ->columns([
                 Tables\Columns\TextColumn::make('jenis_pekerjaan')
-                    ->label('Jenis Pekerjaan'),
+                    ->label('Jenis Pekerjaan')
+                    ->sortable()
+                    ->formatStateUsing(function ($state) {
+                        $map = [
+                            'pekerjaan_lapangan' => 'Pekerjaan Lapangan',
+                            'data_gambar' => 'Data dan Gambar',
+                            'laporan' => 'Laporan',
+                        ];
+                        return $map[$state] ?? $state;
+                    }),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status'),
+                ImageColumn::make('bukti_pekerjaan_path')
+                    ->label('Bukti Pekerjaan')
+                    ->disk('public')
+                    ->square()
+                    ->url(fn(Model $record): ?string => $record->bukti_pekerjaan_path ? Storage::disk('public')->url($record->bukti_pekerjaan_path) : null)
+                    ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('keterangan'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat pada')

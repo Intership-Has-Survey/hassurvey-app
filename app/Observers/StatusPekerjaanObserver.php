@@ -14,6 +14,13 @@ class StatusPekerjaanObserver
         }
     }
 
+    public function deleted(StatusPekerjaan $statusPekerjaan): void
+    {
+        if ($statusPekerjaan->project) {
+            $this->updateProjectWorkStatus($statusPekerjaan->project);
+        }
+    }
+
     protected function updateProjectWorkStatus(Project $project): void
     {
         $requiredStages = ['pekerjaan_lapangan', 'data_gambar', 'laporan'];

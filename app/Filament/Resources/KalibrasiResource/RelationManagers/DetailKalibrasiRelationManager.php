@@ -59,10 +59,10 @@ class DetailKalibrasiRelationManager extends RelationManager
                             ->maxLength(255),
                         Forms\Components\Textarea::make('keterangan')
                             ->nullable(),
-                        Section::make('Informasi Customer')
+                        Section::make('Informasi Pemilik Alat')
                             ->schema([
                                 Select::make('customer_flow_type')
-                                    ->label('Tipe Customer')
+                                    ->label('Tipe Pemilik')
                                     ->options([
                                         'perorangan' => 'Perorangan',
                                         'corporate' => 'Corporate'
@@ -220,6 +220,14 @@ class DetailKalibrasiRelationManager extends RelationManager
                     TextInput::make('nib')
                         ->label('NIB')
                         ->maxLength(20),
+                    Forms\Components\Select::make('level')
+                        ->label('Level Perusahaan')
+                        ->options([
+                            'kecil' => 'Kecil',
+                            'menengah' => 'Menengah',
+                            'besar' => 'Besar',
+                        ])
+                        ->native(false),
                     TextInput::make('email')
                         ->label('Email')
                         ->email()
@@ -229,6 +237,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
+            Forms\Components\Section::make('Alamat Perusahaan')
+                ->schema(self::getAddressFields())
+                ->columns(2),
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
@@ -238,7 +249,7 @@ class DetailKalibrasiRelationManager extends RelationManager
     private static function getPeroranganForm(): array
     {
         return [
-            Section::make('Informasi Personal')
+            Section::make('Informasi Perorangan')
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
@@ -257,6 +268,12 @@ class DetailKalibrasiRelationManager extends RelationManager
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
+                    Forms\Components\Select::make('gender')
+                        ->label('Jenis Kelamin')
+                        ->options([
+                            'Pria' => 'Pria',
+                            'Wanita' => 'Wanita',
+                        ]),
                 ])->columns(2),
 
             Section::make('Alamat')

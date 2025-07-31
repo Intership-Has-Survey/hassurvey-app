@@ -4,6 +4,7 @@ namespace App\Models;
 
 // app/Models/StatusPekerjaan.php
 
+use Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

@@ -45,6 +45,7 @@ class ProjectResource extends Resource
                     Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
+                        ->relationship('sales', 'nama')
                         ->label('Sales')
                         ->options(function () {
                             return Sales::query()
@@ -220,7 +221,7 @@ class ProjectResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -447,7 +448,7 @@ class ProjectResource extends Resource
     private static function getPeroranganForm(): array
     {
         return [
-            Forms\Components\Section::make('Informasi Personal')
+            Forms\Components\Section::make('Informasi Perorangan')
                 ->schema([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Lengkap')
@@ -492,7 +493,7 @@ class ProjectResource extends Resource
                         ->label('Nama Kategori')
 
                         ->maxLength(100),
-                    Forms\Components\Textarea::make('deskripsi')
+                    Forms\Components\Textarea::make('keterangan')
                         ->label('Deskripsi')
                         ->maxLength(500)
                         ->nullable(),

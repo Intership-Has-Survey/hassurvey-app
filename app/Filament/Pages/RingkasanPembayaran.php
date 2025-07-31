@@ -22,7 +22,7 @@ class RingkasanPembayaran extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Pemasukan';
-    protected static ?string $title = 'Pemasukan';
+    protected static ?string $title = 'Ringkasan Pembayaran';
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
@@ -46,7 +46,7 @@ class RingkasanPembayaran extends Page implements HasTable
             ->query(
                 StatusPembayaran::query()
                     ->selectRaw('payable_id as id, SUM(nilai) as total_dibayar,payable_type')
-                    ->groupBy('payable_id', 'payable_type')
+                    ->groupBy('id', 'payable_type')
             )
             ->columns([
                 TextColumn::make('payable_type')

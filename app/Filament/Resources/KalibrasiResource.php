@@ -2,30 +2,31 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KalibrasiResource\Pages;
-use App\Filament\Resources\KalibrasiResource\RelationManagers;
-use App\Models\Kalibrasi;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Repeater;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRelationManager;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use App\Models\Perorangan;
+use Filament\Forms\Form;
 use App\Models\Corporate;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Kalibrasi;
+use App\Models\Perorangan;
 use App\Models\TrefRegion;
+use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Textarea;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KalibrasiResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\KalibrasiResource\RelationManagers;
+use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRelationManager;
 
 class KalibrasiResource extends Resource
 {
@@ -83,7 +84,11 @@ class KalibrasiResource extends Resource
                             ->label('Nama Kalibrasi')
                             ->required(),
                         TextInput::make('harga')
-                            ->label('Harga'),
+                            ->label('Harga')
+                            ->numeric()
+                            ->prefix('Rp ')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
                         Select::make('status')
                             ->options([
                                 'dalam_proses' => 'Dalam proses',
@@ -157,9 +162,16 @@ class KalibrasiResource extends Resource
                         ->label('Nama Perusahaan')
                         ->required()
                         ->maxLength(200),
-                    TextInput::make('npwp')
-                        ->label('NPWP')
+                    TextInput::make('nib')
+                        ->label('NIB')
                         ->maxLength(20),
+                    Forms\Components\Select::make('level')
+                        ->label('Level Perusahaan')
+                        ->options([
+                            'kecil' => 'Kecil',
+                            'menengah' => 'Menengah',
+                            'besar' => 'Besar',
+                        ]),
                     TextInput::make('email')
                         ->label('Email')
                         ->email()
@@ -170,6 +182,10 @@ class KalibrasiResource extends Resource
                         ->maxLength(15),
                 ])->columns(2),
 
+            Forms\Components\Section::make('Alamat Perusahaan')
+                ->schema(self::getAddressFields())
+                ->columns(2),
+
             Hidden::make('user_id')
                 ->default(auth()->id()),
         ];
@@ -178,7 +194,7 @@ class KalibrasiResource extends Resource
     private static function getPeroranganForm(): array
     {
         return [
-            Section::make('Informasi Personal')
+            Section::make('Informasi Perorangan')
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
@@ -197,6 +213,12 @@ class KalibrasiResource extends Resource
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
+                    Forms\Components\Select::make('gender')
+                        ->label('Jenis Kelamin')
+                        ->options([
+                            'Pria' => 'Pria',
+                            'Wanita' => 'Wanita',
+                        ]),
                 ])->columns(2),
 
             Section::make('Alamat')

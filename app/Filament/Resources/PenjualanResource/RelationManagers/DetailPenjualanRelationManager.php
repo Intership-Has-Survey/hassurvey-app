@@ -3,15 +3,16 @@
 namespace App\Filament\Resources\PenjualanResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\DaftarAlat;
-use App\Models\JenisAlat;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Forms\Form;
+use App\Models\JenisAlat;
+use App\Models\DaftarAlat;
+use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DetailPenjualanRelationManager extends RelationManager
 {
@@ -75,13 +76,18 @@ class DetailPenjualanRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()
                     ->label('Tambah Alat')
                     ->form([
-                        Forms\Components\Select::make('jenis_alat_id')->label('Jenis Alat')->options(JenisAlat::query()->pluck('nama', 'id'))->live()->required(),
+                        Forms\Components\Select::make('jenis_alat_id')->label('Jenis Alat')->options(JenisAlat::query()->pluck('nama', 'id'))->live()->required()->searchable(),
                         Forms\Components\Select::make('daftar_alat_id')->label('Nomor Seri')->options(function (Get $get) {
                             $jenisAlatId = $get('jenis_alat_id');
                             if (!$jenisAlatId) return [];
                             return DaftarAlat::where('jenis_alat_id', $jenisAlatId)->where('status', true)->pluck('nomor_seri', 'id');
                         })->searchable()->required(),
-                        Forms\Components\TextInput::make('harga')->required()->numeric(),
+                        Forms\Components\TextInput::make('harga')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->maxlength(20),
                     ])
                     ->mutateFormDataUsing(function (array $data): array {
                         $alat = DaftarAlat::find($data['daftar_alat_id']);
