@@ -174,11 +174,14 @@ class DaftarAlatResource extends Resource
                         false => 'danger',
                     }),
 
-                BadgeColumn::make('status')
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Dipakai')
-                    ->color(fn(bool $state): string => match ($state) {
-                        true => 'success',
-                        false => 'warning',
+                Tables\Columns\TextColumn::make('status_text')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Tersedia' => 'success',
+                        'Dipakai' => 'warning',
+                        'Terjual' => 'danger',
+                        default => 'gray',
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')

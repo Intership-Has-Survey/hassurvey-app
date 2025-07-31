@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth; // <-- Import class Auth
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Auth; // <-- Import class Auth
 
 
 class DaftarAlat extends Model
@@ -21,7 +22,7 @@ class DaftarAlat extends Model
 
     protected $casts = [
         'kondisi' => 'boolean',
-        'status' => 'boolean',
+        'status' => 'integer',
     ];
 
     /**
@@ -86,5 +87,15 @@ class DaftarAlat extends Model
             ->using(RiwayatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa', 'user_id']) // Pastikan semua kolom pivot ada
             ->withTimestamps();
+    }
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => match ($this->status) {
+                0 => 'Dipakai',
+                1 => 'Tersedia',
+                2 => 'Terjual',
+            },
+        );
     }
 }
