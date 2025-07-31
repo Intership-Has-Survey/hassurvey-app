@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignUuid('merk_id')->references('id')->on('merk');
 
             $table->decimal('harga', 15, 2);
+            $table->string('keterangan')->nullable();
 
             $table->timestamps();
         });

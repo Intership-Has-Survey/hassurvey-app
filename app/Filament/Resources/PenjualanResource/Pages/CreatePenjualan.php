@@ -38,14 +38,5 @@ class CreatePenjualan extends CreateRecord
                 }
             }
         }
-
-        // Update status of DaftarAlat to 'terjual'
-        foreach ($this->record->detailPenjualan as $detail) {
-            $alat = $detail->daftarAlat;
-            if ($alat) {
-                $alat->status = 'terjual';
-                $alat->save();
-            }
-        }
     }
 }

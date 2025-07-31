@@ -21,17 +21,8 @@ class EditPenjualan extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        if (filled($data['corporate_id'])) {
-            $data['customer_flow_type'] = 'corporate';
-        } else {
-            $data['customer_flow_type'] = 'perorangan';
-        }
-
-        if (isset($data['detailPenjualan']) && is_array($data['detailPenjualan'])) {
-            foreach ($data['detailPenjualan'] as &$detail) {
-                $detail['nomor_seri'] = $detail['daftar_alat_id'] ?? null;
-            }
-        }
+        // Logika Tipe Customer
+        $data['customer_flow_type'] = filled($data['corporate_id']) ? 'corporate' : 'perorangan';
 
         return $data;
     }
@@ -39,34 +30,11 @@ class EditPenjualan extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $this->customerFlowType = $data['customer_flow_type'] ?? null;
-
         if ($this->customerFlowType === 'perorangan') {
             $data['corporate_id'] = null;
         }
-
         unset($data['customer_flow_type']);
 
         return $data;
-    }
-
-    protected function afterSave(): void
-    {
-        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
-            $corporate = $this->record->corporate;
-            if ($corporate) {
-                $corporate->perorangan()->syncWithoutDetaching([
-                    $this->record->perorangan_id => ['user_id' => auth()->id()]
-                ]);
-            }
-        }
-
-        // Update status of DaftarAlat to 'terjual'
-        foreach ($this->record->detailPenjualan as $detail) {
-            $alat = $detail->daftarAlat;
-            if ($alat) {
-                $alat->status = 'terjual';
-                $alat->save();
-            }
-        }
     }
 }
