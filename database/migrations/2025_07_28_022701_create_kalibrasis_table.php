@@ -15,6 +15,7 @@ return new class extends Migration
             $table->Uuid('id')->primary();
             $table->string('nama');
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
+            $table->foreignUuid('perorangan_id')->nullable()->constrained('perorangan');
             // $table->foreignUuid('customer_id');
             $table->decimal('harga', 15, 2)->nullable();
             $table->string('status')->nullable();

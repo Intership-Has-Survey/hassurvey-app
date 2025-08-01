@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use App\Filament\Resources\KalibrasiResource\Pages;
+use App\Filament\Resources\KalibrasiResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRelationManager;
 
 class KalibrasiResource extends Resource
@@ -130,7 +131,7 @@ class KalibrasiResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PengajuanDanasRelationManager::class,
             DetailKalibrasiRelationManager::class,
         ];
     }

@@ -30,16 +30,20 @@ class PengajuanDana extends Model
         return $this->belongsTo(Sewa::class);
     }
 
+    public function penjualan(): BelongsTo
+    {
+        return $this->belongsTo(Penjualan::class);
+    }
+
+    public function kalibrasi(): BelongsTo
+    {
+        return $this->belongsTo(Kalibrasi::class);
+    }
+
     public function detailPengajuans(): HasMany
     {
         return $this->hasMany(DetailPengajuan::class);
     }
-
-
-    // public function transaksiPembayarans(): HasMany
-    // {
-    //     return $this->hasMany(TransaksiPembayaran::class);
-    // }
 
     public function user()
     {
@@ -134,28 +138,4 @@ class PengajuanDana extends Model
     {
         return $this->morphMany(TransaksiPembayaran::class, 'payable');
     }
-
-
-    // public function tolak()
-    // {
-    //     $userRole = auth()->user()->roles;
-    //     $roleName = auth()->user()->roles->first()?->name;
-    //     $level = $this->level;
-    //     $steps = $level->levelSteps()->orderBy('step')->pluck('role_id')->toArray();
-
-    //     $currentIndex = array_search(auth()->user()->roles->first()?->id, $steps);
-    //     if ($currentIndex !== false && isset($steps[$currentIndex + 1])) {
-    //         // Masih ada step berikutnya
-    //         $this->update(['dalam_review' => $steps[$currentIndex + 1]]);
-    //         $this->update(['disetujui' => $roleName]);
-    //     } else {
-    //         // Sudah final step
-    //         $this->update([
-    //             'dalam_review' => 'approved',
-    //             'disetujui' => $roleName,
-    //         ]);
-    //     }
-    // }
-
-
 }

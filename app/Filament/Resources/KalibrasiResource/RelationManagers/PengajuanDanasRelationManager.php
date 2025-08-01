@@ -1,32 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ProjectResource\RelationManagers;
+namespace App\Filament\Resources\KalibrasiResource\RelationManagers;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Models\BankAccount;
 use App\Traits\GlobalForms;
-use Filament\Support\RawJs;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\DeleteAction;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
-
 
 class PengajuanDanasRelationManager extends RelationManager
 {
@@ -35,6 +17,7 @@ class PengajuanDanasRelationManager extends RelationManager
     protected static ?string $title = 'Pengajuan Dana';
 
     protected static bool $isLazy = false;
+
     public function form(Form $form): Form
     {
         return $form
@@ -48,19 +31,20 @@ class PengajuanDanasRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('judul_pengajuan')
             ->columns([
-                TextColumn::make('judul_pengajuan'),
-                TextColumn::make('deskripsi_pengajuan'),
-                TextColumn::make('bank.nama_bank'),
-                TextColumn::make('bank.accounts.no_rek')->label('Nomor Rekening'),
-                TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Pemilik'),
-                TextColumn::make('user.name'),
+                Tables\Columns\TextColumn::make('judul_pengajuan'),
+                Tables\Columns\TextColumn::make('deskripsi_pengajuan'),
+                Tables\Columns\TextColumn::make('bank.nama_bank'),
+                Tables\Columns\TextColumn::make('bank.accounts.no_rek')->label('Nomor Rekening'),
+                Tables\Columns\TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Pemilik'),
+                Tables\Columns\TextColumn::make('user.name'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                CreateAction::make()
+                Tables\Actions\CreateAction::make()
                     ->after(function ($livewire, $record) {
+                        // dd($record);
                         $record->updateTotalHarga();
 
                         $nilai = $record->nilai;
@@ -72,31 +56,28 @@ class PengajuanDanasRelationManager extends RelationManager
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
                             $roleName = $firstStep->role_id;
+                            // dd($firstStep->role_id);
 
                             $record->update([
                                 'level_id'     => $level->id,
-                                'dalam_review' => $roleName,
+                                'dalam_review' => $firstStep->role_id,
                             ]);
                         }
                     }),
 
             ])
             ->actions([
-                DeleteAction::make(),
-                EditAction::make()
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
                     ->after(function ($livewire, $record) {
                         $record->updateTotalHarga();
-
                         $nilai = $record->nilai;
-
                         $level = Level::where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
-
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
                             $roleName = $firstStep->role_id;
-
                             $record->update([
                                 'level_id'     => $level->id,
                                 'dalam_review' => $roleName,
@@ -105,17 +86,10 @@ class PengajuanDanasRelationManager extends RelationManager
                     }),
             ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    protected function getRelations(): array
-    {
-        return [
-            DetailPengajuansRelationManager::class,
-        ];
     }
 
     protected function afterCreate(): void
@@ -126,13 +100,22 @@ class PengajuanDanasRelationManager extends RelationManager
         $level = Level::where('max_nilai', '>=', $nilai)
             ->orderBy('max_nilai')
             ->first();
+
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
             $roleName = $firstStep->role_id;
+
             $pengajuan->update([
                 'level_id'     => $level->id,
                 'dalam_review' => $roleName,
             ]);
         }
+    }
+
+    protected function getRelations(): array
+    {
+        return [
+            DetailPengajuansRelationManager::class,
+        ];
     }
 }

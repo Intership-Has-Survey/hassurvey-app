@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\Customer;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kalibrasi extends Model
 {
@@ -45,22 +46,6 @@ class Kalibrasi extends Model
 
     public function pengajuanDanas()
     {
-        return $this->hasMany(PengajuanDana::class, 'sewa_id');
+        return $this->hasMany(PengajuanDana::class);
     }
-
-    // public function alatCustomers()
-    // {
-    //     return $this->belongsToMany(AlatCustomer::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
-    //         ->using(RiwayatSewa::class)
-    //         ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
-    //         ->withTimestamps();
-    // }
-
-    // public function alatCustomers()
-    // {
-    //     return $this->belongsToMany(AlatCustomer::class, 'detail_kalibrasis')
-    //         ->using(DetailKalibrasi::class)
-    //         ->withPivot(['tgl_masuk', 'tgl_stiker_kalibrasi', 'tgl_keluar', 'status'])
-    //         ->withTimestamps();
-    // }
 }
