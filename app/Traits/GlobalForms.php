@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 
@@ -256,6 +257,99 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+        ];
+    }
+
+    private static function getPengajuanDanaForm(): array
+    {
+        return [
+            Section::make('Informasi Pengajuan Dana')
+                ->schema([
+                    TextInput::make('judul_pengajuan')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+                    Textarea::make('deskripsi_pengajuan')
+                        ->label('Deskripsi Umum')
+                        ->columnSpanFull(),
+
+                    Hidden::make('tipe_pengajuan')
+                        ->default('project'),
+                    Hidden::make('nilai')
+                        ->default('0'),
+                    Hidden::make('user_id')
+                        ->default(auth()->id()),
+                    Select::make('bank_id')
+                        ->relationship('bank', 'nama_bank')
+                        ->placeholder('Pilih Bank')
+                        ->searchable()
+                        ->preload()
+                        ->label('Daftar Bank')
+                        ->required()
+                        ->reactive()
+                        ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
+                    Select::make('bank_account_id')
+                        ->label('Nomor Rekening')
+                        ->options(function (callable $get) {
+                            $bankId = $get('bank_id');
+                            if (!$bankId) {
+                                return [];
+                            }
+
+                            return \App\Models\BankAccount::where('bank_id', $bankId)
+                                ->get()
+                                ->mapWithKeys(function ($account) {
+                                    return [$account->id => "{$account->no_rek} ({$account->nama_pemilik})"];
+                                });
+                        })
+                        ->reactive()
+                        ->createOptionForm([
+                            TextInput::make('no_rek')
+                                ->label('Nomor Rekening')
+                                ->required(),
+                            TextInput::make('nama_pemilik')
+                                ->label('Nama Pemilik')
+                                ->required(),
+                            Hidden::make('bank_id')
+                                ->default(fn(callable $get) => $get('bank_id')),
+                            Hidden::make('user_id')
+                                ->default(auth()->id()),
+                        ])
+                        ->createOptionUsing(function (array $data, callable $get): string {
+                            $data['bank_id'] = $get('bank_id');
+
+                            $account = \App\Models\BankAccount::create($data);
+                            return $account->id; // UUID
+                        })
+                        ->searchable()
+                        ->native(false)
+                        ->required(),
+
+                    Repeater::make('detailPengajuans')
+                        ->relationship()
+                        ->columnSpanFull()
+                        ->label('Rincian Pengajuan Dana')
+                        ->schema([
+                            TextInput::make('deskripsi')
+                                ->label('Nama Item')
+                                ->required(),
+                            TextInput::make('qty')
+                                ->label('Jumlah')
+                                ->numeric()
+                                ->required(),
+
+                            TextInput::make('harga_satuan')
+                                ->label('Harga Satuan')
+                                ->numeric()
+                                ->prefix('Rp ')
+                                ->mask(RawJs::make('$money($input)'))
+                                ->stripCharacters(',')
+                                ->required(),
+                        ])
+                        ->defaultItems(1)
+                        ->createItemButtonLabel('Tambah Rincian')
+                        ->columns(3),
+                ]),
         ];
     }
 }

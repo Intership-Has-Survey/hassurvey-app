@@ -120,6 +120,10 @@ class PengajuanDanaResource extends Resource
                             return 'Untuk Proyek: ' . $record->project->nama_project;
                         } elseif ($record->sewa) {
                             return 'Untuk Sewa: ' . $record->sewa->judul;
+                        } elseif ($record->penjualan) {
+                            return 'Untuk Penjualan: ' . $record->penjualan->nama;
+                        } elseif ($record->kalibrasi) {
+                            return 'Untuk Kalibrasi: ' . $record->kalibrasi->nama;
                         }
                         return 'Untuk: In-House (Internal)';
                     }),

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('penjualans', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->string('nomor_invoice')->unique();
+            $table->string('nama')->unique();
             $table->date('tanggal_penjualan');
 
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
