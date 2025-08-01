@@ -21,11 +21,6 @@ class PembayaranPersonel extends Model
         return $this->belongsTo(User::class);
     }
 
-    // protected function getTableRecordKey($record): string
-    // {
-    //     return $record->id ?? $record->payable_id ?? uniqid();
-    // }
-
     public function statusPengeluarans()
     {
         return $this->morphMany(TransaksiPembayaran::class, 'payable');
@@ -34,5 +29,10 @@ class PembayaranPersonel extends Model
     public function personel()
     {
         return $this->belongsTo(Personel::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

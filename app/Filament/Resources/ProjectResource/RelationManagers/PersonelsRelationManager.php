@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\RawJs;
 
 class PersonelsRelationManager extends RelationManager
 {
@@ -35,11 +36,6 @@ class PersonelsRelationManager extends RelationManager
             ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama'),
-                // Tables\Columns\TextColumn::make('status')->badge()
-                //     ->color(
-                //         fn(string $state): string => $state === 'Tersedia' ? 'success' : 'warning',
-                //     ),
-                // Menampilkan data 'peran' dari tabel pivot
                 Tables\Columns\TextColumn::make('pivot.peran')
                     ->label('Peran di Proyek')
                     ->badge(),
@@ -53,7 +49,14 @@ class PersonelsRelationManager extends RelationManager
 
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('sudah_dibayar')
+                    ->label('Hanya yang Sudah Dibayar')
+                    ->query(function ($query) {
+                        $project = request()->route('record'); // atau $this->getOwnerRecord() jika dalam Resource
+                        return $query->whereHas('pembayaranPersonel', function ($q) use ($project) {
+                            $q->where('project_id', $project->id);
+                        });
+                    }),
             ])
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),
@@ -85,8 +88,6 @@ class PersonelsRelationManager extends RelationManager
                     ->successNotificationTitle('Personel berhasil ditambahkan.')
                     ->label('Tambah Personel')
                     ->modalHeading('Tambah Personel ke Proyek')
-
-
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -114,10 +115,11 @@ class PersonelsRelationManager extends RelationManager
                     ->icon('heroicon-m-check-badge')
                     ->color('gray')
                     ->form([
-                        TextInput::make('nilai')
+                        Forms\Components\TextInput::make('nilai')
                             ->numeric()
+                            ->mask(RawJs::make('$money($input)'))
                             ->disabled()
-                            ->required(),
+                            ->stripCharacters(','),
                         Forms\Components\FileUpload::make('bukti_bayar')
                             ->disk('public') // sesuaikan dengan disk kamu
                             ->disabled()
@@ -128,10 +130,12 @@ class PersonelsRelationManager extends RelationManager
                         Forms\Components\Hidden::make('user_id')
                             ->disabled()
                             ->default(auth()->id()),
-                        TextInput::make('nama_bank')
-                            ->disabled(),
-                        TextInput::make('no_rek')
-                            ->disabled(),
+                        Forms\Components\Select::make('metode_pembayaran')
+                            ->disabled()
+                            ->options([
+                                'transfer' => 'Transfer',
+                                'tunai' => 'Tunai',
+                            ]),
                     ])
                     ->visible(function ($record) {
                         $project = $this->getOwnerRecord();
@@ -141,9 +145,6 @@ class PersonelsRelationManager extends RelationManager
                             ->exists();
                     })
                     ->mountUsing(function ($form, $record) {
-                        // $pembayaran = $record->pembayaranPersonel;
-                        // $pembayaran = $record->pembayaranPersonel()
-                        //     ->where('personel_project_id', $record->id)->latest()->first();
                         $project = $this->getOwnerRecord();
                         $pembayaran = $record->pembayaranPersonel()
                             ->where('personel_id', $record->id)
@@ -154,11 +155,10 @@ class PersonelsRelationManager extends RelationManager
                         if ($pembayaran) {
                             $form->fill([
                                 'nilai' => $pembayaran->nilai,
-                                'bukti_bayar' => $pembayaran->bukti_pembayaran,
-                                'tanggal_bayar' => $pembayaran->tanggal_bayar,
+                                'bukti_pembayaran' => $pembayaran->bukti_pembayaran,
+                                'tanggal_transaksi' => $pembayaran->tanggal_transaksi,
                                 'user_id' => $pembayaran->user_id,
-                                'nama_bank' => $pembayaran->bank_id, // atau ambil relasi bank->nama_bank
-                                'no_rek' => $pembayaran->bank_account_id, // atau bank_account->no_rek
+                                'metode_pembayaran' => $pembayaran->metode_pembayaran, // atau bank_account->no_rek
                             ]);
                         }
                     })
@@ -178,41 +178,28 @@ class PersonelsRelationManager extends RelationManager
                     ->label('Bayar')
                     ->icon('heroicon-m-banknotes')
                     ->form([
-                        TextInput::make('nilai')
+                        Forms\Components\TextInput::make('nilai')
                             ->numeric()
-                            ->required(),
-
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
                         Forms\Components\FileUpload::make('bukti_bayar')
                             ->disk('public') // sesuaikan dengan disk kamu
                             ->directory('bukti-bayar'),
-                        // ->required(),
-
                         Forms\Components\DatePicker::make('tanggal_transaksi')
                             ->label('Tanggal transaksi')
                             ->required(),
                         Forms\Components\Hidden::make('user_id')
                             ->default(auth()->id()),
-                        // ->required(),
-
-                        Forms\Components\Select::make('nama_bank')
+                        Forms\Components\Select::make('metode_pembayaran')
                             ->label('Metode Pembayaran')
                             ->options([
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
                             ]),
-
-                        // Forms\Components\Select::make('no_rek')
-                        //     ->label('Metode Pembayaran')
-                        //     ->options([
-                        //         'transfer' => 'Transfer',
-                        //         'tunai' => 'Tunai',
-                        //     ]),
-                        // ->required(),
                     ])
                     ->action(function (array $data, $record) {
                         // Simpan ke tabel pembayaran_personel
                         $project = $this->getOwnerRecord();
-                        // dd($project);
                         $pembayaran = \App\Models\PembayaranPersonel::create([
                             'personel_project_id' => $record->id,
                             'project_id' => $project->id,
@@ -220,16 +207,14 @@ class PersonelsRelationManager extends RelationManager
                             'nilai' => $data['nilai'],
                             'bukti_pembayaran_path' => $data['bukti_bayar'],
                             'tanggal_transaksi' => $data['tanggal_transaksi'],
-                            'metode_pembayaran' => $data['nama_bank'],
-                            // 'bank_account_id' => $data['no_rek'],
+                            'metode_pembayaran' => $data['metode_pembayaran'],
                             'user_id' => $data['user_id'],
                         ]);
-
                         $pembayaran->statusPengeluarans()->create([
                             'user_id' => $data['user_id'], // atau auth()->id()
                             'nilai' => $data['nilai'],
                             'tanggal_transaksi' => $data['tanggal_transaksi'],
-                            'metode_pembayaran' => 'Transfer Bank', // atau bisa juga pakai enum atau TextInput
+                            'metode_pembayaran' => $data['metode_pembayaran'], // atau bisa juga pakai enum atau TextInput
                             'bukti_pembayaran_path' => $data['bukti_bayar'],
                         ]);
                     })

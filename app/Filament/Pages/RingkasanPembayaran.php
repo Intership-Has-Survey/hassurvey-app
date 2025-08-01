@@ -46,7 +46,7 @@ class RingkasanPembayaran extends Page implements HasTable
             ->query(
                 StatusPembayaran::query()
                     ->selectRaw('payable_id as id, SUM(nilai) as total_dibayar,payable_type')
-                    ->groupBy('id', 'payable_type')
+                    ->groupBy('payable_id', 'payable_type')
             )
             ->columns([
                 TextColumn::make('payable_type')

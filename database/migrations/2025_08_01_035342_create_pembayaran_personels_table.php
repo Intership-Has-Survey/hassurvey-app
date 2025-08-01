@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('pembayaran_personels', function (Blueprint $table) {
             $table->Uuid('id');
             $table->foreignUuid('personel_project_id')->nullable();
-            $table->foreignUuid('payable_id')->nullable();
             $table->foreignUuid('project_id')->nullable();
             $table->foreignUuid('personel_id')->nullable();
-
+            $table->foreignUuid('payable_id')->nullable();
             $table->string('payable_type')->nullable();
             $table->date('tanggal_transaksi');
             $table->string('metode_pembayaran');
