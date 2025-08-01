@@ -6,23 +6,15 @@ use App\Models\Project;
 
 class ProjectObserver
 {
-    /**
-     * Handle the Project "updated" event.
-     * Method ini akan berjalan secara otomatis SETELAH sebuah data proyek di-update.
-     */
     public function updated(Project $project): void
     {
         if ($project->wasChanged('status')) {
             if ($project->status === 'Closing' && $project->status_pekerjaan !== 'Selesai') {
-                $project->status_pekerjaan = 'Belum Selesai';
+                $project->status_pekerjaan = 'Dalam Proses';
             } elseif ($project->status !== 'Closing' && $project->status !== 'Selesai') {
                 $project->status_pekerjaan = 'Belum Dikerjakan';
             }
-            $project->saveQuietly(); // Use saveQuietly to avoid triggering observers again
-        }
-
-        if ($project->isDirty('nilai_project')) {
-            $this->updatePaymentStatus($project);
+            $project->saveQuietly();
         }
 
         if ($project->status === 'Selesai') {
@@ -31,30 +23,5 @@ class ProjectObserver
                 ['status' => 'Tersedia']
             );
         }
-    }
-
-    /**
-     * Ini adalah salinan dari logika yang ada di PembayaranObserver
-     * untuk menghitung status pembayaran.
-     */
-    protected function updatePaymentStatus(Project $project): void
-    {
-        if ($project->nilai_project <= 0) {
-            $project->status_pembayaran = 'Nilai Proyek Belum Ditentukan';
-            $project->saveQuietly();
-            return;
-        }
-
-        $totalDibayar = $project->statuspembayaran()->sum('nilai');
-
-        $statusBaru = '';
-        if ((float) $totalDibayar >= (float) $project->nilai_project) {
-            $statusBaru = 'Lunas';
-        } else {
-            $statusBaru = 'Belum Lunas';
-        }
-
-        $project->status_pembayaran = $statusBaru;
-        $project->saveQuietly();
     }
 }

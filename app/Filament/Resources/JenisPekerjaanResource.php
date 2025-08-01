@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
@@ -10,11 +9,7 @@ use App\Models\JenisPekerjaan;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
 use App\Filament\Resources\JenisPekerjaanResource\Pages;
-use App\Filament\Resources\JenisPekerjaanResource\RelationManagers;
 
 class JenisPekerjaanResource extends Resource
 {
@@ -43,7 +38,6 @@ class JenisPekerjaanResource extends Resource
     {
         return $table
             ->columns([
-                // TextInput::make('nama_project')->required(),
                 Tables\Columns\TextColumn::make('nama'),
                 Tables\Columns\TextColumn::make('keterangan'),
                 Tables\Columns\TextColumn::make('user.name')->label('Dibuat oleh')

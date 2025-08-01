@@ -32,7 +32,7 @@ class StatusPekerjaanObserver
         $missingStages = array_diff($requiredStages, $existingStages);
 
         if (count($missingStages) > 0) {
-            $project->status_pekerjaan = 'Belum Selesai';
+            $project->status_pekerjaan = 'Dalam Proses';
             $project->saveQuietly();
             return;
         }
@@ -41,7 +41,7 @@ class StatusPekerjaanObserver
             return in_array($stage->status, ['Selesai', 'Tidak Perlu']);
         });
 
-        $statusBaru = $isFullyFinished ? 'Selesai' : 'Belum Selesai';
+        $statusBaru = $isFullyFinished ? 'Selesai' : 'Dalam Proses';;
 
         $project->status_pekerjaan = $statusBaru;
         $project->saveQuietly();

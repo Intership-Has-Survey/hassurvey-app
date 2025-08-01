@@ -20,7 +20,6 @@ class DetailPenjualanRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        // Form ini sekarang digunakan oleh EditAction
         return $form
             ->schema([
                 Forms\Components\Select::make('jenis_alat_id')
@@ -107,31 +106,22 @@ class DetailPenjualanRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->mountUsing(function (Form $form, Model $record): void {
-                        // mountUsing hanya bertugas mengisi form dengan benar
                         $data = $record->toArray();
                         $data['jenis_alat_id'] = $record->daftarAlat?->jenis_alat_id;
                         $form->fill($data);
                     })
-                    // PERBAIKAN UTAMA: Mengganti 'after' dengan 'using' untuk kontrol penuh
                     ->using(function (Model $record, array $data): Model {
-                        // $record adalah data LAMA sebelum diubah
-                        // $data adalah data BARU dari form
 
                         $oldAlatId = $record->daftar_alat_id;
                         $newAlatId = $data['daftar_alat_id'];
-
-                        // Tambahkan merk_id ke data baru
                         $alat = DaftarAlat::find($newAlatId);
                         if ($alat) {
                             $data['merk_id'] = $alat->merk_id;
                         }
 
-                        // Update record detail penjualan dengan data baru
                         $record->update($data);
 
-                        // Jalankan logika perubahan status
                         if ($newAlatId !== $oldAlatId) {
-                            // 1. Kembalikan status alat LAMA menjadi 'Tersedia'
                             if ($oldAlatId) {
                                 $oldAlat = DaftarAlat::find($oldAlatId);
                                 if ($oldAlat) {
@@ -140,7 +130,6 @@ class DetailPenjualanRelationManager extends RelationManager
                                 }
                             }
 
-                            // 2. Ubah status alat BARU menjadi 'Terjual'
                             $newAlat = DaftarAlat::find($newAlatId);
                             if ($newAlat) {
                                 $newAlat->status = 2; // Terjual

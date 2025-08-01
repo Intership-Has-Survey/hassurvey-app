@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources\PeroranganResource\RelationManagers;
 
-use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Actions\Action;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
-use App\Filament\Resources\CorporateResource; // <-- 1. Import CorporateResource
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\BulkActionGroup;
+use App\Filament\Resources\CorporateResource;
+use Filament\Tables\Actions\DetachBulkAction;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class CorporateRelationManager extends RelationManager
 {
@@ -25,7 +26,7 @@ class CorporateRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
+                TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -36,10 +37,10 @@ class CorporateRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama'),
-                Tables\Columns\TextColumn::make('level'),
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('telepon'),
+                TextColumn::make('nama'),
+                TextColumn::make('level'),
+                TextColumn::make('email'),
+                TextColumn::make('telepon'),
             ])
             ->filters([
                 //
@@ -48,18 +49,16 @@ class CorporateRelationManager extends RelationManager
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('goToCorporate')
+                Action::make('goToCorporate')
                     ->label('Lihat Perusahaan')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->color('info') // Warna 'info' atau 'gray' lebih cocok untuk aksi 'lihat'
-                    // 2. FIX: Gunakan getUrl() dari CorporateResource dan ID dari $record
+                    ->color('info')
                     ->url(fn($record): string => CorporateResource::getUrl('edit', ['record' => $record]))
-                    ->openUrlInNewTab(), // atau hapus jika ingin redirect di tab yang sama
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    // Sebaiknya gunakan DetachBulkAction untuk relasi many-to-many
-                    Tables\Actions\DetachBulkAction::make(),
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ]);
     }

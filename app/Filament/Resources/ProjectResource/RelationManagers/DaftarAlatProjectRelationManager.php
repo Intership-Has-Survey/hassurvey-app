@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use App\Filament\Resources\Shared\BaseAlatSewaRelationManager;
-use App\Models\Project;
 use App\Models\Sewa;
+use App\Models\Project;
+use App\Models\Corporate;
+use App\Filament\Resources\Shared\BaseAlatSewaRelationManager;
 
 class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
 {
@@ -33,7 +34,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
             'desa' => $project->desa ?? '',
             'detail_alamat' => $project->detail_alamat ?? '',
             'user_id' => auth()->id(),
-            'corporate_id' => \App\Models\Corporate::where('nama', 'CV HAS Survey')->first()?->id,
+            'corporate_id' => Corporate::where('nama', 'CV HAS Survey')->first()?->id,
         ]);
 
         $project->update(['sewa_id' => $newSewa->id]);

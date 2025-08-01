@@ -18,7 +18,6 @@ class ProjectsRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        // Form untuk membuat/mengedit project dari halaman ini (opsional)
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nama_project')
@@ -29,7 +28,6 @@ class ProjectsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        // Tabel ini akan menampilkan proyek yang berelasi dengan customer yang sedang dilihat
         return $table
             ->recordTitleAttribute('nama_project')
             ->striped()
@@ -44,7 +42,7 @@ class ProjectsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                // Tables\Actions\CreateAction::make(), // Aktifkan jika ingin bisa menambah proyek dari sini
+                // 
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

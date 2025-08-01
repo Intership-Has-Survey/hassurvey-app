@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -31,14 +32,11 @@ class SalesResource extends Resource
     protected static ?int $navigationSort = 5;
     protected static ?string $pluralModelLabel = 'Sales';
 
-
-
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informasi Sales')
+                Section::make('Informasi Sales')
                     ->schema([
                         TextInput::make('nama')
                             ->label('Nama Sales')
@@ -58,76 +56,8 @@ class SalesResource extends Resource
                             ->required()
                             ->maxLength(50),
                     ])->columns(2),
-                Forms\Components\Section::make('Alamat')
-                    ->schema([
-                        Select::make('provinsi')
-                            ->label('Provinsi')
-                            ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kota', null);
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-
-                        Select::make('kota')
-                            ->label('Kota/Kabupaten')
-                            ->options(function (Get $get) {
-                                $provinsi = $get('provinsi');
-                                if (!$provinsi) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $provinsi . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 5)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-
-                        Select::make('kecamatan')
-                            ->label('Kecamatan')
-                            ->options(function (Get $get) {
-                                $kota = $get('kota');
-                                if (!$kota) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $kota . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 8)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('desa', null);
-                            }),
-
-                        Select::make('desa')
-                            ->label('Desa/Kelurahan')
-                            ->options(function (Get $get) {
-                                $kecamatan = $get('kecamatan');
-                                if (!$kecamatan) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $kecamatan . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 13)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable(),
-
-                        Textarea::make('detail_alamat')
-                            ->label('Detail Alamat')
-                            ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
-                            ->columnSpanFull(),
-                    ])->columns(2),
+                Section::make('Alamat')
+                    ->schema(self::getAddressFields())->columns(2),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);

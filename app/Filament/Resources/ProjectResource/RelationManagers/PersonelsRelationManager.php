@@ -121,8 +121,8 @@ class PersonelsRelationManager extends RelationManager
                         Forms\Components\FileUpload::make('bukti_bayar')
                             ->disk('public') // sesuaikan dengan disk kamu
                             ->disabled()
-                            ->directory('bukti-bayar'),
-                        Forms\Components\DatePicker::make('tanggal_bayar')
+                            ->directory('bukti-pembayaran'),
+                        Forms\Components\DatePicker::make('tanggal_transaksi')
                             ->disabled()
                             ->required(),
                         Forms\Components\Hidden::make('user_id')
@@ -187,7 +187,7 @@ class PersonelsRelationManager extends RelationManager
                             ->directory('bukti-bayar'),
                         // ->required(),
 
-                        Forms\Components\DatePicker::make('tanggal_bayar')
+                        Forms\Components\DatePicker::make('tanggal_transaksi')
                             ->label('Tanggal transaksi')
                             ->required(),
                         Forms\Components\Hidden::make('user_id')
@@ -201,12 +201,12 @@ class PersonelsRelationManager extends RelationManager
                                 'tunai' => 'Tunai',
                             ]),
 
-                        Forms\Components\Select::make('no_rek')
-                            ->label('Metode Pembayaran')
-                            ->options([
-                                'transfer' => 'Transfer',
-                                'tunai' => 'Tunai',
-                            ]),
+                        // Forms\Components\Select::make('no_rek')
+                        //     ->label('Metode Pembayaran')
+                        //     ->options([
+                        //         'transfer' => 'Transfer',
+                        //         'tunai' => 'Tunai',
+                        //     ]),
                         // ->required(),
                     ])
                     ->action(function (array $data, $record) {
@@ -218,17 +218,17 @@ class PersonelsRelationManager extends RelationManager
                             'project_id' => $project->id,
                             'personel_id' => $record->id,
                             'nilai' => $data['nilai'],
-                            'bukti_pembayaran' => $data['bukti_bayar'],
-                            'tanggal_bayar' => $data['tanggal_bayar'],
-                            'bank_id' => $data['nama_bank'],
-                            'bank_account_id' => $data['no_rek'],
+                            'bukti_pembayaran_path' => $data['bukti_bayar'],
+                            'tanggal_transaksi' => $data['tanggal_transaksi'],
+                            'metode_pembayaran' => $data['nama_bank'],
+                            // 'bank_account_id' => $data['no_rek'],
                             'user_id' => $data['user_id'],
                         ]);
 
                         $pembayaran->statusPengeluarans()->create([
                             'user_id' => $data['user_id'], // atau auth()->id()
                             'nilai' => $data['nilai'],
-                            'tanggal_transaksi' => $data['tanggal_bayar'],
+                            'tanggal_transaksi' => $data['tanggal_transaksi'],
                             'metode_pembayaran' => 'Transfer Bank', // atau bisa juga pakai enum atau TextInput
                             'bukti_pembayaran_path' => $data['bukti_bayar'],
                         ]);

@@ -2,51 +2,38 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DaftarAlatResource\Pages;
-use App\Models\DaftarAlat;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\DaftarAlat;
 use Filament\Tables\Table;
+use App\Traits\GlobalForms;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Illuminate\Support\Facades\DB;
-use App\Models\TrefRegion;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Actions;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\BulkActionGroup;
+use App\Filament\Resources\DaftarAlatResource\Pages;
 
 
 class DaftarAlatResource extends Resource
 {
+    use GlobalForms;
     protected static ?string $model = DaftarAlat::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-wrench';
-
     protected static ?string $navigationLabel = 'Daftar Alat';
-
     protected static ?string $navigationGroup = 'Manajemen Data Master';
-
     protected static ?string $pluralModelLabel = 'Daftar Alat';
-
     protected static ?int $navigationSort = 3;
-
     protected static ?int $navigationGroupSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('jenis_alat_id')
+                Select::make('jenis_alat_id')
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
@@ -58,7 +45,7 @@ class DaftarAlatResource extends Resource
                             ->label('Keterangan')
                             ->nullable(),
                     ]),
-                Forms\Components\TextInput::make('nomor_seri')
+                TextInput::make('nomor_seri')
                     ->required()
                     ->unique()
                     ->maxLength(255)
@@ -66,7 +53,7 @@ class DaftarAlatResource extends Resource
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
                     ])
                     ->required(),
-                Forms\Components\Select::make('merk_id')
+                Select::make('merk_id')
                     ->relationship('merk', 'nama')
                     ->searchable()
                     ->preload()
@@ -76,19 +63,18 @@ class DaftarAlatResource extends Resource
                             ->required(),
                     ])
                     ->required(),
-                Forms\Components\Select::make('pemilik_id')
+                Select::make('pemilik_id')
                     ->relationship('pemilik', 'nama')
                     ->searchable()
                     ->preload()
-                    // Menambahkan form modal untuk membuat pemilik baru
                     ->createOptionForm([
                         Section::make('Informasi Pribadi')
                             ->schema([
-                                Forms\Components\TextInput::make('nama')
+                                TextInput::make('nama')
                                     ->label(label: 'Nama Pemilik (Sesuai KTP)')
                                     ->required()
                                     ->maxLength(255),
-                                Forms\Components\Select::make('gender')
+                                Select::make('gender')
                                     ->dehydrated()
                                     ->label('Jenis Kelamin')
                                     ->options([
@@ -96,7 +82,7 @@ class DaftarAlatResource extends Resource
                                         'Wanita' => 'Wanita',
                                     ])
                                     ->required(),
-                                Forms\Components\TextInput::make('NIK')
+                                TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
                                     ->unique()
@@ -106,7 +92,7 @@ class DaftarAlatResource extends Resource
                                     ->minLength(16)
                                     ->maxLength(16)
                                     ->required(),
-                                Forms\Components\TextInput::make('email')
+                                TextInput::make('email')
                                     ->label('Email')
                                     ->unique()
                                     ->validationMessages([
@@ -114,28 +100,22 @@ class DaftarAlatResource extends Resource
                                     ])
                                     ->email()
                                     ->required(),
-                                Forms\Components\TextInput::make('telepon')
+                                TextInput::make('telepon')
                                     ->label('Nomor Telepon')
                                     ->tel()
                                     ->required(),
                             ])->columns(2),
 
                         Section::make('Alamat')
-                            ->schema([
-                                Select::make('provinsi')->label('Provinsi')->required()->placeholder('Pilih Provinsi')->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kota', null) && $set('kecamatan', null) && $set('desa', null)),
-                                Select::make('kota')->label('Kota/Kabupaten')->required()->placeholder('Pilih Kota/Kabupaten')->options(fn(Get $get) => $get('provinsi') ? TrefRegion::query()->where('code', 'like', $get('provinsi') . '.%')->where(DB::raw('LENGTH(code)'), 5)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kecamatan', null) && $set('desa', null)),
-                                Select::make('kecamatan')->label('Kecamatan')->required()->placeholder('Pilih Kecamatan')->options(fn(Get $get) => $get('kota') ? TrefRegion::query()->where('code', 'like', $get('kota') . '.%')->where(DB::raw('LENGTH(code)'), 8)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('desa', null)),
-                                Select::make('desa')->label('Desa/Kelurahan')->required()->placeholder('Pilih Desa/Kelurahan')->options(fn(Get $get) => $get('kecamatan') ? TrefRegion::query()->where('code', 'like', $get('kecamatan') . '.%')->where(DB::raw('LENGTH(code)'), 13)->pluck('name', 'code') : [])->live()->searchable(),
-                                Textarea::make('detail_alamat')->label('Detail Alamat')->required()->columnSpanFull()->placeholder('cth: Jl. Supriyadi No,12, RT.3/RW.4'),
-                            ])->columns(2),
+                            ->schema(self::getAddressFields())->columns(2),
                     ])
                     ->preload()
                     ->required(),
-                Forms\Components\Textarea::make('keterangan')
+                Textarea::make('keterangan')
                     ->nullable()
                     ->columnSpanFull(),
 
-                Forms\Components\Select::make('kondisi')
+                Select::make('kondisi')
                     ->label('Kondisi Alat')
                     ->required()
                     ->options([

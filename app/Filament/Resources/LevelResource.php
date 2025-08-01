@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\LevelResource\Pages;
-use App\Filament\Resources\LevelResource\RelationManagers;
 use App\Models\Level;
-use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Filament\Support\RawJs;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use App\Filament\Resources\LevelResource\Pages\EditLevel;
+use App\Filament\Resources\LevelResource\Pages\ListLevels;
+use App\Filament\Resources\LevelResource\Pages\CreateLevel;
+use App\Filament\Resources\LevelResource\RelationManagers\LevelStepRelationManager;
 
 class LevelResource extends Resource
 {
@@ -48,7 +49,6 @@ class LevelResource extends Resource
     {
         return $table
             ->columns([
-                //
                 TextColumn::make('nama'),
                 TextColumn::make('max_nilai')->label('Maksimal Pengajuan')->money('IDR'),
             ])
@@ -56,11 +56,11 @@ class LevelResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Jenis Tingkatan Pengajuan')
@@ -70,17 +70,16 @@ class LevelResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
-            RelationManagers\LevelStepRelationManager::class,
+            LevelStepRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLevels::route('/'),
-            'create' => Pages\CreateLevel::route('/create'),
-            'edit' => Pages\EditLevel::route('/{record}/edit'),
+            'index' => ListLevels::route('/'),
+            'create' => CreateLevel::route('/create'),
+            'edit' => EditLevel::route('/{record}/edit'),
         ];
     }
 }

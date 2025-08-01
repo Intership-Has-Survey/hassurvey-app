@@ -10,7 +10,9 @@ use App\Models\Corporate;
 use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
+use App\Traits\GlobalForms;
 use Filament\Support\RawJs;
+use Ramsey\Uuid\Type\Integer;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +28,6 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Ramsey\Uuid\Type\Integer;
 use function Livewire\Volt\placeholder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -53,6 +54,7 @@ use App\Filament\Resources\SewaResource\RelationManagers\StatusPembyaranRelation
 
 class SewaResource extends Resource
 {
+    use GlobalForms;
     protected static ?string $model = Sewa::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
@@ -145,13 +147,7 @@ class SewaResource extends Resource
                     ]),
 
                 Section::make('Lokasi Project Alat yang Disewa')
-                    ->schema([
-                        Select::make('provinsi')->label('Provinsi')->required()->placeholder('Pilih Provinsi')->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kota', null) && $set('kecamatan', null) && $set('desa', null)),
-                        Select::make('kota')->label('Kota/Kabupaten')->required()->placeholder('Pilih Kota/Kabupaten')->options(fn(Get $get) => $get('provinsi') ? TrefRegion::query()->where('code', 'like', $get('provinsi') . '.%')->where(DB::raw('LENGTH(code)'), 5)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('kecamatan', null) && $set('desa', null)),
-                        Select::make('kecamatan')->label('Kecamatan')->required()->placeholder('Pilih Kecamatan')->options(fn(Get $get) => $get('kota') ? TrefRegion::query()->where('code', 'like', $get('kota') . '.%')->where(DB::raw('LENGTH(code)'), 8)->pluck('name', 'code') : [])->live()->searchable()->afterStateUpdated(fn(Set $set) => $set('desa', null)),
-                        Select::make('desa')->label('Desa/Kelurahan')->required()->placeholder('Pilih Desa/Kelurahan')->options(fn(Get $get) => $get('kecamatan') ? TrefRegion::query()->where('code', 'like', $get('kecamatan') . '.%')->where(DB::raw('LENGTH(code)'), 13)->pluck('name', 'code') : [])->live()->searchable(),
-                        Textarea::make('detail_alamat')->label('Detail Alamat')->required()->columnSpanFull()->placeholder('cth: Jl. Supriyadi No,12, RT.3/RW.4'),
-                    ])->columns(2),
+                    ->schema(self::getAddressFields())->columns(2),
 
                 Section::make('Informasi Customer')
                     ->schema([
@@ -160,7 +156,6 @@ class SewaResource extends Resource
                             ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                             ->live()->required()->dehydrated(false)
                             ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
-
 
                         Select::make('corporate_id')
                             ->relationship('corporate', 'nama')
@@ -184,7 +179,7 @@ class SewaResource extends Resource
                                     ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
                                     ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                             ])
-                            ->minItems(1)
+                            ->minItems(0)
                             ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                             ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                             ->addActionLabel('Tambah PIC')
@@ -281,9 +276,6 @@ class SewaResource extends Resource
                 TextColumn::make('judul')
                     ->label('Judul Penyewaan')
                     ->searchable(),
-                // TextColumn::make('perorangan.nama')
-                //     ->label('PIC/Customer')
-                //     ->searchable(),
                 TextColumn::make('customer_display')
                     ->label('Klien Utama')
                     ->state(function (Sewa $record): string {
@@ -363,150 +355,6 @@ class SewaResource extends Resource
             'index' => Pages\ListSewa::route('/'),
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
-        ];
-    }
-
-
-    private static function getPeroranganForm(): array
-    {
-        return [
-            Section::make('Informasi Personal')
-                ->schema([
-                    TextInput::make('nama')
-                        ->label('Nama Lengkap')
-                        ->required()
-                        ->maxLength(100),
-                    TextInput::make('nik')
-                        ->label('NIK')
-                        ->length(16)
-                        ->numeric()
-                        ->unique(ignoreRecord: true),
-                    TextInput::make('email')
-                        ->label('Email')
-                        ->email()
-                        ->maxLength(100),
-                    TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Section::make('Alamat')
-                ->schema(self::getAddressFields())
-                ->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-    private static function getCorporateForm(): array
-    {
-        return [
-            Section::make('Informasi Perusahaan')
-                ->schema([
-                    TextInput::make('nama')
-                        ->label('Nama Perusahaan')
-                        ->required()
-                        ->maxLength(200),
-                    TextInput::make('npwp')
-                        ->label('NPWP')
-                        ->maxLength(20),
-                    TextInput::make('email')
-                        ->label('Email')
-                        ->email()
-                        ->maxLength(100),
-                    TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-    private static function getAddressFields(): array
-    {
-        return [
-            Select::make('provinsi')
-                ->label('Provinsi')
-                ->required()
-                ->placeholder('Pilih provinsi')
-                ->options(TrefRegion::query()
-                    ->where(DB::raw('LENGTH(code)'), 2)
-                    ->pluck('name', 'code'))
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('kota', null);
-                    $set('kecamatan', null);
-                    $set('desa', null);
-                }),
-
-            Select::make('kota')
-                ->label('Kota/Kabupaten')
-                ->required()
-                ->placeholder('Pilih kota/kabupaten')
-                ->options(function (Get $get) {
-                    $provinceCode = $get('provinsi');
-                    if (!$provinceCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $provinceCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 5)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('kecamatan', null);
-                    $set('desa', null);
-                }),
-
-            Select::make('kecamatan')
-                ->label('Kecamatan')
-                ->required()
-                ->placeholder('Pilih kecamatan')
-                ->options(function (Get $get) {
-                    $regencyCode = $get('kota');
-                    if (!$regencyCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $regencyCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 8)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('desa', null);
-                }),
-
-            Select::make('desa')
-                ->label('Desa/Kelurahan')
-                ->required()
-                ->placeholder('Pilih desa/kelurahan')
-                ->options(function (Get $get) {
-                    $districtCode = $get('kecamatan');
-                    if (!$districtCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $districtCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 13)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable(),
-
-            Textarea::make('detail_alamat')
-                ->required()
-                ->placeholder('Masukkan detail alamat lengkap')
-                ->label('Detail Alamat')
-                ->rows(3)
-                ->columnSpanFull(),
         ];
     }
 }

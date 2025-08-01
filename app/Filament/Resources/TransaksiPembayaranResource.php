@@ -20,14 +20,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TransaksiPembayaranResource\Pages;
-use App\Filament\Resources\TransaksiPembayaranResource\RelationManagers;
-use App\Filament\Resources\TransaksiPembayaranResource\Pages\ListTransaksiPembayarans;
-use App\Filament\Resources\TransaksiPembayaranResource\Pages\CreateTransaksiPembayaran;
 
 class TransaksiPembayaranResource extends Resource
 {
@@ -55,21 +50,21 @@ class TransaksiPembayaranResource extends Resource
                     ->numeric()
                     ->prefix('Rp')
                     ->maxlength(20),
-                Forms\Components\DatePicker::make('tanggal_transaksi')
+                DatePicker::make('tanggal_transaksi')
                     ->required()
                     ->native(false),
-                Forms\Components\Select::make('metode_pembayaran')
+                Select::make('metode_pembayaran')
                     ->options([
                         'Transfer' => 'Transfer',
                         'Tunai' => 'Tunai',
                     ])
                     ->required()
                     ->native(false),
-                Forms\Components\FileUpload::make('bukti_pembayaran_path')
+                FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->directory('bukti-pembayaran')
                     ->image(),
-                Forms\Components\Hidden::make('user_id')
+                Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
     }
@@ -86,13 +81,13 @@ class TransaksiPembayaranResource extends Resource
                         default => 'Lainnya'
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_transaksi')
+                TextColumn::make('tanggal_transaksi')
                     ->date('d M Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nilai')
+                TextColumn::make('nilai')
                     ->money('IDR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('metode_pembayaran')
+                TextColumn::make('metode_pembayaran')
                     ->badge(),
                 ImageColumn::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
@@ -100,7 +95,7 @@ class TransaksiPembayaranResource extends Resource
                     ->square()
                     ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
                     ->openUrlInNewTab(),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Dibuat oleh')
                     ->sortable(),
             ])
@@ -108,12 +103,12 @@ class TransaksiPembayaranResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
