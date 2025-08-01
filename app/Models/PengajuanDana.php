@@ -36,10 +36,10 @@ class PengajuanDana extends Model
     }
 
 
-    public function transaksiPembayarans(): HasMany
-    {
-        return $this->hasMany(TransaksiPembayaran::class);
-    }
+    // public function transaksiPembayarans(): HasMany
+    // {
+    //     return $this->hasMany(TransaksiPembayaran::class);
+    // }
 
     public function user()
     {
@@ -128,6 +128,11 @@ class PengajuanDana extends Model
                 'alasan' => $alasan,
             ]);
         }
+    }
+
+    public function statusPengeluarans()
+    {
+        return $this->morphMany(TransaksiPembayaran::class, 'payable');
     }
 
 

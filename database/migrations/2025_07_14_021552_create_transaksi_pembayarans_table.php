@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('transaksi_pembayarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('pengajuan_dana_id')->constrained('pengajuan_danas')->cascadeOnDelete();
+            $table->foreignUuid('payable_id');
+            $table->string('payable_type')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->decimal('nilai', 15, 2);
             $table->date('tanggal_transaksi');

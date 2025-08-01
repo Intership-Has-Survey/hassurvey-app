@@ -12,13 +12,23 @@ class TransaksiPembayaran extends Model
     use HasFactory, HasUuids;
     protected $guarded = [];
 
-    public function pengajuanDana(): BelongsTo
-    {
-        return $this->belongsTo(PengajuanDana::class);
-    }
+    // public function pengajuanDana(): BelongsTo
+    // {
+    //     return $this->belongsTo(PengajuanDana::class);
+    // }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function payable()
+    {
+        return $this->morphTo();
+    }
+
+    protected function getTableRecordKey($record): string
+    {
+        return $record->id ?? $record->payable_id ?? uniqid();
     }
 }

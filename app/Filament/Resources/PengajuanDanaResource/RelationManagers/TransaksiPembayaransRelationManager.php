@@ -23,14 +23,14 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class TransaksiPembayaransRelationManager extends RelationManager
 {
-    protected static string $relationship = 'transaksiPembayarans';
+    protected static string $relationship = 'statusPengeluarans';
     protected static ?string $title = 'Realisasi Pembayaran';
 
     public function form(Form $form): Form
     {
         $pengajuan = $this->ownerRecord;
         $totalDiajukan = $pengajuan->detailPengajuans()->sum(DB::raw('qty * harga_satuan'));
-        $totalDibayar = (float) $pengajuan->transaksiPembayarans()->sum('nilai');
+        $totalDibayar = (float) $pengajuan->statusPengeluarans()->sum('nilai');
         $sisaPembayaran = $totalDiajukan - $totalDibayar;
 
         return $form

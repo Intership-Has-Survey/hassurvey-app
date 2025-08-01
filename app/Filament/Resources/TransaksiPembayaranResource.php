@@ -33,17 +33,22 @@ class TransaksiPembayaranResource extends Resource
 {
     protected static ?string $model = TransaksiPembayaran::class;
 
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $navigationLabel = 'Semua Pengeluaran';
+    protected static ?string $title = 'Semua Pengeluaran';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Keuangan';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('pengajuan_dana_id')
-                    ->relationship('pengajuanDana', 'judul_pengajuan')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                // Forms\Components\Select::make('pengajuan_dana_id')
+                //     ->relationship('pengajuanDana', 'judul_pengajuan')
+                //     ->searchable()
+                //     ->preload()
+                //     ->required(),
                 TextInput::make('nilai')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
@@ -73,9 +78,12 @@ class TransaksiPembayaranResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pengajuanDana.judul_pengajuan')
-                    ->label('Untuk Pengajuan')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('payable_type')
+                    ->label('Jenis Pengeluaran')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'App\\Models\\PengajuanDana' => 'Pengajuan Dana',
+                        default => 'Lainnya'
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tanggal_transaksi')
                     ->date('d M Y')
