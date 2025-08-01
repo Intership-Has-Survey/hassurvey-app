@@ -82,6 +82,7 @@ class TransaksiPembayaranResource extends Resource
                     ->label('Jenis Pengeluaran')
                     ->formatStateUsing(fn($state) => match ($state) {
                         'App\\Models\\PengajuanDana' => 'Pengajuan Dana',
+                        'App\\Models\\PembayaranPersonel' => 'Pembayaran Personel',
                         default => 'Lainnya'
                     })
                     ->sortable(),

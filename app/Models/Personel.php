@@ -34,4 +34,9 @@ class Personel extends Model
 
         return 'Tersedia';
     }
+
+    public function pembayaranPersonel()
+    {
+        return $this->hasMany(PembayaranPersonel::class);
+    }
 }

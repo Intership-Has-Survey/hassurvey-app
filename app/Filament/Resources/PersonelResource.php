@@ -241,6 +241,7 @@ class PersonelResource extends Resource
     {
         return [
             //
+            RelationManagers\PembayaranPersonelRelationManager::class,
         ];
     }
 
