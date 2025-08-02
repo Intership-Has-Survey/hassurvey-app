@@ -44,15 +44,15 @@ class PemilikResource extends Resource
             $set('total_pendapataninv', 0);
             $set('total_pendapatanhas', 0);
 
-            $set('total_pendapatanktr_display', 'Rp 0');
-            $set('total_pendapataninv_display', 'Rp 0');
-            $set('total_pendapatanhas_display', 'Rp 0');
+            $set('total_pendapatanktr_display', 0);
+            $set('total_pendapataninv_display', 0);
+            $set('total_pendapatanhas_display', 0);
             return;
         }
 
-        $totalKotor = $record->riwayatSewaAlat()->sum('biaya_sewa_alat');
-        $totalInvestor = $record->riwayatSewaAlat()->sum('pendapataninv');
-        $totalHas = $record->riwayatSewaAlat()->sum('pendapatanhas');
+        $totalKotor = $record->riwayatSewaAlat()->sum('biaya_sewa_alat_final');
+        $totalInvestor = $record->riwayatSewaAlat()->sum('pendapataninv_final');
+        $totalHas = $record->riwayatSewaAlat()->sum('pendapatanhas_final');
 
         $set('total_pendapatanktr', $totalKotor);
         $set('total_pendapataninv', $totalInvestor);
@@ -102,7 +102,7 @@ class PemilikResource extends Resource
                 Section::make('Alamat')
                     ->schema(self::getAddressFields())->columns(2),
 
-                Section::make('Informasi Pendapatan & Bagi Hasil')
+Section::make('Informasi Pendapatan & Bagi Hasil')
                     ->schema([
                         TextInput::make('persen_bagihasil')
                             ->label('Persentase Bagi Hasil (%)')
@@ -112,33 +112,6 @@ class PemilikResource extends Resource
                             ->default(20)
                             ->postfix('%')
                             ->required(),
-
-                        // --- PERBAIKAN UTAMA DI SINI ---
-                        // Menggunakan callback function untuk menghitung dan menampilkan data secara dinamis.
-                        Placeholder::make('total_pendapatanktr')
-                            ->label('Total Pendapatan Kotor')
-                            ->content(function (?Model $record): string {
-                                if (!$record)
-                                    return 'Rp 0';
-                                // Pastikan relasi 'riwayatSewaAlat' ada di model Pemilik
-                                $total = $record->riwayatSewaAlat()->sum('biaya_sewa_alat');
-                                return Number::currency($total, 'IDR');
-                            }),
-
-                        Placeholder::make('total_pendapataninv')
-                            ->label('Total Pendapatan Investor/Pemilik')
-                            ->content(function (?Model $record): string {
-                                if (!$record)
-                                    return 'Rp 0';
-                                $total = $record->riwayatSewaAlat()->sum('pendapataninv');
-                                return Number::currency($total, 'IDR');
-                            }),
-
-                        Placeholder::make('total_pendapatanhas')
-                            ->label('Total Pendapatan untuk Has Survey')
-                            ->dehydrated(false),
-                        Hidden::make('total_pendapatanhas'),
-
                     ])->columns(1)
                     ->visibleOn('edit'),
             ]);

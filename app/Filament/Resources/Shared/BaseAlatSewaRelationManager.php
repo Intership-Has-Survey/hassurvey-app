@@ -72,10 +72,15 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             // Calculate weight for this record
             $weight = ($pivotData->biaya_sewa_alat ?? 0) / $totalBiayaSewaAlat;
 
+
             // Calculate final values using prorata allocation
             $biayaSewaAlatFinal = $weight * $totalHarga;
-            $pendapatanInvFinal = $weight * $totalHarga * ($pivotData->pendapataninv / ($pivotData->biaya_sewa_alat ?: 1));
-            $pendapatanHasFinal = $weight * $totalHarga * ($pivotData->pendapatanhas / ($pivotData->biaya_sewa_alat ?: 1));
+            if ($record->pemilik && $record->pemilik->persen_bagihasil) {
+                $persentasePemilik = $record->pemilik->persen_bagihasil / 100;
+                $pendapatanInvFinal = $biayaSewaAlatFinal * $persentasePemilik;
+                $pendapatanHasFinal = $biayaSewaAlatFinal - $pendapatanInvFinal;
+            }
+
         } else {
             // If total biaya_sewa_alat is zero, fallback to original values
             $biayaSewaAlatFinal = $pivotData->biaya_sewa_alat ?? 0;
@@ -102,24 +107,26 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 TextColumn::make('tgl_keluar')->date('d-m-Y'),
                 TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
                 TextColumn::make('harga_perhari')->money('IDR')->sortable(),
-                TextColumn::make('biaya_perkiraan_alat')->label('Biaya Perkiraan')->money('IDR')->state(function (Model $record): ?float {
-                    $sewa = $this->getSewaRecord();
-                    $pivotData = $record->pivot;
-                    if (!$sewa->is_locked && $sewa?->tgl_selesai && $pivotData?->tgl_keluar && $pivotData?->harga_perhari) {
-                        $tglSelesaiKontrak = Carbon::parse($sewa->tgl_selesai);
-                        $tglKeluarAlat = Carbon::parse($pivotData->tgl_keluar);
-                        if ($tglSelesaiKontrak->gte($tglKeluarAlat)) {
-                            $durasiPerkiraan = $tglKeluarAlat->diffInDays($tglSelesaiKontrak) + 1;
-                            return $durasiPerkiraan * $pivotData->harga_perhari;
+                TextColumn::make('biaya_perkiraan_alat')->label('Biaya Perkiraan')
+                    ->money('IDR')
+                    ->visible(fn(): bool => true)
+                    ->state(function (Model $record): ?float {
+                        $sewa = $this->getSewaRecord();
+                        $pivotData = $record->pivot;
+                        if ($sewa?->tgl_selesai && $pivotData?->tgl_keluar && $pivotData?->harga_perhari) {
+                            $tglSelesaiKontrak = Carbon::parse($sewa->tgl_selesai);
+                            $tglKeluarAlat = Carbon::parse($pivotData->tgl_keluar);
+                            if ($tglSelesaiKontrak->gte($tglKeluarAlat)) {
+                                $durasiPerkiraan = $tglKeluarAlat->diffInDays($tglSelesaiKontrak) + 1;
+                                return $durasiPerkiraan * $pivotData->harga_perhari;
+                            }
                         }
-                    } elseif ($sewa->is_locked) {
-                        // When sewa is locked, show harga final alat (biaya_sewa_alat_final)
-                        return $pivotData->biaya_sewa_alat_final ?? 0;
-                    }
-                    return 0;
-                }),
+                        return 0;
+                    }),
                 TextColumn::make('biaya_sewa_alat')->label('Biaya Realisasi')->money('IDR')->placeholder('Belum Kembali')->sortable(),
-
+                TextColumn::make('biaya_sewa_alat_final')->label('Harga Final Alat')->money('IDR')
+                    ->visible(fn(): bool => true)
+                    ->state(fn(Model $record): ?float => $record->pivot->biaya_sewa_alat_final ?? null),
             ])
             ->filters([])
             ->headerActions([
