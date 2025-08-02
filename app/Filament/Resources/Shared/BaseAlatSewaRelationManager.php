@@ -8,6 +8,7 @@ use App\Models\Merk;
 use App\Models\Sewa;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Form;
 use Filament\Support\RawJs;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -52,36 +53,86 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             ->disabled(fn(): bool => $this->getSewaRecord()->is_locked);
     }
 
+    public function perhitunganFinal(Model $record, Sewa $sewa)
+    {
+        $pivotData = $record->pivot;
+
+        // Get all alat related to this sewa with tgl_masuk not null
+        $allAlat = $sewa->daftarAlat()->wherePivotNotNull('tgl_masuk')->get();
+
+        // Calculate total biaya_sewa_alat from all alat
+        $totalBiayaSewaAlat = $allAlat->sum(function ($alat) {
+            return $alat->pivot->biaya_sewa_alat ?? 0;
+        });
+
+        // Use harga_fix if sewa is locked, else fallback to harga_real
+        $totalHarga = $sewa->is_locked ? $sewa->harga_fix : $sewa->harga_real;
+
+        if ($totalBiayaSewaAlat > 0) {
+            // Calculate weight for this record
+            $weight = ($pivotData->biaya_sewa_alat ?? 0) / $totalBiayaSewaAlat;
+
+
+            // Calculate final values using prorata allocation
+            $biayaSewaAlatFinal = $weight * $totalHarga;
+            if ($record->pemilik && $record->pemilik->persen_bagihasil) {
+                $persentasePemilik = $record->pemilik->persen_bagihasil / 100;
+                $pendapatanInvFinal = $biayaSewaAlatFinal * $persentasePemilik;
+                $pendapatanHasFinal = $biayaSewaAlatFinal - $pendapatanInvFinal;
+            }
+
+        } else {
+            // If total biaya_sewa_alat is zero, fallback to original values
+            $biayaSewaAlatFinal = $pivotData->biaya_sewa_alat ?? 0;
+            $pendapatanInvFinal = $pivotData->pendapataninv ?? 0;
+            $pendapatanHasFinal = $pivotData->pendapatanhas ?? 0;
+        }
+
+        // Save final calculated values to pivot
+        $pivotData->biaya_sewa_alat_final = $biayaSewaAlatFinal;
+        $pivotData->pendapataninv_final = $pendapatanInvFinal;
+        $pivotData->pendapatanhas_final = $pendapatanHasFinal;
+
+        $pivotData->save();
+    }
+
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('nomor_seri')
             ->columns([
+                TextColumn::make('jenisAlat.nama')->label('Jenis Alat')->searchable(),
                 TextColumn::make('nomor_seri')->searchable(),
                 BadgeColumn::make('kondisi')->label('Kondisi Alat')->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')->color(fn(bool $state) => $state ? 'success' : 'danger'),
                 TextColumn::make('tgl_keluar')->date('d-m-Y'),
                 TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
                 TextColumn::make('harga_perhari')->money('IDR')->sortable(),
-                TextColumn::make('biaya_perkiraan_alat')->label('Biaya Perkiraan')->money('IDR')->state(function (Model $record): ?float {
-                    $sewa = $this->getSewaRecord();
-                    $pivotData = $record->pivot;
-                    if ($sewa?->tgl_selesai && $pivotData?->tgl_keluar && $pivotData?->harga_perhari) {
-                        $tglSelesaiKontrak = Carbon::parse($sewa->tgl_selesai);
-                        $tglKeluarAlat = Carbon::parse($pivotData->tgl_keluar);
-                        if ($tglSelesaiKontrak->gte($tglKeluarAlat)) {
-                            $durasiPerkiraan = $tglKeluarAlat->diffInDays($tglSelesaiKontrak) + 1;
-                            return $durasiPerkiraan * $pivotData->harga_perhari;
+                TextColumn::make('biaya_perkiraan_alat')->label('Biaya Perkiraan')
+                    ->money('IDR')
+                    ->visible(fn(): bool => true)
+                    ->state(function (Model $record): ?float {
+                        $sewa = $this->getSewaRecord();
+                        $pivotData = $record->pivot;
+                        if ($sewa?->tgl_selesai && $pivotData?->tgl_keluar && $pivotData?->harga_perhari) {
+                            $tglSelesaiKontrak = Carbon::parse($sewa->tgl_selesai);
+                            $tglKeluarAlat = Carbon::parse($pivotData->tgl_keluar);
+                            if ($tglSelesaiKontrak->gte($tglKeluarAlat)) {
+                                $durasiPerkiraan = $tglKeluarAlat->diffInDays($tglSelesaiKontrak) + 1;
+                                return $durasiPerkiraan * $pivotData->harga_perhari;
+                            }
                         }
-                    }
-                    return 0;
-                }),
+                        return 0;
+                    }),
                 TextColumn::make('biaya_sewa_alat')->label('Biaya Realisasi')->money('IDR')->placeholder('Belum Kembali')->sortable(),
+                TextColumn::make('biaya_sewa_alat_final')->label('Harga Final Alat')->money('IDR')
+                    ->visible(fn(): bool => true)
+                    ->state(fn(Model $record): ?float => $record->pivot->biaya_sewa_alat_final ?? null),
             ])
             ->filters([])
             ->headerActions([
                 AttachAction::make()
                     ->label('Tambah Alat Sewa')
-                    ->visible(fn(): bool => $this->getSewaRecord()->canAddTools())
+                    ->visible(fn(): bool => $this->getSewaRecord()->canAddTools() && !$this->getSewaRecord()->is_locked)
                     ->preloadRecordSelect()
                     ->using(function (array $data, RelationManager $livewire): void {
                         $sewa = $livewire->getSewaRecord();
@@ -91,6 +142,11 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         $alat = DaftarAlat::find($recordId);
                         if ($alat) {
                             $alat->update(['status' => false]);
+                        }
+                        // If need_replacement is true (1), set it to false (0) when adding a new alat
+                        if ($sewa->need_replacement == 1) {
+                            $sewa->need_replacement = 0;
+                            $sewa->save();
                         }
                     })
                     ->form(function (): array {
@@ -149,6 +205,20 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(','),
                         Forms\Components\TextInput::make('pendapatanhas')->label('Pendapatan Has Survey')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+
+                        Forms\Components\Placeholder::make('')->content('Informasi Harga Final')->dehydrated(false),
+                        Forms\Components\TextInput::make('biaya_sewa_alat_final')->label('Pendapatan Kotor')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+                        Forms\Components\TextInput::make('pendapataninv_final')->label('Pendapatan Investor')->prefix('Rp')
+                            ->disabled()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
+                        Forms\Components\TextInput::make('pendapatanhas_final')->label('Pendapatan Has Survey')->prefix('Rp')
                             ->disabled()
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(','),

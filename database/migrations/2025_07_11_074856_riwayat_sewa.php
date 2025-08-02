@@ -18,9 +18,14 @@ return new class extends Migration {
 
             $table->decimal('harga_perhari', 15, 2)->nullable();
             $table->decimal('biaya_perkiraan_alat', 15, 2)->nullable();
-            $table->decimal('biaya_sewa_alat', 15, 2)->nullable();
-            $table->decimal('pendapataninv', 15, 2)->nullable();
-            $table->decimal('pendapatanhas', 15, 2)->nullable();
+
+            $table->decimal('biaya_sewa_alat', 15, 2)->default(0);
+            $table->decimal('pendapataninv', 15, 2)->default(0);
+            $table->decimal('pendapatanhas', 15, 2)->default(0);
+
+            $table->decimal('biaya_sewa_alat_final', 15, 2)->default(0);
+            $table->decimal('pendapataninv_final', 15, 2)->default(0);
+            $table->decimal('pendapatanhas_final', 15, 2)->default(0);
 
             $table->text('catatan')->nullable();
             
