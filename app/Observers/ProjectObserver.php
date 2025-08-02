@@ -26,15 +26,14 @@ class ProjectObserver
     }
     public function saving(Project $project): void
     {
-        $nilaiDasar = (float) $project->nilai_project;
+        $nilaiDasar = (float) $project->nilai_project_awal;
+        $nilaiBulat = floor($nilaiDasar);
 
         if ($project->dikenakan_ppn) {
-            $project->nilai_ppn = $nilaiDasar * 0.11;
+            $project->nilai_ppn = $nilaiDasar * 0.12;
         } else {
             $project->nilai_ppn = 0;
         }
-
-        // Hitung total tagihan akhir
-        $project->total_tagihan = $nilaiDasar + $project->nilai_ppn;
+        $project->nilai_project = $nilaiBulat + $project->nilai_ppn;
     }
 }

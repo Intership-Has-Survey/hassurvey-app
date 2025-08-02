@@ -67,8 +67,8 @@ trait GlobalForms
                         ->maxLength(100),
                     TextInput::make('nik')
                         ->label('NIK')
-                        ->length(16)
                         ->numeric()
+                        ->maxLength(16)
                         ->unique(ignoreRecord: true),
                     TextInput::make('email')
                         ->label('Email')
@@ -183,37 +183,42 @@ trait GlobalForms
     private static function getKeuanganFields(): array
     {
         return [
-            TextInput::make('nilai_project')
+            TextInput::make('nilai_project_awal')
                 ->label('Nilai Proyek')
                 ->numeric()
                 ->prefix('Rp ')
                 ->mask(RawJs::make('$money($input)'))
                 ->stripCharacters(',')
+                ->live()
+                ->maxLength(20)
                 ->placeholder('Masukkan anggaran proyek')
                 ->disabled(fn(callable $get) => $get('status') === 'Closing'),
             Toggle::make('dikenakan_ppn')
                 ->label('Kenakan PPN (12%)')
-                ->live(),
+                ->live()
+                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
 
             Placeholder::make('nilai_ppn_display')
                 ->label('Nilai PPN (12%)')
                 ->content(function (Get $get): string {
                     if ($get('dikenakan_ppn')) {
-                        $nilai = (float) str_replace(['.', ','], '', $get('nilai_project'));
-                        return 'Rp ' . number_format($nilai * 0.12, 0, ',', '.');
+                        $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
+                        $nilaiBulat = floor($nilai);
+                        return 'Rp ' . number_format($nilaiBulat * 0.12, 0, ',');
                     }
                     return 'Rp 0';
                 }),
 
-            Placeholder::make('total_tagihan_display')
+            Placeholder::make('nilai_project')
                 ->label('Total Tagihan')
                 ->content(function (Get $get): string {
-                    $nilai = (float) str_replace(['.', ','], '', $get('nilai_project'));
-                    $total = $nilai;
+                    $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
+                    $nilaiBulat = floor($nilai);
+                    $total = $nilaiBulat;
                     if ($get('dikenakan_ppn')) {
-                        $total = $nilai + ($nilai * 0.11);
+                        $total = $nilaiBulat + ($nilaiBulat * 0.12);
                     }
-                    return 'Rp ' . number_format($total, 0, ',', '.');
+                    return 'Rp ' . number_format($total, 0, ',');
                 }),
             Select::make('status')
                 ->label('Status Proyek')
@@ -242,7 +247,7 @@ trait GlobalForms
                     TextInput::make('nik')
                         ->label('NIK')
 
-                        ->length(16)
+                        ->maxLength(16)
                         ->unique(ignoreRecord: true)
                         ->numeric(),
                     TextInput::make('email')

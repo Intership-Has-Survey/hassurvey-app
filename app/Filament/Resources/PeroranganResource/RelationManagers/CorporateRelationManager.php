@@ -4,7 +4,7 @@ namespace App\Filament\Resources\PeroranganResource\RelationManagers;
 
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Actions\Action;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;

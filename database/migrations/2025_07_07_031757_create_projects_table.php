@@ -23,13 +23,13 @@ return new class extends Migration {
             $table->string('kota', 5)->nullable();
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
-            $table->string('detail_alamat')->nullable();
+            -$table->string('detail_alamat')->nullable();
 
             // keuangan & status
-            $table->decimal('nilai_project', 15, 2)->default(0);
+            $table->string('nilai_project_awal')->default(0);
             $table->boolean('dikenakan_ppn')->default(false);
-            $table->decimal('nilai_ppn', 15, 2)->default(0);
-            $table->decimal('total_tagihan', 15, 2)->default(0);
+            $table->string('nilai_ppn')->default(0);
+            $table->string('nilai_project')->default(0);
             $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
             $table->string('status_pekerjaan')->nullable()->default('Belum Dikerjakan');

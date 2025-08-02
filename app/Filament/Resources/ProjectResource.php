@@ -47,7 +47,7 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')->columnSpanFull(),
+                    TextInput::make('nama_project')->columnSpanFull()->placeholder('Masukkan Nama Proyek'),
                     Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
