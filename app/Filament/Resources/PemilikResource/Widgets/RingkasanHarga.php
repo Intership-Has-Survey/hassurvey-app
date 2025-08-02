@@ -54,8 +54,7 @@ class RingkasanHarga extends BaseWidget
 
         return [
             Stat::make('Total Pendapatan Kotor', Number::currency($totalKotor, 'IDR'))
-                ->color('primary')
-                ->,
+                ->color('primary'),
             Stat::make('Total Pendapatan Investor', Number::currency($totalInvestor, 'IDR'))
                 ->color('success'),
             Stat::make('Total Pendapatan Has', Number::currency($totalHas, 'IDR'))
