@@ -125,12 +125,16 @@ class SewaResource extends Resource
                                     ->required()
                                     ->label('Tanggal Mulai')
                                     ->live(onBlur: true)
+                                    ->native(false)
+                                    ->default(now())
                                     ->afterStateUpdated($calculateRentang),
                                 DatePicker::make('tgl_selesai')
                                     ->required()
                                     ->label('Tanggal Selesai')
                                     ->minDate(fn(Get $get) => $get('tgl_mulai'))
                                     ->live(onBlur: true)
+                                    ->native(false)
+                                    ->placeholder('dd/mm/yyyy')
                                     ->afterStateUpdated($calculateRentang),
                             ]),
                         Placeholder::make('rentang')
@@ -154,7 +158,7 @@ class SewaResource extends Resource
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
                             ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->required()->dehydrated(false)
+                            ->live()->required()->dehydrated(false)->native(false)
                             ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                         Select::make('corporate_id')
@@ -176,7 +180,7 @@ class SewaResource extends Resource
                                         return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                     })
                                     ->searchable()->required()
-                                    ->createOptionForm(self::getPeroranganForm()) // Asumsikan Anda punya helper method ini
+                                    ->createOptionForm(self::getPeroranganForm())
                                     ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                             ])
                             ->minItems(0)
