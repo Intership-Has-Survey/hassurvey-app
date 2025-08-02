@@ -28,7 +28,7 @@ class RingkasanTransaksi extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(PengajuanDana::query()->whereHas('transaksiPembayarans'))
+            ->query(PengajuanDana::query()->whereHas('statusPengeluarans'))
             ->columns([
                 TextColumn::make('judul_pengajuan')
                     ->label('Judul Pengajuan')
