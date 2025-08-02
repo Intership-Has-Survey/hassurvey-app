@@ -181,7 +181,7 @@ trait GlobalForms
     {
         return [
             TextInput::make('nilai_project')
-                ->label('Anggaran Proyek')
+                ->label('Nilai Proyek')
                 ->numeric()
 
                 ->prefix('Rp ')
