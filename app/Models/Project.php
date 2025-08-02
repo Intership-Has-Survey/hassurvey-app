@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\AlatSewa;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -58,11 +59,6 @@ class Project extends Model
         return $this->hasMany(StatusPekerjaan::class);
     }
 
-    // public function StatusPembayaran()
-    // {
-    //     return $this->hasMany(StatusPembayaran::class);
-    // }
-
     public function statusPembayaran()
     {
         return $this->morphMany(StatusPembayaran::class, 'payable');
@@ -72,11 +68,6 @@ class Project extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    // public function customer()
-    // {
-    //     return $this->morphTo();
-    // }
 
     public function pengajuanDanas(): HasMany
     {
@@ -96,7 +87,7 @@ class Project extends Model
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'project_id', 'daftar_alat_id')
-            ->using(RiwayatSewa::class)
+            ->using(AlatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
     }

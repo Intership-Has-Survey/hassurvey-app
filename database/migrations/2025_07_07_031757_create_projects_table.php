@@ -27,6 +27,9 @@ return new class extends Migration {
 
             // keuangan & status
             $table->decimal('nilai_project', 15, 2)->default(0);
+            $table->boolean('dikenakan_ppn')->default(false);
+            $table->decimal('nilai_ppn', 15, 2)->default(0);
+            $table->decimal('total_tagihan', 15, 2)->default(0);
             $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
             $table->string('status_pekerjaan')->nullable()->default('Belum Dikerjakan');
@@ -34,7 +37,6 @@ return new class extends Migration {
 
             // Relasi
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
-            // $table->foreignUuid('perorangan_id')->constrained('perorangan');
             $table->foreignUuid('sewa_id')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * Custom Pivot Model for riwayat_sewa table
  */
-class RiwayatSewa extends Pivot
+
+class AlatSewa extends Pivot
 {
     use HasUuids;
 
-    protected $table = 'riwayat_sewa'; // Pastikan nama tabel pivot sudah benar
+    protected $table = 'riwayat_sewa';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -25,14 +26,10 @@ class RiwayatSewa extends Pivot
      */
     protected static function booted(): void
     {
-        // Model event ini akan berjalan secara otomatis SEBELUM data pivot baru disimpan
         static::creating(function ($pivot) {
-            // Jika user_id belum diisi, isi dengan ID user yang sedang login
             if (Auth::check()) {
                 $pivot->user_id = Auth::id();
             }
-
-            // SOLUSI: Menghapus logika untuk mengisi kolom 'status' yang sudah tidak ada.
         });
     }
 

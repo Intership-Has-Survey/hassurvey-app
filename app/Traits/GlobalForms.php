@@ -9,10 +9,13 @@ use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
+use App\Models\BankAccount;
 
 trait GlobalForms
 {
@@ -183,12 +186,35 @@ trait GlobalForms
             TextInput::make('nilai_project')
                 ->label('Anggaran Proyek')
                 ->numeric()
-
                 ->prefix('Rp ')
                 ->mask(RawJs::make('$money($input)'))
                 ->stripCharacters(',')
                 ->placeholder('Masukkan anggaran proyek')
                 ->disabled(fn(callable $get) => $get('status') === 'Closing'),
+            Toggle::make('dikenakan_ppn')
+                ->label('Kenakan PPN (12%)')
+                ->live(),
+
+            Placeholder::make('nilai_ppn_display')
+                ->label('Nilai PPN (12%)')
+                ->content(function (Get $get): string {
+                    if ($get('dikenakan_ppn')) {
+                        $nilai = (float) str_replace(['.', ','], '', $get('nilai_project'));
+                        return 'Rp ' . number_format($nilai * 0.12, 0, ',', '.');
+                    }
+                    return 'Rp 0';
+                }),
+
+            Placeholder::make('total_tagihan_display')
+                ->label('Total Tagihan')
+                ->content(function (Get $get): string {
+                    $nilai = (float) str_replace(['.', ','], '', $get('nilai_project'));
+                    $total = $nilai;
+                    if ($get('dikenakan_ppn')) {
+                        $total = $nilai + ($nilai * 0.11);
+                    }
+                    return 'Rp ' . number_format($total, 0, ',', '.');
+                }),
             Select::make('status')
                 ->label('Status Proyek')
                 ->options([

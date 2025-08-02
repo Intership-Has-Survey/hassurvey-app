@@ -24,4 +24,17 @@ class ProjectObserver
             );
         }
     }
+    public function saving(Project $project): void
+    {
+        $nilaiDasar = (float) $project->nilai_project;
+
+        if ($project->dikenakan_ppn) {
+            $project->nilai_ppn = $nilaiDasar * 0.11;
+        } else {
+            $project->nilai_ppn = 0;
+        }
+
+        // Hitung total tagihan akhir
+        $project->total_tagihan = $nilaiDasar + $project->nilai_ppn;
+    }
 }
