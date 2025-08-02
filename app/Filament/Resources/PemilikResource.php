@@ -14,6 +14,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -36,6 +37,32 @@ class PemilikResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function calculateAndSetTotals(Set $set, ?Model $record): void
+    {
+        if (!$record) {
+            $set('total_pendapatanktr', 0);
+            $set('total_pendapataninv', 0);
+            $set('total_pendapatanhas', 0);
+
+            $set('total_pendapatanktr_display', 'Rp 0');
+            $set('total_pendapataninv_display', 'Rp 0');
+            $set('total_pendapatanhas_display', 'Rp 0');
+            return;
+        }
+
+        $totalKotor = $record->riwayatSewaAlat()->sum('biaya_sewa_alat');
+        $totalInvestor = $record->riwayatSewaAlat()->sum('pendapataninv');
+        $totalHas = $record->riwayatSewaAlat()->sum('pendapatanhas');
+
+        $set('total_pendapatanktr', $totalKotor);
+        $set('total_pendapataninv', $totalInvestor);
+        $set('total_pendapatanhas', $totalHas);
+
+        $set('total_pendapatanktr_display', Number::currency($totalKotor, 'IDR'));
+        $set('total_pendapataninv_display', Number::currency($totalInvestor, 'IDR'));
+        $set('total_pendapatanhas_display', Number::currency($totalHas, 'IDR'));
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -52,7 +79,7 @@ class PemilikResource extends Resource
                             ->required(),
                         TextInput::make('NIK')
                             ->label('Nomor Induk Kependudukan (NIK)')
-                            ->unique()
+                            ->unique(ignoreRecord: true)
                             ->validationMessages([
                                 'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
                             ])
@@ -60,7 +87,7 @@ class PemilikResource extends Resource
                             ->required(),
                         TextInput::make('email')
                             ->label('Email')
-                            ->unique()
+                            ->unique(ignoreRecord: true)
                             ->validationMessages([
                                 'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                             ])
@@ -86,11 +113,14 @@ class PemilikResource extends Resource
                             ->postfix('%')
                             ->required(),
 
+                        // --- PERBAIKAN UTAMA DI SINI ---
+                        // Menggunakan callback function untuk menghitung dan menampilkan data secara dinamis.
                         Placeholder::make('total_pendapatanktr')
                             ->label('Total Pendapatan Kotor')
                             ->content(function (?Model $record): string {
                                 if (!$record)
                                     return 'Rp 0';
+                                // Pastikan relasi 'riwayatSewaAlat' ada di model Pemilik
                                 $total = $record->riwayatSewaAlat()->sum('biaya_sewa_alat');
                                 return Number::currency($total, 'IDR');
                             }),
@@ -106,12 +136,8 @@ class PemilikResource extends Resource
 
                         Placeholder::make('total_pendapatanhas')
                             ->label('Total Pendapatan untuk Has Survey')
-                            ->content(function (?Model $record): string {
-                                if (!$record)
-                                    return 'Rp 0';
-                                $total = $record->riwayatSewaAlat()->sum('pendapatanhas');
-                                return Number::currency($total, 'IDR');
-                            }),
+                            ->dehydrated(false),
+                        Hidden::make('total_pendapatanhas'),
 
                     ])->columns(1)
                     ->visibleOn('edit'),

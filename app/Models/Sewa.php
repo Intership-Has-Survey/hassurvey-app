@@ -37,6 +37,16 @@ class Sewa extends Model
                 $sewa->user_id = Auth::id();
             }
         });
+
+        static::updated(function ($sewa) {
+            if ($sewa->is_locked) {
+                $sewa->daftarAlat()->each(function ($alat) use ($sewa) {
+                    $relationManager = app(\App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager::class);
+                    // Remove call to setOwnerRecord as method does not exist
+                    $relationManager->perhitunganFinal($alat, $sewa);
+                });
+            }
+        });
     }
 
     public function projects()
