@@ -18,6 +18,13 @@ class Penjualan extends Model
 
     protected $guarded = [];
 
+    protected $appends = ['total_items'];
+
+    public function getTotalItemsAttribute(): string
+    {
+        return 'Rp ' . number_format($this->detailPenjualan->sum('harga'), 0, ',', '.');
+    }
+
     protected $casts = [
         'tanggal_penjualan' => 'date',
     ];
@@ -49,9 +56,9 @@ class Penjualan extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function statusPembayaran(): BelongsTo
+    public function statusPembayaran()
     {
-        return $this->belongsTo(StatusPembayaran::class);
+        return $this->morphMany(StatusPembayaran::class, 'payable');
     }
 
     public function detailPenjualan(): HasMany

@@ -38,12 +38,12 @@ class StatusPembayaranResource extends Resource
         return $form
             ->schema([
                 // Field untuk memilih proyek terkait
-                Select::make('project_id')
-                    ->relationship('project', 'nama_project')
-                    ->searchable()
-                    ->preload()
-                    ->label('Proyek')
-                    ->required(),
+                // Select::make('project_id')
+                //     ->relationship('project', 'nama_project')
+                //     ->searchable()
+                //     ->preload()
+                //     ->label('Proyek')
+                //     ->required(),
 
                 Select::make('nama_pembayaran')
                     ->label('Metode Pembayaran')
@@ -83,9 +83,10 @@ class StatusPembayaranResource extends Resource
                 TextColumn::make('payable_type')
                     ->label('Jenis Layanan')
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'App\\Models\\Project' => 'Jasa Pemetaan',
-                        'App\\Models\\Sewa' => 'Sewa',
-                        'App\\Models\\Kalibrasi' => 'Kalibrasi',
+                        'App\Models\Project' => 'Jasa Pemetaan',
+                        'App\Models\Sewa' => 'Sewa',
+                        'App\Models\Kalibrasi' => 'Kalibrasi',
+                        'App\Models\Penjualan' => 'Penjualan',
                         default => 'Lainnya'
                     }),
                 TextColumn::make('nama_layanan')
@@ -94,6 +95,8 @@ class StatusPembayaranResource extends Resource
                         return match ($record->payable_type) {
                             'App\\Models\\Project' => $record->payable?->nama_project,
                             'App\\Models\\Sewa' => $record->payable?->judul,
+                            'App\\Models\\Kalibrasi' => $record->payable?->nama,
+                            'App\\Models\\Penjualan' => $record->payable?->nama,
                             default => '-'
                         };
                     }),

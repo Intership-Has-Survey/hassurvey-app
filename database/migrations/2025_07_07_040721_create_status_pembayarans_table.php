@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('payable_type')->nullable();
             $table->string('jenis_pembayaran');
             $table->string('bukti_pembayaran_path')->nullable();
-            $table->decimal('nilai', 15, 2)->default(0);
+            $table->string('nilai')->default(0);
 
 
             $table->foreignUuid('user_id')->constrained('users');

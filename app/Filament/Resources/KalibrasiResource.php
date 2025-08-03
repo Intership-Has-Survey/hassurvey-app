@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use App\Filament\Resources\KalibrasiResource\Pages;
 use App\Filament\Resources\KalibrasiResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRelationManager;
+use App\Filament\Resources\KalibrasiResource\RelationManagers\StatusPembayaranRelationManager;
 
 class KalibrasiResource extends Resource
 {
@@ -133,6 +134,7 @@ class KalibrasiResource extends Resource
         return [
             PengajuanDanasRelationManager::class,
             DetailKalibrasiRelationManager::class,
+            StatusPembayaranRelationManager::class,
         ];
     }
 

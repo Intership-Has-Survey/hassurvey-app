@@ -48,4 +48,9 @@ class Kalibrasi extends Model
     {
         return $this->hasMany(PengajuanDana::class);
     }
+
+    public function statusPembayaran()
+    {
+        return $this->morphMany(StatusPembayaran::class, 'payable');
+    }
 }

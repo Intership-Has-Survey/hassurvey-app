@@ -41,7 +41,7 @@ class PenjualanResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nomor_invoice')
+                TextInput::make('nama')
                     ->label('Nama Penjualan')
                     ->required()
                     ->unique(ignoreRecord: true),
@@ -127,7 +127,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nomor_invoice')->searchable()
+                TextColumn::make('nama')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),
                 TextColumn::make('tanggal_penjualan')->date(),
@@ -155,10 +155,7 @@ class PenjualanResource extends Resource
                     default => 'info',
                 }),
                 TextColumn::make('total_items')
-                    ->label('Total Item')
-                    ->state(function (\App\Models\Penjualan $record): string {
-                        return 'Rp ' . number_format($record->detailPenjualan->sum('harga'), 0, ',', '.');
-                    }),
+                    ->label('Total Item'),
             ])
             ->filters([
                 //
@@ -177,6 +174,8 @@ class PenjualanResource extends Resource
     {
         return [
             RelationManagers\DetailPenjualanRelationManager::class,
+            RelationManagers\StatusPembayaranRelationManager::class,
+
         ];
     }
 
