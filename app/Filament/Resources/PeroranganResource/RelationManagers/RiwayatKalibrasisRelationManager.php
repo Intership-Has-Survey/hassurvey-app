@@ -49,6 +49,13 @@ class RiwayatKalibrasisRelationManager extends RelationManager
                 TextColumn::make('nama')
                     ->label('Judul Kalibrasi')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('pivot.peran')
+                    ->label('Untuk')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Pribadi' => 'success', // hijau
+                        default => 'info',   // biru
+                    }),
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->badge()

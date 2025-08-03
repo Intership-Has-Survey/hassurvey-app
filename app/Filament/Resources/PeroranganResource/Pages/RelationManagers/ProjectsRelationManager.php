@@ -24,6 +24,13 @@ class ProjectsRelationManager extends RelationManager
             ->heading('Riwayat Pemetaan')
             ->columns([
                 Tables\Columns\TextColumn::make('nama_project')->label('Nama Proyek'),
+                Tables\Columns\TextColumn::make('pivot.peran')
+                    ->label('Untuk')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Pribadi' => 'success', // hijau
+                        default => 'info',   // biru
+                    }),
                 Tables\Columns\TextColumn::make('status')->badge()->label('Status Proyek'),
                 Tables\Columns\TextColumn::make('status_pekerjaan')->badge()->label('Status Pekerjaan'),
                 Tables\Columns\TextColumn::make('status_pembayaran')->badge()->label('Status Pembayaran'),

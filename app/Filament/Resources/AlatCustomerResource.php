@@ -104,7 +104,12 @@ class AlatCustomerResource extends Resource
                         // Jika perorangan
                         Select::make('perorangan_id')
                             ->label('Pilih Customer')
-                            ->relationship('perorangan', 'nama')
+                            ->options(function (Get $get) {
+                                if ($get('customer_flow_type') !== 'perorangan') {
+                                    return [];
+                                }
+                                return Perorangan::all()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
+                            })
                             ->searchable()
                             ->createOptionForm(self::getPeroranganForm())
                             ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)

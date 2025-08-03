@@ -27,4 +27,22 @@ class EditKalibrasi extends EditRecord
 
         return $data;
     }
+
+    protected function afterSave(): void
+    {
+        // Simpan relasi many-to-many dengan peran
+        $record = $this->getRecord();
+        $data = $this->data;
+        
+        if (isset($data['customer_flow_type']) && $data['customer_flow_type'] === 'perorangan' && isset($data['perorangan_ids'])) {
+            $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+            
+            // Sync dengan project dan simpan peran
+            $syncData = [];
+            foreach ($data['perorangan_ids'] as $id) {
+                $syncData[$id] = ['peran' => $peran];
+            }
+            $record->perorangan()->sync($syncData);
+        }
+    }
 }

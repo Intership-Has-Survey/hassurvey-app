@@ -30,7 +30,7 @@ class Penjualan extends Model
     public function perorangan(): BelongsToMany
     {
         return $this->belongsToMany(Perorangan::class, 'penjualan_perorangan')
-            ->withPivot('penjualan_id', 'perorangan_id')
+            ->withPivot('penjualan_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 

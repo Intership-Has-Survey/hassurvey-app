@@ -52,7 +52,7 @@ class Kalibrasi extends Model
     public function perorangan()
     {
         return $this->belongsToMany(Perorangan::class, 'kalibrasi_perorangan')
-            ->withPivot('kalibrasi_id', 'perorangan_id')
+            ->withPivot('kalibrasi_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 

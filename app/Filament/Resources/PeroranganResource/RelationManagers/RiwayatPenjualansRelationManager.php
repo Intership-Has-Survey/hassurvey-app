@@ -47,6 +47,13 @@ class RiwayatPenjualansRelationManager extends RelationManager
                 TextColumn::make('nama_penjualan')
                     ->label('Nama Penjualan')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('pivot.peran')
+                    ->label('Untuk')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Pribadi' => 'success', // hijau
+                        default => 'info',   // biru
+                    }),
                 TextColumn::make('total_items')
                     ->label('Total')
                     ->money('IDR')

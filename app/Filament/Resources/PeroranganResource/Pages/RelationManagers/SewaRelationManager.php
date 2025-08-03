@@ -24,6 +24,13 @@ class SewaRelationManager extends RelationManager
             ->heading('Riwayat Penyewaan')
             ->columns([
                 Tables\Columns\TextColumn::make('judul')->label('Judul Penyewaan'),
+                Tables\Columns\TextColumn::make('pivot.peran')
+                    ->label('Untuk')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Pribadi' => 'success', // hijau
+                        default => 'info',   // biru
+                    }),
                 Tables\Columns\TextColumn::make('rentang')->label('Durasi Sewa'),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge(fn(string $state): string => match ($state) {
                     'Selesai' => 'success',

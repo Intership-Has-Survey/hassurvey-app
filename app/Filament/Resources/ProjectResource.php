@@ -86,14 +86,14 @@ class ProjectResource extends Resource
                         ->preload()
                         ->createOptionForm(self::getCorporateForm())
                         ->afterStateUpdated(function ($state, callable $set) {
-                            if (! $state) {
+                            if (!$state) {
                                 $set('perorangan', []);
                                 return;
                             }
 
                             $corporate = \App\Models\Corporate::with('perorangan')->find($state);
 
-                            if (! $corporate) {
+                            if (!$corporate) {
                                 $set('perorangan', []);
                                 return;
                             }
@@ -129,7 +129,14 @@ class ProjectResource extends Resource
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
-                            $record->perorangan()->sync($selectedIds); // sync dengan project
+                            $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+                            
+                            // Sync dengan project dan simpan peran
+                            $syncData = [];
+                            foreach ($selectedIds as $id) {
+                                $syncData[$id] = ['peran' => $peran];
+                            }
+                            $record->perorangan()->sync($syncData);
 
                             if ($record->corporate_id) {
                                 $corporate = $record->corporate;

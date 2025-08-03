@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\PeroranganResource\RelationManagers\RiwayatLayananRelationManager;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -59,7 +60,7 @@ class PeroranganResource extends Resource
         return [
             CorporateRelationManager::class,
             ProjectsRelationManager::class,
-            SewaRelationManager::class, 
+            SewaRelationManager::class,
             RiwayatKalibrasisRelationManager::class,
             RiwayatPenjualansRelationManager::class,
         ];
