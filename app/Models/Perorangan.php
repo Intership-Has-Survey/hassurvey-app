@@ -34,28 +34,35 @@ class Perorangan extends Model
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_perorangan')
-            ->withPivot('project_id', 'perorangan_id')
+            ->withPivot('project_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 
     public function sewa()
     {
         return $this->belongsToMany(Sewa::class, 'sewa_perorangan')
-            ->withPivot('sewa_id', 'perorangan_id')
+            ->withPivot('sewa_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 
     public function alatcustomer()
     {
         return $this->belongsToMany(AlatCustomer::class, 'alat_customers_perorangan')
-            ->withPivot('alat_customers_id', 'perorangan_id')
+            ->withPivot('alat_customers_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 
     public function penjualans()
     {
         return $this->belongsToMany(Penjualan::class, 'penjualan_perorangan')
-            ->withPivot('penjualan_id', 'perorangan_id')
+            ->withPivot('penjualan_id', 'perorangan_id', 'peran')
+            ->withTimestamps();
+    }
+
+    public function kalibrasi()
+    {
+        return $this->belongsToMany(Kalibrasi::class, 'kalibrasi_perorangan')
+            ->withPivot('kalibrasi_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
 

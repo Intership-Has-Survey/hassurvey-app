@@ -51,7 +51,13 @@ class SewaRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('lokasi'),
                 Tables\Columns\TextColumn::make('total_biaya')->money('IDR'),
 
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Pembuat'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Dibuat')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

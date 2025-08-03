@@ -14,44 +14,26 @@ class ProjectsRelationManager extends RelationManager
 
     protected static bool $isLazy = false;
 
-    protected static ?string $title = 'Riwayat Penyewaan';
-
-    public function form(Form $form): Form
-    {
-        // Form untuk membuat/mengedit project dari halaman ini (opsional)
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nama_project')
-                    ->required()
-                    ->maxLength(255),
-            ]);
-    }
+    protected static ?string $title = 'Riwayat Pemetaan';
 
     public function table(Table $table): Table
     {
-        // Tabel ini akan menampilkan proyek yang berelasi dengan customer yang sedang dilihat
         return $table
             ->recordTitleAttribute('nama_project')
-            ->heading('Riwayat Proyek Pemetaan')
+            ->heading('Riwayat Pemetaan')
             ->columns([
-                Tables\Columns\TextColumn::make('nama_project'),
-                Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('nilai_project')->money('IDR'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('nama_project')->label('Nama Proyek'),
+                Tables\Columns\TextColumn::make('nilai_project')->money('IDR')->label('Nilai Proyek'),
+                Tables\Columns\TextColumn::make('status')->badge()->label('Status Proyek'),
+                Tables\Columns\TextColumn::make('status_pekerjaan')->badge()->label('Status Pekerjaan'),
+                Tables\Columns\TextColumn::make('status_pembayaran')->badge()->label('Status Pembayaran'),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Tanggal Dibuat'),
             ])
             ->filters([
                 //
             ])
-            ->headerActions([
-                // Tables\Actions\CreateAction::make(), // Aktifkan jika ingin bisa menambah proyek dari sini
-            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                // Tables\Actions\EditAction::make(),
-                // Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                // ...
             ]);
     }
 }

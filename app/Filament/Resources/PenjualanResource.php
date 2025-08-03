@@ -41,7 +41,7 @@ class PenjualanResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nomor_invoice')
+                TextInput::make('nama_penjualan')
                     ->label('Nama Penjualan')
                     ->required()
                     ->unique(ignoreRecord: true),
@@ -127,7 +127,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nomor_invoice')->searchable()
+                TextColumn::make('nama_penjualan')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),
                 TextColumn::make('tanggal_penjualan')->date(),

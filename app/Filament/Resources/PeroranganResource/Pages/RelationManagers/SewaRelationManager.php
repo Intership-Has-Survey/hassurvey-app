@@ -16,28 +16,6 @@ class SewaRelationManager extends RelationManager
     protected static ?string $title = 'Riwayat Penyewaan';
     protected static bool $isLazy = false;
 
-    public function form(Form $form): Form
-    {
-        // Form untuk membuat/mengedit project dari halaman ini (opsional)
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('judul')
-                    ->required()
-                    ->label('Judul Penyewaan'),
-                Forms\Components\DatePicker::make('tgl_mulai')
-                    ->required(),
-                Forms\Components\DatePicker::make('tgl_selesai')
-                    ->required()
-                    ->minDate(fn(Get $get) => $get('tgl_mulai')),
-                Forms\Components\TextInput::make('lokasi')
-                    ->required(),
-                Forms\Components\Textarea::make('alamat')
-                    ->required()
-                    ->columnSpanFull(),
-            ]);
-
-    }
-
     public function table(Table $table): Table
     {
         // Tabel ini akan menampilkan proyek yang berelasi dengan customer yang sedang dilihat
@@ -45,13 +23,24 @@ class SewaRelationManager extends RelationManager
             ->recordTitleAttribute('judul_sewa')
             ->heading('Riwayat Penyewaan')
             ->columns([
-                Tables\Columns\TextColumn::make('judul'),
-                Tables\Columns\TextColumn::make('tgl_mulai')->date(),
-                Tables\Columns\TextColumn::make('tgl_selesai')->date(),
-                Tables\Columns\TextColumn::make('lokasi'),
-                Tables\Columns\TextColumn::make('total_biaya')->money('IDR'),
+                Tables\Columns\TextColumn::make('judul')->label('Judul Penyewaan'),
+                Tables\Columns\TextColumn::make('rentang')->label('Durasi Sewa'),
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge(fn(string $state): string => match ($state) {
+                    'Selesai' => 'success',
+                    'Konfirmasi Selesai' => 'info',
+                    'Jatuh Tempo' => 'danger',
+                    'Belum Selesai' => 'warning',
+                    default => 'secondary',
+                }),
+                Tables\Columns\TextColumn::make('harga_fix')->money('IDR')->default(0),
 
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Pembuat'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Dibuat')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

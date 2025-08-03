@@ -58,6 +58,8 @@ class RiwayatSewaPemilikRelationManager extends RelationManager
                     ->label('Pendapatan Investor/Pemilik')
                     ->money('IDR')
                     ->placeholder('-'),
+
+                
             ])
             ->headerActions([])
             ->actions([])

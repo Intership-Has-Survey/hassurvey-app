@@ -4,14 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('penjualans', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->string('nama')->unique();
+            $table->string('nama_penjualan')->unique();
             $table->date('tanggal_penjualan');
 
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
