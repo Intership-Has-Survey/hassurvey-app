@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\CorporateResource\RelationManagers\RiwayatKalibrasisRelationManager;
+use App\Filament\Resources\CorporateResource\RelationManagers\RiwayatPenjualansRelationManager;
 use Filament\Forms\Form;
 use App\Models\Corporate;
 use App\Traits\GlobalForms;
@@ -50,10 +52,11 @@ class CorporateResource extends Resource
     {
         return [
             PeroranganRelationManager::class,
-            RelationGroup::make('Riwayat Pesanan', [
-                ProjectsRelationManager::class,
-                SewaRelationManager::class,
-            ]),
+            ProjectsRelationManager::class,
+            SewaRelationManager::class,
+            RiwayatKalibrasisRelationManager::class,
+            RiwayatPenjualansRelationManager::class,
+
         ];
     }
 

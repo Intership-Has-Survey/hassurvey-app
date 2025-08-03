@@ -28,7 +28,39 @@ class CorporateRelationManager extends RelationManager
             ->schema([
                 TextInput::make('nama')
                     ->required()
-                    ->maxLength(255),
+                    ->label('Nama Perusahaan'),
+                TextInput::make('nib')
+                    ->label('NIB')
+                    ->unique()
+                    ->nullable(),
+                TextInput::make('level')
+                    ->label('Level'),
+                TextInput::make('email')
+                    ->email()
+                    ->label('Email')
+                    ->unique(),
+                TextInput::make('telepon')
+                    ->tel()
+                    ->label('Telepon'),
+                TextInput::make('provinsi')
+                    ->label('Provinsi'),
+                TextInput::make('kota')
+                    ->label('Kota'),
+                TextInput::make('kecamatan')
+                    ->label('Kecamatan'),
+                TextInput::make('desa')
+                    ->label('Desa'),
+                TextInput::make('detail_alamat')
+                    ->label('Detail Alamat')
+                    ->textarea(),
+                TextInput::make('user_id')
+                    ->label('User ID'),
+                Forms\Components\Placeholder::make('created_at')
+                    ->label('Tanggal Dibuat')
+                    ->content(fn ($record) => $record?->created_at?->format('d/m/Y H:i') ?? '-'),
+                Forms\Components\Placeholder::make('updated_at')
+                    ->label('Tanggal Diubah')
+                    ->content(fn ($record) => $record?->updated_at?->format('d/m/Y H:i') ?? '-'),
             ]);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PeroranganResource\RelationManagers;
+namespace App\Filament\Resources\CorporateResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -43,10 +43,10 @@ class RiwayatPenjualansRelationManager extends RelationManager
                 Forms\Components\Textarea::make('catatan'),
                 Forms\Components\Placeholder::make('created_at')
                     ->label('Tanggal Dibuat')
-                    ->content(fn ($record) => $record?->created_at?->format('d/m/Y H:i') ?? '-'),
+                    ->content(fn($record) => $record?->created_at?->format('d/m/Y H:i') ?? '-'),
                 Forms\Components\Placeholder::make('updated_at')
                     ->label('Tanggal Diubah')
-                    ->content(fn ($record) => $record?->updated_at?->format('d/m/Y H:i') ?? '-'),
+                    ->content(fn($record) => $record?->updated_at?->format('d/m/Y H:i') ?? '-'),
             ]);
     }
 
@@ -59,13 +59,6 @@ class RiwayatPenjualansRelationManager extends RelationManager
                 TextColumn::make('nama_penjualan')
                     ->label('Nama Penjualan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pivot.peran')
-                    ->label('Untuk')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Pribadi' => 'success', // hijau
-                        default => 'info',   // biru
-                    }),
                 TextColumn::make('total_items')
                     ->label('Total')
                     ->money('IDR')
