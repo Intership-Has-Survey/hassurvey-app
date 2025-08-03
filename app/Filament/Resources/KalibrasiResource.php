@@ -195,7 +195,7 @@ class KalibrasiResource extends Resource
                 Tables\Columns\TextColumn::make('nama'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $stjate): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'dalam_proses' => 'primary',
                         'selesai' => 'success',
                         default => 'primary'
