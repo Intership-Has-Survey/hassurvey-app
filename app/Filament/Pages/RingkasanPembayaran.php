@@ -26,6 +26,8 @@ class RingkasanPembayaran extends Page implements HasTable
     protected static string $view = 'filament.pages.ringkasan-pembayaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
+    protected static bool $shouldRegisterNavigation = false;
+
 
     /**
      * Mendefinisikan struktur tabel untuk halaman ini.

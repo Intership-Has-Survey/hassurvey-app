@@ -3,18 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Models\Pemilik;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Illuminate\Support\Number;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -23,6 +25,7 @@ use App\Filament\Resources\PemilikResource\Pages\ListPemiliks;
 use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
 use App\Filament\Resources\PemilikResource\RelationManagers\DaftarAlatRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\RiwayatSewaPemilikRelationManager;
+use App\Filament\Resources\PemilikResource\RelationManagers\TransaksiPembayaransRelationManager;
 
 class PemilikResource extends Resource
 {
@@ -102,7 +105,7 @@ class PemilikResource extends Resource
                 Section::make('Alamat')
                     ->schema(self::getAddressFields())->columns(2),
 
-Section::make('Informasi Pendapatan & Bagi Hasil')
+                Section::make('Informasi Pendapatan & Bagi Hasil')
                     ->schema([
                         TextInput::make('persen_bagihasil')
                             ->label('Persentase Bagi Hasil (%)')
@@ -124,6 +127,15 @@ Section::make('Informasi Pendapatan & Bagi Hasil')
                 TextColumn::make('nama')->label('Nama Pemilik')->searchable()->sortable(),
                 TextColumn::make('NIK')->label('NIK')->searchable(),
                 TextColumn::make('telepon')->label('No. Telepon')->searchable(),
+                TextColumn::make('status_pembayaran_bulan_ini')
+                    ->label('Status Pembayaran')
+                    ->default('Belum Dibayar')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Lunas' => 'success',
+                        'Belum Dibayar' => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('created_at')->dateTime()->label('Tanggal Dibuat')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([])
@@ -145,6 +157,7 @@ Section::make('Informasi Pendapatan & Bagi Hasil')
         return [
             DaftarAlatRelationManager::class,
             RiwayatSewaPemilikRelationManager::class,
+            TransaksiPembayaransRelationManager::class,
         ];
     }
 

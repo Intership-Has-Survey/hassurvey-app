@@ -42,7 +42,24 @@ class PersonelsRelationManager extends RelationManager
                     ->label('Tanggal Berakhir')
                     ->date()
                     ->placeholder('Belum Berakhir'),
+                Tables\Columns\TextColumn::make('tenggat_waktu')
+                    ->label('Tenggat Waktu (Hari)')
+                    ->state(function ($record) {
+                        $tanggalMulai = $record->pivot->tanggal_mulai;
+                        $tanggalBerakhir = $record->pivot->tanggal_berakhir;
 
+                        if (!$tanggalMulai || !$tanggalBerakhir) {
+                            return null;
+                        }
+
+                        $start = new \DateTime($tanggalMulai);
+                        $end = new \DateTime($tanggalBerakhir);
+                        $interval = $start->diff($end);
+                        return $interval->days + 1;
+                    })
+
+                    ->placeholder('Belum Ditentukan')
+                    ->suffix(' hari'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('sudah_dibayar')
@@ -117,7 +134,7 @@ class PersonelsRelationManager extends RelationManager
                             ->disabled()
                             ->stripCharacters(','),
                         Forms\Components\FileUpload::make('bukti_bayar')
-                            ->disk('public') // sesuaikan dengan disk kamu
+                            ->disk('public')
                             ->disabled()
                             ->directory('bukti-pembayaran'),
                         Forms\Components\DatePicker::make('tanggal_transaksi')

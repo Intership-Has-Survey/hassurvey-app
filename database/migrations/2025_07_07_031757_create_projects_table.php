@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->string('kota', 5)->nullable();
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
-            -$table->string('detail_alamat')->nullable();
+            $table->string('detail_alamat')->nullable();
 
             // keuangan & status
             $table->string('nilai_project_awal')->default(0);

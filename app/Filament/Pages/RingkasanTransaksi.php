@@ -23,6 +23,7 @@ class RingkasanTransaksi extends Page implements HasTable
     protected static ?string $title = 'Pengeluaran';
     protected static string $view = 'filament.pages.ringkasan-transaksi';
     protected static ?int $navigationSort = 3;
+    protected static bool $shouldRegisterNavigation = false;
 
 
     public function table(Table $table): Table
@@ -47,7 +48,7 @@ class RingkasanTransaksi extends Page implements HasTable
                 TextColumn::make('total_dibayarkan')
                     ->label('Total Dibayarkan')
                     ->state(function (PengajuanDana $record): float {
-                        return $record->transaksiPembayarans()->sum('nilai');
+                        return $record->statusPengeluarans()->sum('nilai');
                     })
                     ->money('IDR'),
 
@@ -62,7 +63,7 @@ class RingkasanTransaksi extends Page implements HasTable
                     ->label('Status Pembayaran')
                     ->state(function (PengajuanDana $record): string {
                         $totalDiajukan = $record->detailPengajuans()->sum(DB::raw('qty * harga_satuan'));
-                        $totalDibayar = $record->transaksiPembayarans()->sum('nilai');
+                        $totalDibayar = $record->statusPengeluarans()->sum('nilai');
 
                         if ($totalDiajukan > 0 && $totalDibayar >= $totalDiajukan) {
                             return 'Lunas';

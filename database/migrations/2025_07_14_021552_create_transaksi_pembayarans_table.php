@@ -15,12 +15,13 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('payable_id');
             $table->string('payable_type')->nullable();
-            $table->foreignUuid('user_id')->constrained('users');
+            $table->string('bulan_pembayaran')->nullable();
             $table->decimal('nilai', 15, 2);
             $table->date('tanggal_transaksi');
             $table->string('metode_pembayaran');
             $table->string('bukti_pembayaran_path')->nullable();
             $table->timestamps();
+            $table->foreignUuid('user_id')->constrained('users');
         });
     }
 

@@ -30,8 +30,8 @@ class TransaksiPembayaranResource extends Resource
 
     // protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $navigationLabel = 'Semua Pengeluaran';
-    protected static ?string $title = 'Semua Pengeluaran';
+    protected static ?string $navigationLabel = 'Pengeluaran';
+    protected static ?string $title = 'Pengeluaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
 
@@ -62,8 +62,12 @@ class TransaksiPembayaranResource extends Resource
                     ->native(false),
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
+                    ->image()
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
                     ->directory('bukti-pembayaran')
-                    ->image(),
+                    ->columnSpanFull(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
@@ -78,6 +82,7 @@ class TransaksiPembayaranResource extends Resource
                     ->formatStateUsing(fn($state) => match ($state) {
                         'App\\Models\\PengajuanDana' => 'Pengajuan Dana',
                         'App\\Models\\PembayaranPersonel' => 'Pembayaran Personel',
+                        'App\\Models\\Pemilik' => 'Pembayaran Investor',
                         default => 'Lainnya'
                     })
                     ->sortable(),

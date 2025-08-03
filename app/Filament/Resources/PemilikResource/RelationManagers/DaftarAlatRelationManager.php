@@ -27,6 +27,7 @@ class DaftarAlatRelationManager extends RelationManager
                 Forms\Components\Select::make('jenis_alat')
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
+                    ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Jenis Alat')
@@ -39,13 +40,13 @@ class DaftarAlatRelationManager extends RelationManager
                 Forms\Components\Select::make('merk')
                     ->relationship('merk', 'nama')
                     ->searchable()
+                    ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Merk')
                             ->required(),
                     ])->required(),
             ])->columns(2);
-
     }
 
     public function table(Table $table): Table

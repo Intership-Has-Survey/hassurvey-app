@@ -195,8 +195,8 @@ class ProjectResource extends Resource
                         default => 'heroicon-o-x-circle',
                     })
                     ->color(fn(string $state): string => match ($state) {
-                        'Prospect' => 'primary',
-                        'Follow up 1' => 'info',
+                        'Prospect' => 'info',
+                        'Follow up 1' => 'warning',
                         'Follow up 2' => 'warning',
                         'Follow up 3' => 'warning',
                         'Closing' => 'success',
