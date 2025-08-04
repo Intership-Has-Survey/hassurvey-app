@@ -17,7 +17,7 @@ ajuan<?php
                     $table->text('deskripsi_pengajuan')->nullable();
                     $table->string('bank_id')->constrained('banks');
                     $table->string('bank_account_id')->constrained('bank_accounts');
-                    $table->string('nilai');
+                    $table->decimal('nilai', 15, 2);
                     $table->string('dalam_review')->nullable();
                     $table->string('ditolak')->nullable();
                     $table->string('disetujui')->nullable();

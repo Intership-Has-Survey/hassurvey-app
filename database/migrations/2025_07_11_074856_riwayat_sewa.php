@@ -16,19 +16,19 @@ return new class extends Migration {
             $table->dateTime('tgl_masuk')->nullable();
             $table->string('kondisi_kembali')->default('Baik');
 
-            $table->string('harga_perhari')->nullable();
-            $table->string('biaya_perkiraan_alat')->nullable();
+            $table->decimal('harga_perhari', 15, 2)->nullable();
+            $table->decimal('biaya_perkiraan_alat', 15, 2)->nullable();
 
-            $table->string('biaya_sewa_alat')->default(0);
-            $table->string('pendapataninv')->default(0);
-            $table->string('pendapatanhas')->default(0);
+            $table->decimal('biaya_sewa_alat', 15, 2)->default(0);
+            $table->decimal('pendapataninv', 15, 2)->default(0);
+            $table->decimal('pendapatanhas', 15, 2)->default(0);
 
-            $table->string('biaya_sewa_alat_final')->default(0);
-            $table->string('pendapataninv_final')->default(0);
-            $table->string('pendapatanhas_final')->default(0);
+            $table->decimal('biaya_sewa_alat_final', 15, 2)->default(0);
+            $table->decimal('pendapataninv_final', 15, 2)->default(0);
+            $table->decimal('pendapatanhas_final', 15, 2)->default(0);
 
             $table->text('catatan')->nullable();
-
+            
             $table->string('foto_bukti')->nullable();
             $table->string('recordId')->nullable(); // Tambahkan kolom recordId untuk menyimpan ID record terkait
             $table->boolean(('needs_replacement'))->default(false); // Tambahkan kolom untuk kebutuhan penggantian alat

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
             $table->foreignUuid('perorangan_id')->nullable()->constrained('perorangan');
             // $table->foreignUuid('customer_id');
-            $table->string('harga')->nullable();
+            $table->decimal('harga', 15, 2)->nullable();
             $table->string('status')->nullable();
             $table->timestamps();
         });

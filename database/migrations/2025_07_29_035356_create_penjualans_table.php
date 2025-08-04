@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
 
             $table->text('catatan')->nullable();
-            $table->string('total_items')->nullable();
+            $table->integer('total_items')->nullable();
             $table->timestamps();
         });
     }

@@ -25,12 +25,12 @@ return new class extends Migration {
             $table->string('detail_alamat');
 
             $table->integer('persen_bagihasil')->default(20);
-            $table->string('total_pendapatanktr')->default(0);
-            $table->string('total_pendapataninv')->default(0);
-            $table->string('total_pendapatanhas')->default(0);
-            $table->string('total_tagihan')->default(0);
+            $table->decimal('total_pendapatanktr')->default(0);
+            $table->decimal('total_pendapataninv')->default(0);
+            $table->decimal('total_pendapatanhas')->default(0);
+            $table->decimal('total_tagihan')->default(0);
 
-            $table->timestamps();
+            $table->timestamps(); 
 
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

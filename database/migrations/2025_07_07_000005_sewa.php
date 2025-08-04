@@ -22,9 +22,9 @@ return new class extends Migration {
             $table->string('desa', 13);
             $table->text('detail_alamat');
 
-            $table->string('harga_perkiraan')->nullable();
-            $table->string('harga_real')->nullable();
-            $table->string('harga_fix')->nullable();
+            $table->decimal('harga_perkiraan', 15, 2)->nullable();
+            $table->decimal('harga_real', 15, 2)->nullable();
+            $table->decimal('harga_fix', 15, 2)->nullable();
 
             $table->string('status')->default('Belum Selesai');
             $table->boolean('needs_replacement')->default(false);
