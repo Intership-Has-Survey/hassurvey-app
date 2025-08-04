@@ -73,4 +73,9 @@ class PeroranganResource extends Resource
             'index' => Pages\ListPerorangans::route('/'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Project'); // atau permission spesifik
+    }
 }

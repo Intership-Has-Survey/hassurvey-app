@@ -68,4 +68,9 @@ class CorporateResource extends Resource
             'edit' => Pages\EditCorporate::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view-any Project'); // atau permission spesifik
+    }
 }

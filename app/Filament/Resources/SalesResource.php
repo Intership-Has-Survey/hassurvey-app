@@ -117,4 +117,9 @@ class SalesResource extends Resource
             'edit' => Pages\EditSales::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola sales'); // atau permission spesifik
+    }
 }

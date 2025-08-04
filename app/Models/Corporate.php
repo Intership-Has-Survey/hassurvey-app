@@ -30,14 +30,14 @@ class Corporate extends Model
         return $this->belongsToMany(Perorangan::class, 'perorangan_corporate')->withPivot('user_id');
     }
 
-    public function projects(): HasMany
+    public function project(): HasMany
     {
         return $this->hasMany(Project::class, 'corporate_id');
     }
 
     public function sewa(): HasMany
     {
-        return $this->HasMany(Sewa::class, 'corporate_id');
+        return $this->HasMany(Sewa::class, 'sewa_id');
     }
 
     public function kalibrasi(): HasMany

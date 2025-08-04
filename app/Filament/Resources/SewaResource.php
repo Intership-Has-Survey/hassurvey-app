@@ -65,7 +65,7 @@ class SewaResource extends Resource
     protected static ?string $pluralModelLabel = 'Penyewaan';
 
     protected static ?int $navigationSort = 2;
-
+    
     public static function form(Form $form): Form
     {
         $calculateRentang = function (Set $set, Get $get) {
@@ -327,6 +327,15 @@ class SewaResource extends Resource
             ->actions([
                 EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
+                Action::make('selesaikan_sewa')
+                    ->label('Selesaikan Sewa')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Selesaikan dan Kunci Transaksi?')
+                    ->modalDescription('Aksi ini tidak dapat dibatalkan. Pastikan semua proses sudah final.')
+                    ->action(fn(Sewa $record) => $record->update(['is_locked' => true]))
+                    ->visible(fn(Sewa $record): bool => $record->status === 'Konfirmasi Selesai' || $record->status === 'Jatuh Tempo'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

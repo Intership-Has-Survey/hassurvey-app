@@ -183,4 +183,9 @@ class PersonelResource extends Resource
             'edit' => Pages\EditPersonel::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola personel'); // atau permission spesifik
+    }
 }

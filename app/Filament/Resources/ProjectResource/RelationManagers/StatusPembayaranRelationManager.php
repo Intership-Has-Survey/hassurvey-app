@@ -138,4 +138,37 @@ class StatusPembayaranRelationManager extends RelationManager
                 ]),
             ]);
     }
+
+    // protected function canCreate(): bool
+    // {
+    //     return in_array(auth()->user()?->role, ['keuangan']);
+    // }
+
+    // protected function canEdit(Model $record): bool
+    // {
+    //     return in_array(auth()->user()?->role, ['keuangan']);
+    // }
+
+    // protected function canDelete(Model $record): bool
+    // {
+    //     return auth()->user()->role === 'keuangan';
+    // }
+
+    // protected function canCreate(): bool
+    // {
+    //     $user = auth()->user();
+
+    //     // Jika role bukan 'keuangan', langsung false
+    //     if ($user?->role !== 'keuangan') {
+    //         return false;
+    //     }
+
+    //     // Ambil parent record (misalnya Project)
+    //     $parent = $this->getOwnerRecord();
+
+    //     // dd($parent);
+
+    //     // Jika status pembayaran parent sudah lunas, tidak bisa create
+    //     return $parent->status_pembayaran !== 'Lunas';
+    // }
 }

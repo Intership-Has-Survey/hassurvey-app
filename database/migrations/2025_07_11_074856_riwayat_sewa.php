@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->decimal('pendapataninv', 15, 2)->nullable();
             $table->decimal('pendapatanhas', 15, 2)->nullable();
 
-            $table->text('catatan')->nullable();
+            $table->text('keterangan')->nullable();
             
             $table->string('foto_bukti')->nullable();
             $table->string('recordId')->nullable(); // Tambahkan kolom recordId untuk menyimpan ID record terkait

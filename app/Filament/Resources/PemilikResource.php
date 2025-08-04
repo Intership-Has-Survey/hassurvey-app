@@ -157,4 +157,9 @@ class PemilikResource extends Resource
             'edit' => EditPemilik::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola investor'); // atau permission spesifik
+    }
 }

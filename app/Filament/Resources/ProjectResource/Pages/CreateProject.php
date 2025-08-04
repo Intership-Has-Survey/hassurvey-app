@@ -45,6 +45,23 @@ class CreateProject extends CreateRecord
 
         unset($data['customer_flow_type']);
 
+        if (empty($data['sewa_id'])) {
+            $sewa = \App\Models\Sewa::create([
+                'judul' => 'Kontrak Sewa Otomatis untuk ' . $data['nama_project'],
+                'tgl_mulai' => now(),
+                'tgl_selesai' => now()->addDays(7),
+                'provinsi' => $data['provinsi'] ?? '',
+                'kota' => $data['kota'] ?? '',
+                'kecamatan' => $data['kecamatan'] ?? '',
+                'desa' => $data['desa'] ?? '',
+                'detail_alamat' => $data['detail_alamat'] ?? '',
+                'corporate_id' => $data['corporate_id'] ?? null,
+                'user_id' => $data['user_id'],
+            ]);
+
+            $data['sewa_id'] = $sewa->getKey();
+        }
+
         return $data;
     }
 
@@ -60,6 +77,20 @@ class CreateProject extends CreateRecord
                     }
                 }
             }
+        }
+
+        $project = $this->getRecord();
+        $assignedPersonels = $this->form->getState()['assignedPersonels'] ?? [];
+
+        $syncData = [];
+        foreach ($assignedPersonels as $item) {
+            if (!empty($item['personel_id']) && !empty($item['peran'])) {
+                $syncData[$item['personel_id']] = ['peran' => $item['peran']];
+            }
+        }
+
+        if (!empty($syncData)) {
+            $project->personels()->sync($syncData);
         }
     }
 }

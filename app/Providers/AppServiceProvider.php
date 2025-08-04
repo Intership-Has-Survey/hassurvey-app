@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use App\Models\Project;
 use App\Models\StatusPembayaran;
 use App\Observers\ProjectObserver;
@@ -10,12 +9,6 @@ use App\Observers\PembayaranObserver;
 use Illuminate\Support\ServiceProvider;
 use App\Models\StatusPekerjaan;
 use App\Observers\StatusPekerjaanObserver;
-use App\Policies\RolePolicy;
-use App\Policies\PermissionPolicy;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
-use Illuminate\Support\Facades\Gate;
-
 
 
 class AppServiceProvider extends ServiceProvider
@@ -23,7 +16,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void {}
+    public function register(): void
+    {
+        //
+    }
 
     /**
      * Bootstrap any application services.
@@ -33,10 +29,5 @@ class AppServiceProvider extends ServiceProvider
         StatusPembayaran::observe(PembayaranObserver::class);
         Project::observe(ProjectObserver::class);
         StatusPekerjaan::observe(StatusPekerjaanObserver::class);
-        Gate::policy(Role::class, RolePolicy::class);
-        Gate::policy(Permission::class, PermissionPolicy::class);
-        Gate::before(function (User $user, string $ability) {
-            return $user->isSuperAdmin() ? true : null;
-        });
     }
 }

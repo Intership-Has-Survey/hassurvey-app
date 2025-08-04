@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Buat roles
-        $adminRole    = Role::firstOrCreate(['name' => 'Super Admin']);
+        $adminRole    = Role::firstOrCreate(['name' => 'Admin']);
         $financeRole  = Role::firstOrCreate(['name' => 'Keuangan']);
         $directorRole = Role::firstOrCreate(['name' => 'Direktur Utama']);
         $operasionalRole = Role::firstOrCreate(['name' => 'Operasional']);

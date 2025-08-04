@@ -662,6 +662,7 @@ class ActivitylogResource extends Resource
                 ->title(__('activitylog::notifications.model_successfully_restored'))
                 ->success()
                 ->send();
+
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -673,8 +674,8 @@ class ActivitylogResource extends Resource
         }
     }
 
-    // public static function canAccess()
-    // {
-    //     return auth()->user()?->hasRole('Super Admin');
-    // }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('kelola Log Aktifitas'); // atau permission spesifik
+    }
 }

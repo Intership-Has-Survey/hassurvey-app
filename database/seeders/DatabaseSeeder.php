@@ -24,8 +24,6 @@ class DatabaseSeeder extends Seeder
             PeroranganSeeder::class,
             PersonelSeeder::class,
             SalesSeeder::class,
-            MerkSeeder::class,
-            JenisAlatSeeder::class,
             DaftarAlatSeeder::class,
             BankSeeder::class,
             ProjectSeeder::class,

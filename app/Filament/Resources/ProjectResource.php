@@ -6,7 +6,9 @@ use App\Models\Sales;
 use App\Models\Project;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use App\Models\Personel;
 use Filament\Forms\Form;
+use App\Models\Corporate;
 use App\Models\Perorangan;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
@@ -62,20 +64,20 @@ class ProjectResource extends Resource
                         ->placeholder('Pilih sales')
                         ->searchable()
                         ->preload()
-
+                        ->required()
                         ->createOptionForm(self::getSalesForm()),
-                    DatePicker::make('tanggal_informasi_masuk')->native(false)->default(now()),
-                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->native(false),
+                    DatePicker::make('tanggal_informasi_masuk')->required()->native(false)->default(now()),
+                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->required()->native(false),
                 ])
                 ->columns(2)
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
 
             Section::make('Informasi Customer')
                 ->schema([
                     Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                        ->live()->dehydrated(false)->native(false)
+                        ->live()->required()->dehydrated(false)->native(false)
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                     Select::make('corporate_id')
@@ -117,7 +119,7 @@ class ProjectResource extends Resource
                                     $selectedPicIds = array_diff($selectedPicIds, [$state]);
                                     return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                 })
-                                ->searchable()
+                                ->searchable()->required()
                                 ->createOptionForm(self::getPeroranganForm())
                                 ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                         ])
@@ -130,7 +132,7 @@ class ProjectResource extends Resource
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
                             $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-                            
+
                             // Sync dengan project dan simpan peran
                             $syncData = [];
                             foreach ($selectedIds as $id) {
@@ -159,11 +161,61 @@ class ProjectResource extends Resource
                             }
                         })
                 ])
-                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+                ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
+            Section::make('Tim Personel Proyek')
+                ->schema([
+                    Repeater::make('assignedPersonels')
+                        ->label(false)
+                        ->schema([
+                            Select::make('personel_id')
+                                ->label('Pilih Personel')
+                                ->options(function (Get $get) {
+                                    $currentProjectId = $get('id');
+                                    return Personel::query()
+                                        ->whereDoesntHave('projects', function (Builder $query) use ($currentProjectId) {
+                                            $query->where('status_pekerjaan', '!=', 'Selesai')
+                                                ->where('project_id', '!=', $currentProjectId);
+                                        })
+                                        ->pluck('nama', 'id');
+                                })
+                                ->searchable()
+                                ->required()
+                                ->getOptionLabelUsing(fn($value): ?string => Personel::find($value)?->nama)
+                                ->createOptionUsing(fn(array $data): string => Personel::create(collect($data)->except('personel_id')->all())->id)
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->createOptionForm(self::getPersonelForm()),
+                            Select::make('peran')
+                                ->label('Peran di Proyek')
+                                ->options([
+                                    'Surveyor' => 'Surveyor',
+                                    'Asisten Surveyor' => 'Asisten Surveyor',
+                                    'Driver' => 'Driver',
+                                    'Drafter' => 'Drafter',
+                                ])
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->columns(2)
+                        ->addActionLabel('Tambah Personel ke Tim')
+                        // ->itemLabel(function (array $state): ?string {
+                        //     if (empty($state['personel_id'])) {
+                        //         return null;
+                        //     }
+                        //     return Personel::find($state['personel_id'])?->nama;
+                        // })
+                        ->saveRelationshipsUsing(function (Model $record, array $state): void {
+                            $syncData = [];
+                            foreach ($state as $item) {
+                                if (!empty($item['personel_id']) && !empty($item['peran'])) {
+                                    $syncData[$item['personel_id']] = ['peran' => $item['peran']];
+                                }
+                            }
+                            $record->personels()->sync($syncData);
+                        }),
+                ]),
 
             Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
             Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
-
 
             Hidden::make('user_id')->default(auth()->id()),
         ]);
