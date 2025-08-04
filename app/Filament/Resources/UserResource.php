@@ -24,7 +24,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationLabel = 'Kelola Akun Pengguna';
+    protected static ?string $navigationLabel = 'Kelola Akun';
 
     protected static ?string $pluralModelLabel = 'Akun Pengguna';
 

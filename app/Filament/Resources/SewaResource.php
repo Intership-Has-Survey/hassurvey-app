@@ -262,7 +262,6 @@ class SewaResource extends Resource
                             ->hiddenOn('create')
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(',')
-                            ->maxlength(20)
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
                             ->numeric()
                             ->prefix('Rp')

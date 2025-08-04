@@ -32,6 +32,7 @@ class StatusPembayaranResource extends Resource
     protected static ?string $title = 'Pemasukan';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
+    protected static ?string $pluralModelLabel = 'Pemasukan';
 
     public static function form(Form $form): Form
     {

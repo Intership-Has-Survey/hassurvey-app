@@ -34,6 +34,7 @@ class TransaksiPembayaranResource extends Resource
     protected static ?string $title = 'Pengeluaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
+    protected static ?string $pluralModelLabel = 'Pengeluaran';
 
     public static function form(Form $form): Form
     {

@@ -190,7 +190,6 @@ trait GlobalForms
                 ->mask(RawJs::make('$money($input)'))
                 ->stripCharacters(',')
                 ->live()
-                ->maxLength(20)
                 ->placeholder('Masukkan anggaran proyek')
                 ->disabled(fn(callable $get) => $get('status') === 'Closing'),
             Toggle::make('dikenakan_ppn')
