@@ -38,9 +38,13 @@ class PembayaranObserver
         // Ambil total pembayaran dengan relasi morphMany
         $totalDibayar = $project->statusPembayaran()->sum('nilai');
 
-        $statusBaru = ((float) $totalDibayar >= (float) $project->nilai_project)
-            ? 'Lunas'
-            : 'Belum Lunas';
+        if ((float) $totalDibayar === 0.0) {
+            $statusBaru = 'Belum Dibayar';
+        } else {
+            $statusBaru = ((float) $totalDibayar >= (float) $project->nilai_project)
+                ? 'Lunas'
+                : 'Belum Lunas';
+        }
 
         $project->status_pembayaran = $statusBaru;
         $project->saveQuietly();

@@ -3,22 +3,21 @@
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
-use App\Models\StatusPembayaran;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\ViewAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -82,11 +81,12 @@ class StatusPembayaranRelationManager extends RelationManager
 
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
-                    ->acceptedFileTypes(['image/*', 'application/pdf'])
-                    ->maxSize(1024) // 1 MB
-                    ->required()
                     ->image()
-                    ->directory('bukti-pembayaran'),
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
+                    ->directory('bukti-pembayaran')
+                    ->columnSpanFull(),
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
@@ -110,16 +110,16 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->money('IDR')
                     ->sortable(),
 
+                ImageColumn::make('bukti_pembayaran_path')
+                    ->label('Bukti Pembayaran')
+                    ->disk('public')
+                    ->square()
+                    ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
+                    ->openUrlInNewTab(),
+
                 TextColumn::make('user.name')
                     ->label('Diinput oleh')
                     ->sortable(),
-
-                ImageColumn::make('bukti_pembayaran_path')
-                    ->disk('public')
-                    ->label('Bukti Pembayaran')
-                    ->circular()
-                // ->visible(fn($record) => $record->bukti_pembayaran_path),
-
             ])
             ->filters([
                 // TrashedFilter::make(),

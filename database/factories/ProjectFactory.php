@@ -30,7 +30,7 @@ class ProjectFactory extends Factory
         $provinceCode = substr($villageCode, 0, 2);
 
         return [
-            'nama_project' => 'Proyek ' . $this->faker->words(3, true),
+            'nama_project' => 'Proyek ' . $this->faker->words(1, true),
 
             // Mengambil ID dari tabel relasi secara acak.
             // Pastikan seeder untuk Kategori, Sales, dan User sudah dijalankan.
@@ -40,7 +40,8 @@ class ProjectFactory extends Factory
 
             'tanggal_informasi_masuk' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'sumber' => $this->faker->randomElement(['online', 'offline']),
-            'nilai_project' => $this->faker->numberBetween(5000000, 1000000000),
+
+            'nilai_project_awal' => $this->faker->numberBetween(5000000, 1000000000),
 
             'provinsi' => $provinceCode,
             'kota' => $cityCode,
@@ -49,7 +50,7 @@ class ProjectFactory extends Factory
             'detail_alamat' => 'Lokasi di ' . $this->faker->streetAddress(),
 
             // Status-status yang mungkin terjadi
-            'status' => $this->faker->randomElement(['Prospect', 'Follow up', 'Closing']),
+            'status' => $this->faker->randomElement(['Prospect', 'Follow up 1', 'Follow up 2', 'Follow up 3', 'Closing', 'Failed']),
         ];
     }
 }

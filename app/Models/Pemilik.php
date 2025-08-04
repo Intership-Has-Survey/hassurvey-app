@@ -47,6 +47,6 @@ class Pemilik extends Model
          * pemilik.id -> daftar_alat.pemilik_id
          * daftar_alat.id -> riwayat_sewa.daftar_alat_id
          */
-        return $this->hasManyThrough(RiwayatSewa::class, DaftarAlat::class);
+        return $this->hasManyThrough(AlatSewa::class, DaftarAlat::class);
     }
 }

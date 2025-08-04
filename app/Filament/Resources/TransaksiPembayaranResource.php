@@ -9,52 +9,62 @@ use Filament\Tables\Table;
 use Filament\Support\RawJs;
 use Filament\Resources\Resource;
 use App\Models\TransaksiPembayaran;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\TransaksiPembayaranResource\Pages;
-use App\Filament\Resources\TransaksiPembayaranResource\RelationManagers;
 
 class TransaksiPembayaranResource extends Resource
 {
     protected static ?string $model = TransaksiPembayaran::class;
 
-    // protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    // protected static ?string $navigationGroup = 'Keuangan';
-    // static ?string $navigationLabel = 'Riwayat Transaksi Keluar';
-
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $navigationLabel = 'Semua Pengeluaran';
+    protected static ?string $title = 'Semua Pengeluaran';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Keuangan';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('pengajuan_dana_id')
-                    ->relationship('pengajuanDana', 'judul_pengajuan')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                // Forms\Components\Select::make('pengajuan_dana_id')
+                //     ->relationship('pengajuanDana', 'judul_pengajuan')
+                //     ->searchable()
+                //     ->preload()
+                //     ->required(),
                 TextInput::make('nilai')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
                     ->prefix('Rp')
                     ->maxlength(20),
-                Forms\Components\DatePicker::make('tanggal_transaksi')
+                DatePicker::make('tanggal_transaksi')
                     ->required()
                     ->native(false),
-                Forms\Components\Select::make('metode_pembayaran')
+                Select::make('metode_pembayaran')
                     ->options([
                         'Transfer' => 'Transfer',
                         'Tunai' => 'Tunai',
                     ])
                     ->required()
                     ->native(false),
-                Forms\Components\FileUpload::make('bukti_pembayaran_path')
+                FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->directory('bukti-pembayaran')
                     ->image(),
-                Forms\Components\Hidden::make('user_id')
+                Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
     }
@@ -63,19 +73,29 @@ class TransaksiPembayaranResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pengajuanDana.judul_pengajuan')
-                    ->label('Untuk Pengajuan')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('payable_type')
+                    ->label('Jenis Pengeluaran')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'App\\Models\\PengajuanDana' => 'Pengajuan Dana',
+                        'App\\Models\\PembayaranPersonel' => 'Pembayaran Personel',
+                        default => 'Lainnya'
+                    })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_transaksi')
+                TextColumn::make('tanggal_transaksi')
                     ->date('d M Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nilai')
+                TextColumn::make('nilai')
                     ->money('IDR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('metode_pembayaran')
+                TextColumn::make('metode_pembayaran')
                     ->badge(),
-                Tables\Columns\TextColumn::make('user.name')
+                ImageColumn::make('bukti_pembayaran_path')
+                    ->label('Bukti Pembayaran')
+                    ->disk('public')
+                    ->square()
+                    ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
+                    ->openUrlInNewTab(),
+                TextColumn::make('user.name')
                     ->label('Dibuat oleh')
                     ->sortable(),
             ])
@@ -83,12 +103,12 @@ class TransaksiPembayaranResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

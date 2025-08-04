@@ -16,6 +16,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -47,7 +48,10 @@ class UserResource extends Resource
                     ->required(),
                 TextInput::make('password')
                     ->label('Password')
-                    ->required(),
+                    ->placeholder('Kosongkan jika tidak ingin mengubah password')
+                    ->dehydrated(fn($state) => filled($state))
+                    ->required(fn(string $context) => $context === 'create')
+                    ->mutateDehydratedStateUsing(fn($state) => filled($state) ? Hash::make($state) : null),
                 Select::make('roles')
                     ->multiple()
                     ->relationship('roles', 'name')

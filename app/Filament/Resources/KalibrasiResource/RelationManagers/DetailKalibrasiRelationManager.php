@@ -59,10 +59,10 @@ class DetailKalibrasiRelationManager extends RelationManager
                             ->maxLength(255),
                         Forms\Components\Textarea::make('keterangan')
                             ->nullable(),
-                        Section::make('Informasi Customer')
+                        Section::make('Informasi Pemilik Alat')
                             ->schema([
                                 Select::make('customer_flow_type')
-                                    ->label('Tipe Customer')
+                                    ->label('Tipe Pemilik')
                                     ->options([
                                         'perorangan' => 'Perorangan',
                                         'corporate' => 'Corporate'
@@ -134,7 +134,6 @@ class DetailKalibrasiRelationManager extends RelationManager
             ->recordTitleAttribute('nomor_seri')
             ->columns([
                 Tables\Columns\TextColumn::make('alatCustomer.nomor_seri')->label('nomor seri'),
-                // Tables\Columns\TextColumn::make('kalibrasi.id'),
                 Tables\Columns\TextColumn::make('tgl_masuk'),
                 Tables\Columns\TextColumn::make('tgl_stiker_kalibrasi')
                     ->placeholder('-'),
@@ -156,46 +155,7 @@ class DetailKalibrasiRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
-                // Tables\Actions\AttachAction::make()
-                //     // ->preloadRecordSelect()
-                //     ->form(fn(Tables\Actions\AttachAction $action): array =>  [
-                //         Forms\Components\Placeholder::make('kalibrasi_id')
-                //             ->label('Pilih Alat'),
-                //         $action
-                //             ->getRecordSelect(),
-                //         Forms\Components\DatePicker::make('tgl_masuk')
-                //             ->label('Tanggal Mulai')
-                //             ->required()
-                //             ->default(now())
-                //             ->native(false),
-                //         Forms\Components\DatePicker::make('tgl_stiker_kalibrasi')
-                //             ->label('Tanggal Stiker Kalibrasi')
-                //             // ->required()
-                //             ->hidden()
-                //             ->native(false),
-                //         Forms\Components\DatePicker::make('tgl_keluar')
-                //             ->label('Tanggal Keluar')
-                //             // ->required()
-                //             ->hidden()
-                //             ->native(false),
-                //         Select::make('status')
-                //             ->hidden()
-                //             ->options([
-                //                 'belum_dikerjakan' => 'Belum dikerjakan',
-                //                 'proses' => 'Dalam proses',
-                //                 'kalibrasi_diluar' => 'Kalibrasi diluar HAS',
-                //                 'sudah_diservis' => 'Sudah diservis',
-                //                 'terkalibrasi' => 'Terkalibrasi'
-                //             ])
-                //             ->default('belum_dikerjakan')
-                //             ->native(false),
-                //         Forms\Components\Hidden::make('status')
-                //             ->label('Tanggal Mulai')
-                //             ->default('pending')
-                //     ])
-                //     ->successNotificationTitle('Kalibrasi Berhasil ditambahkan.')
-                //     ->label('Tambah Alat')
-                //     ->modalHeading('Tambah alat untuk dikalibrasi'),
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -220,6 +180,14 @@ class DetailKalibrasiRelationManager extends RelationManager
                     TextInput::make('nib')
                         ->label('NIB')
                         ->maxLength(20),
+                    Forms\Components\Select::make('level')
+                        ->label('Level Perusahaan')
+                        ->options([
+                            'kecil' => 'Kecil',
+                            'menengah' => 'Menengah',
+                            'besar' => 'Besar',
+                        ])
+                        ->native(false),
                     TextInput::make('email')
                         ->label('Email')
                         ->email()
@@ -229,6 +197,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
+            Forms\Components\Section::make('Alamat Perusahaan')
+                ->schema(self::getAddressFields())
+                ->columns(2),
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
@@ -238,7 +209,7 @@ class DetailKalibrasiRelationManager extends RelationManager
     private static function getPeroranganForm(): array
     {
         return [
-            Section::make('Informasi Personal')
+            Section::make('Informasi Perorangan')
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
@@ -257,6 +228,12 @@ class DetailKalibrasiRelationManager extends RelationManager
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
+                    Forms\Components\Select::make('gender')
+                        ->label('Jenis Kelamin')
+                        ->options([
+                            'Pria' => 'Pria',
+                            'Wanita' => 'Wanita',
+                        ]),
                 ])->columns(2),
 
             Section::make('Alamat')

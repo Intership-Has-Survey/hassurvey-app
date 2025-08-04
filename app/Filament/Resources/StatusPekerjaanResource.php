@@ -34,8 +34,7 @@ class StatusPekerjaanResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->unique(ignoreRecord: true), // Hanya boleh ada satu status per proyek
-
+                    ->unique(ignoreRecord: true),
                 Forms\Components\Select::make('pekerjaan_lapangan')->options($statusOptions)->required(),
                 Forms\Components\Select::make('proses_data_dan_gambar')->options($statusOptions)->required(),
                 Forms\Components\Select::make('laporan')->options($statusOptions)->required(),

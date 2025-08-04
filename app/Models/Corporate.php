@@ -39,4 +39,14 @@ class Corporate extends Model
     {
         return $this->HasMany(Sewa::class, 'sewa_id');
     }
+
+    public function kalibrasi(): HasMany
+    {
+        return $this->hasMany(Kalibrasi::class, 'corporate_id');
+    }
+
+    public function penjualans(): HasMany
+    {
+        return $this->HasMany(Penjualan::class, 'corporate_id');
+    }
 }

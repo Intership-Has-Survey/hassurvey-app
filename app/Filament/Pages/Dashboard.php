@@ -16,6 +16,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard as BaseDashboard;
+use App\Filament\Widgets\GrafikCustomer;
+use App\Filament\Widgets\GrafikCustomerBulan;
+use App\Filament\Widgets\GrafikPesanan;
+use App\Filament\Widgets\GrafikPesananBulan;
+use App\Filament\Widgets\StatsOverview;
+use CodeWithKyrian\FilamentDateRange\Forms\Components\DateRangePicker;
 
 class Dashboard extends BaseDashboard
 {
@@ -25,9 +31,9 @@ class Dashboard extends BaseDashboard
 
     public function filtersForm(Form $form): Form
     {
-        $earliestProjectDate = Project::min('tanggal_informasi_masuk');
-        $earliestSewaDate = Sewa::min('tgl_mulai');
-        $minDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
+        // $earliestProjectDate = Project::min('tanggal_informasi_masuk');
+        // $earliestSewaDate = Sewa::min('tgl_mulai');
+        // $minDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
 
         return $form
             ->schema([
@@ -41,17 +47,10 @@ class Dashboard extends BaseDashboard
                                 'Layanan Sewa' => 'Layanan Sewa',
                                 //'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
                                 //'Layanan Penjualan Alat' => 'Layanan Penjualan Alat', 
-                            ]),
-                        DatePicker::make('startDate')
-                            ->label('Tanggal Mulai')
-                            ->minDate($minDate)
-                            ->maxDate(fn(Get $get) => $get('endDate') ?: now())
-                            ->default($minDate),
-                        DatePicker::make('endDate')
-                            ->label('Tanggal Akhir')
-                            ->minDate(fn(Get $get) => $get('startDate') ?: $minDate)
-                            ->maxDate(now())
-                            ->default(now()),
+                            ])
+                            ->default('Semua'),
+                        DateRangePicker::make('created_at')
+                            ->label('Filter Berdasarkan Rentang Tanggal'),
                     ])
                     ->columns(3),
             ]);
@@ -66,6 +65,17 @@ class Dashboard extends BaseDashboard
         GrafikPesanan::class,
         GrafikPesananBulan::class,
     ];
+
+    public function getWidgets(): array
+    {
+        return [
+            StatsOverview::class,
+            GrafikCustomer::class,
+            GrafikCustomerBulan::class,
+            GrafikPesanan::class,
+            GrafikPesananBulan::class,
+        ];
+    }
 
     public function getWidgets(): array
     {

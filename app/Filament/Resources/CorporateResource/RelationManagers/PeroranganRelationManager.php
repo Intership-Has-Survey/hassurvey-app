@@ -15,10 +15,9 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\AttachAction;
 use Illuminate\Database\Eloquent\Builder;
-
-// Import Action yang dibutuhkan
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -29,104 +28,33 @@ class PeroranganRelationManager extends RelationManager
     protected static bool $isLazy = false;
     public function form(Form $form): Form
     {
-        // Form ini akan digunakan untuk membuat PIC baru dan mengedit PIC yang sudah ada.
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
+                TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('nik')
+                TextInput::make('nik')
                     ->nullable()
                     ->maxLength(16)
-                    ->unique(ignoreRecord: true) // ignoreRecord penting untuk edit
+                    ->unique(ignoreRecord: true)
                     ->label('NIK'),
-                Forms\Components\Select::make('gender')
+                Select::make('gender')
                     ->options([
                         'Pria' => 'Pria',
                         'Wanita' => 'Wanita',
                     ])
                     ->required()
                     ->label('Jenis Kelamin'),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->email()
                     ->required()
-                    ->unique(ignoreRecord: true), // ignoreRecord penting untuk edit
-                Forms\Components\TextInput::make('telepon')
+                    ->unique(ignoreRecord: true),
+                TextInput::make('telepon')
                     ->tel()
                     ->required()
                     ->label('Nomor Telepon'),
                 Section::make('Alamat PIC')
-                    ->schema([
-                        Select::make('provinsi')
-                            ->label('Provinsi')
-                            ->required()
-                            ->placeholder('Pilih Provinsi')
-                            ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kota', null);
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-                        Select::make('kota')
-                            ->label('Kota/Kabupaten')
-                            ->required()
-                            ->placeholder('Pilih Kota/Kabupaten')
-                            ->options(function (Get $get) {
-                                $provinceCode = $get('provinsi');
-                                if (!$provinceCode)
-                                    return [];
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $provinceCode . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 5)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-                        Select::make('kecamatan')
-                            ->label('Kecamatan')
-                            ->required()
-                            ->placeholder('Pilih Kecamatan')
-                            ->options(function (Get $get) {
-                                $regencyCode = $get('kota');
-                                if (!$regencyCode)
-                                    return [];
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $regencyCode . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 8)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('desa', null);
-                            }),
-                        Select::make('desa')
-                            ->label('Desa/Kelurahan')
-                            ->required()
-                            ->placeholder('Pilih Desa/Kelurahan')
-                            ->options(function (Get $get) {
-                                $districtCode = $get('kecamatan');
-                                if (!$districtCode)
-                                    return [];
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $districtCode . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 13)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable(),
-                        Textarea::make('detail_alamat')
-                            ->label('Detail Alamat')
-                            ->required()
-                            ->placeholder('Masukkan detail alamat')
-                            ->columnSpanFull(),
-                    ])->columns(2),
+                    ->schema(self::getAddressFields())->columns(2),
             ]);
     }
 
@@ -164,12 +92,10 @@ class PeroranganRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                // Mengganti DeleteAction menjadi DetachAction
                 Tables\Actions\DetachAction::make()->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // Mengganti DeleteBulkAction menjadi DetachBulkAction
                     Tables\Actions\DetachBulkAction::make(),
                 ]),
             ]);

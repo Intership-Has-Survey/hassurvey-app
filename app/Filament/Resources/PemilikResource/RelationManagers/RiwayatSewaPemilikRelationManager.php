@@ -12,18 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class RiwayatSewaPemilikRelationManager extends RelationManager
 {
-    // Gunakan nama relasi yang baru dibuat di model Pemilik
     protected static string $relationship = 'riwayatSewaAlat';
-
     protected static ?string $recordTitleAttribute = 'id';
-
     protected static ?string $title = 'Riwayat Penggunaan Alat';
-
-    /**
-     * Override method ini untuk secara eksplisit memilih semua kolom dari tabel riwayat_sewa.
-     * Ini adalah solusi definitif untuk error TypeError pada relasi HasManyThrough
-     * karena memastikan kolom 'id' selalu ada dalam hasil query.
-     */
     protected function getRelationshipQuery(): Builder
     {
         return parent::getRelationshipQuery()->with(['daftarAlat', 'sewa']);
@@ -31,7 +22,6 @@ class RiwayatSewaPemilikRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        // Form ini tidak kita gunakan karena relation manager ini hanya untuk melihat data
         return $form->schema([]);
     }
 
@@ -68,8 +58,9 @@ class RiwayatSewaPemilikRelationManager extends RelationManager
                     ->label('Pendapatan Investor/Pemilik')
                     ->money('IDR')
                     ->placeholder('-'),
+
+                
             ])
-            // Kita nonaktifkan semua aksi karena ini hanya untuk laporan (read-only)
             ->headerActions([])
             ->actions([])
             ->bulkActions([]);

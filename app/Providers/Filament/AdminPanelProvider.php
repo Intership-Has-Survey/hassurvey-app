@@ -21,6 +21,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Rmsramos\Activitylog\ActivitylogPlugin;
 use App\Filament\Pages\Auth\Login;
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+use Romalramos\FilamentLogger\FilamentLoggerPlugin;
+use Filament\Facades\Filament;
+use Filament\Navigation\UserMenuItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -32,6 +35,15 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             // ->registration()
             ->login()
+            ->userMenuItems([
+                UserMenuItem::make()
+                    ->label(fn() => 'Nama: ' . auth()->user()?->name ?? '-'),
+                UserMenuItem::make()
+                    ->label(fn() => 'Email: ' . auth()->user()?->email ?? '-'),
+                UserMenuItem::make()
+                    ->label(fn() => 'Role: ' . auth()->user()?->roles->pluck('name')->join(', ') ?? '-'),
+            ])
+            ->profile()
             ->passwordReset()
 
             // ->emailVerification()

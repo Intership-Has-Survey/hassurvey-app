@@ -15,6 +15,6 @@ class PeroranganSeeder extends Seeder
     {
         // Membuat 50 data perorangan dummy menggunakan factory.
         // Anda bisa ubah jumlahnya sesuai kebutuhan.
-        Perorangan::factory()->count(50)->create();
+        Perorangan::factory()->count(5)->create();
     }
 }

@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
 use App\Models\Sales;
 use App\Models\Project;
 use Filament\Forms\Get;
@@ -12,26 +10,33 @@ use App\Models\Personel;
 use Filament\Forms\Form;
 use App\Models\Corporate;
 use App\Models\Perorangan;
-use App\Models\TrefRegion;
 use Filament\Tables\Table;
-use Filament\Support\RawJs;
+use App\Traits\GlobalForms;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
-use App\Filament\Resources\ProjectResource\RelationManagers;
+use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
 
 class ProjectResource extends Resource
 {
+    use GlobalForms;
+
     protected static ?string $model = Project::class;
     protected static ?string $navigationIcon = 'heroicon-o-map';
     protected static ?string $navigationLabel = 'Layanan Pemetaan';
@@ -44,10 +49,11 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')->required()->columnSpanFull(),
-                    Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()->required()
+                    TextInput::make('nama_project')->columnSpanFull()->placeholder('Masukkan Nama Proyek'),
+                    Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
+                        ->relationship('sales', 'nama')
                         ->label('Sales')
                         ->options(function () {
                             return Sales::query()
@@ -82,14 +88,14 @@ class ProjectResource extends Resource
                         ->preload()
                         ->createOptionForm(self::getCorporateForm())
                         ->afterStateUpdated(function ($state, callable $set) {
-                            if (! $state) {
+                            if (!$state) {
                                 $set('perorangan', []);
                                 return;
                             }
 
                             $corporate = \App\Models\Corporate::with('perorangan')->find($state);
 
-                            if (! $corporate) {
+                            if (!$corporate) {
                                 $set('perorangan', []);
                                 return;
                             }
@@ -125,7 +131,14 @@ class ProjectResource extends Resource
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
-                            $record->perorangan()->sync($selectedIds); // sync dengan project
+                            $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+
+                            // Sync dengan project dan simpan peran
+                            $syncData = [];
+                            foreach ($selectedIds as $id) {
+                                $syncData[$id] = ['peran' => $peran];
+                            }
+                            $record->perorangan()->sync($syncData);
 
                             if ($record->corporate_id) {
                                 $corporate = $record->corporate;
@@ -212,8 +225,8 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_project')->sortable()->searchable()->wrap(),
-                Tables\Columns\TextColumn::make('customer_display')
+                TextColumn::make('nama_project')->sortable()->searchable()->wrap(),
+                TextColumn::make('customer_display')
                     ->label('Klien Utama')
                     ->state(function (Project $record): string {
                         if ($record->corporate) {
@@ -226,12 +239,20 @@ class ProjectResource extends Resource
                             ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
                             ->orWhereHas('perorangan', fn($q) => $q->where('nama', 'like', "%{$search}%"));
                     }),
-                Tables\Columns\TextColumn::make('perorangan.nama')
+                TextColumn::make('perorangan.nama')
                     ->label('PIC')
                     ->listWithLineBreaks()
                     ->limitList(2),
-                Tables\Columns\TextColumn::make('status')->sortable()
+                TextColumn::make('status')->sortable()
                     ->badge()
+                    ->icon(fn(string $state): ?string => match ($state) {
+                        'Prospect' => 'heroicon-o-user-group',
+                        'Follow up 1' => 'heroicon-o-clock',
+                        'Follow up 2' => 'heroicon-o-clock',
+                        'Follow up 3' => 'heroicon-o-clock',
+                        'Closing' => 'heroicon-o-check-circle',
+                        default => 'heroicon-o-x-circle',
+                    })
                     ->color(fn(string $state): string => match ($state) {
                         'Prospect' => 'primary',
                         'Follow up 1' => 'info',
@@ -240,16 +261,28 @@ class ProjectResource extends Resource
                         'Closing' => 'success',
                         default => 'danger'
                     }),
-                Tables\Columns\TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()->color(fn(string $state): string => match ($state) {
-                    'Lunas' => 'success',
-                    'Belum Lunas' => 'danger',
-                    default => 'info',
-                }),
-                Tables\Columns\TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()->color(fn(string $state): string => match ($state) {
-                    'Selesai' => 'success',
-                    'Belum Dikerjakan' => 'info',
-                    default => 'danger',
-                }),
+                TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()
+                    ->icon(fn(string $state): ?string => match ($state) {
+                        'Lunas' => 'heroicon-o-check-circle',
+                        'Belum Lunas' => 'heroicon-o-x-circle',
+                        default => 'heroicon-o-minus-circle',
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        'Lunas' => 'success',
+                        'Belum Lunas' => 'danger',
+                        default => 'gray',
+                    }),
+                TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()
+                    ->icon(fn(string $state): ?string => match ($state) {
+                        'Sekesai' => 'heroicon-o-check-circle',
+                        'Belum Dikerjakan' => 'heroicon-o-minus-circle',
+                        default => 'heroicon-o-clock',
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        'Selesai' => 'success',
+                        'Belum Dikerjakan' => 'gray',
+                        default => 'warning',
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -260,7 +293,8 @@ class ProjectResource extends Resource
                         'Follow up 2' => 'Follow up 2',
                         'Follow up 3' => 'Follow up 3',
                         'Closing' => 'Closing'
-                    ]),
+                    ])
+                    ->native(false),
                 SelectFilter::make('kategori')
                     ->relationship('kategori', 'nama')
                     ->searchable()
@@ -269,16 +303,22 @@ class ProjectResource extends Resource
                     ->options([
                         'Lunas' => 'Lunas',
                         'Belum Lunas' => 'Belum Lunas',
-                        'Sebagian' => 'Sebagian'
-                    ]),
+                        'Belum Dibayar' => 'Belum Dibayar'
+                    ])
+                    ->native(false),
+                SelectFilter::make('status_pekerjaan')
+                    ->options([
+                        'Selesai' => 'Selesai',
+                        'Belum Dikerjakan' => 'Belum Dikerjakan',
+                        'Dalam Proses' => 'Dalam Proses',
+                    ])->native(false),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal_informasi_masuk', 'desc')
@@ -292,11 +332,11 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\PersonelsRelationManager::class,
-            RelationManagers\StatusPembayaranRelationManager::class,
-            RelationManagers\DaftarAlatProjectRelationManager::class,
-            RelationManagers\StatusPekerjaanRelationManager::class,
-            RelationManagers\PengajuanDanasRelationManager::class,
+            PersonelsRelationManager::class,
+            StatusPembayaranRelationManager::class,
+            DaftarAlatProjectRelationManager::class,
+            StatusPekerjaanRelationManager::class,
+            PengajuanDanasRelationManager::class,
 
         ];
     }
@@ -309,272 +349,5 @@ class ProjectResource extends Resource
             'view' => Pages\ViewProject::route('/{record}'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
-    }
-
-    // Helper Methods
-    private static function getAddressFields(): array
-    {
-        return [
-            Select::make('provinsi')
-                ->label('Provinsi')
-                ->required()
-                ->placeholder('Pilih provinsi')
-                ->options(TrefRegion::query()
-                    ->where(DB::raw('LENGTH(code)'), 2)
-                    ->pluck('name', 'code'))
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('kota', null);
-                    $set('kecamatan', null);
-                    $set('desa', null);
-                }),
-
-            Select::make('kota')
-                ->label('Kota/Kabupaten')
-                ->required()
-                ->placeholder('Pilih kota/kabupaten')
-                ->options(function (Get $get) {
-                    $provinceCode = $get('provinsi');
-                    if (!$provinceCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $provinceCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 5)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('kecamatan', null);
-                    $set('desa', null);
-                }),
-
-            Select::make('kecamatan')
-                ->label('Kecamatan')
-                ->required()
-                ->placeholder('Pilih kecamatan')
-                ->options(function (Get $get) {
-                    $regencyCode = $get('kota');
-                    if (!$regencyCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $regencyCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 8)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable()
-                ->afterStateUpdated(function (Set $set) {
-                    $set('desa', null);
-                }),
-
-            Select::make('desa')
-                ->label('Desa/Kelurahan')
-                ->required()
-                ->placeholder('Pilih desa/kelurahan')
-                ->options(function (Get $get) {
-                    $districtCode = $get('kecamatan');
-                    if (!$districtCode)
-                        return [];
-
-                    return TrefRegion::query()
-                        ->where('code', 'like', $districtCode . '.%')
-                        ->where(DB::raw('LENGTH(code)'), 13)
-                        ->pluck('name', 'code');
-                })
-                ->live()
-                ->searchable(),
-
-            Forms\Components\Textarea::make('detail_alamat')
-                ->required()
-                ->placeholder('Masukkan detail alamat lengkap')
-                ->label('Detail Alamat')
-                ->rows(3)
-                ->columnSpanFull(),
-        ];
-    }
-
-    private static function getPersonelForm(): array
-    {
-        return [
-            Forms\Components\Section::make('Informasi Personel')
-                ->schema([
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Lengkap')
-                        ->required()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('nik')
-                        ->label('NIK')
-                        ->length(16)
-                        ->numeric()
-                        ->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('email')
-                        ->label('Email')
-                        ->email()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Forms\Components\Section::make('Alamat Personel')
-                ->schema(self::getAddressFields())
-                ->columns(2),
-
-            Hidden::make('user_id')->default(auth()->id()),
-        ];
-    }
-
-    private static function getKeuanganFields(): array
-    {
-        return [
-            Forms\Components\TextInput::make('nilai_project')
-                ->label('Anggaran Proyek')
-                ->numeric()
-                ->required()
-                ->placeholder('Masukkan anggaran proyek')
-                ->prefix('Rp ')
-                ->mask(RawJs::make('$money($input)'))
-                ->stripCharacters(',')
-                ->placeholder('Masukkan anggaran proyek')
-                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
-            Select::make('status')
-                ->label('Status Proyek')
-                ->options([
-                    'Prospect' => 'Prospect',
-                    'Follow up 1' => 'Follow up 1',
-                    'Follow up 2' => 'Follow up 2',
-                    'Follow up 3' => 'Follow up 3',
-                    'Closing' => 'Closing',
-                    'Failed' => 'Failed',
-                ])
-                ->required()
-                ->native(false),
-        ];
-    }
-
-    private static function getSalesForm(): array
-    {
-        return [
-            Forms\Components\Section::make('Informasi Sales')
-                ->schema([
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Sales')
-                        ->required()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('nik')
-                        ->label('NIK')
-                        ->required()
-                        ->length(16)
-                        ->unique(ignoreRecord: true)
-                        ->numeric(),
-                    Forms\Components\TextInput::make('email')
-                        ->label('Email')
-                        ->required()
-                        ->email()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->required()
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Forms\Components\Section::make('Alamat Sales')
-                ->schema(self::getAddressFields())
-                ->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-
-    private static function getCorporateForm(): array
-    {
-        return [
-            Forms\Components\Section::make('Informasi Perusahaan')
-                ->schema([
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Perusahaan')
-                        ->required()
-                        ->maxLength(200),
-                    Forms\Components\TextInput::make('npwp')
-                        ->label('NPWP')
-                        ->maxLength(20),
-                    Forms\Components\TextInput::make('email')
-                        ->label('Email')
-                        ->email()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-
-    private static function getPeroranganForm(): array
-    {
-        return [
-            Forms\Components\Section::make('Informasi Personal')
-                ->schema([
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Lengkap')
-                        ->required()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('nik')
-                        ->label('NIK')
-                        ->length(16)
-                        ->numeric()
-                        ->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('email')
-                        ->label('Email')
-                        ->email()
-                        ->maxLength(100),
-                    Forms\Components\TextInput::make('telepon')
-                        ->label('Telepon')
-                        ->tel()
-                        ->maxLength(15),
-                ])->columns(2),
-
-            Forms\Components\Section::make('Alamat')
-                ->schema(self::getAddressFields())
-                ->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-
-    private static function getKategoriForm(): array
-    {
-        return [
-            Forms\Components\Section::make('Informasi Kategori')
-                ->schema([
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Kategori')
-                        ->required()
-                        ->maxLength(100),
-                    Forms\Components\Textarea::make('deskripsi')
-                        ->label('Deskripsi')
-                        ->maxLength(500)
-                        ->nullable(),
-                ])->columns(2),
-
-            Hidden::make('user_id')
-                ->default(auth()->id()),
-        ];
-    }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola layanan pemetaan'); // atau permission spesifik
     }
 }

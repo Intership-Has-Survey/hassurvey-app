@@ -28,7 +28,6 @@ return new class extends Migration {
 
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->softDeletes();
-
         });
 
         Schema::create('daftar_alat', function (Blueprint $table) {
@@ -44,7 +43,7 @@ return new class extends Migration {
 
             // Mengubah kolom 'status' menjadi boolean
             // true: Tersedia, false: Tidak Tersedia
-            $table->boolean('status')->default(true);
+            $table->integer('status')->default(true);
 
             $table->text('keterangan')->nullable();
             $table->timestamps();

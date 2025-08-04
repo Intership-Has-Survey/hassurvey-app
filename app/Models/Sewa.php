@@ -25,7 +25,7 @@ class Sewa extends Model
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
-            ->using(RiwayatSewa::class)
+            ->using(AlatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
     }
@@ -37,6 +37,11 @@ class Sewa extends Model
                 $sewa->user_id = Auth::id();
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function projects()
@@ -52,7 +57,7 @@ class Sewa extends Model
     public function perorangan(): BelongsToMany
     {
         return $this->belongsToMany(Perorangan::class, 'sewa_perorangan')
-            ->withPivot('perorangan_id', 'sewa_id')
+            ->withPivot('perorangan_id', 'sewa_id', 'peran')
             ->withTimestamps();
     }
 

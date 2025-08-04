@@ -10,6 +10,7 @@ use App\Models\Personel;
 use Filament\Forms\Form;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
+use App\Traits\GlobalForms;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
@@ -27,6 +28,7 @@ use App\Filament\Resources\PersonelResource\RelationManagers;
 
 class PersonelResource extends Resource
 {
+    use GlobalForms;
     protected static ?string $model = Personel::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
@@ -86,81 +88,8 @@ class PersonelResource extends Resource
                             ->placeholder('Kosongkan jika tidak ada keterangan khusus')
                             ->columnSpanFull(),
                     ])->columns(2),
-                Forms\Components\Section::make('Alamat')
-                    ->schema([
-                        Select::make('provinsi')
-                            ->label('Provinsi')
-                            ->options(TrefRegion::query()->where(DB::raw('LENGTH(code)'), 2)->pluck('name', 'code'))
-                            ->live()
-                            ->searchable()
-                            ->required()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kota', null);
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-
-                        Select::make('kota')
-                            ->label('Kota/Kabupaten')
-                            ->required()
-                            ->options(function (Get $get) {
-                                $provinsi = $get('provinsi');
-                                if (!$provinsi) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $provinsi . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 5)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('kecamatan', null);
-                                $set('desa', null);
-                            }),
-
-                        Select::make('kecamatan')
-                            ->label('Kecamatan')
-                            ->required()
-                            ->options(function (Get $get) {
-                                $kota = $get('kota');
-                                if (!$kota) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $kota . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 8)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('desa', null);
-                            }),
-
-                        Select::make('desa')
-                            ->label('Desa/Kelurahan')
-                            ->required()
-                            ->options(function (Get $get) {
-                                $kecamatan = $get('kecamatan');
-                                if (!$kecamatan) {
-                                    return [];
-                                }
-                                return TrefRegion::query()
-                                    ->where('code', 'like', $kecamatan . '.%')
-                                    ->where(DB::raw('LENGTH(code)'), 13)
-                                    ->pluck('name', 'code');
-                            })
-                            ->live()
-                            ->searchable(),
-
-                        Textarea::make('detail_alamat')
-                            ->label('Detail Alamat')
-                            ->required()
-                            ->placeholder('Contoh: Jln. Merdeka No. 123, RT 01/RW 02')
-                            ->columnSpanFull(),
-                    ])->columns(2),
+                Section::make('Alamat')
+                    ->schema(self::getAddressFields())->columns(2),
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
@@ -241,6 +170,8 @@ class PersonelResource extends Resource
     {
         return [
             //
+            RelationManagers\ProjectPersonelRelationManager::class,
+            RelationManagers\PembayaranPersonelRelationManager::class,
         ];
     }
 

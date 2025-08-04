@@ -13,9 +13,16 @@ class Personel extends Model
     use HasFactory, HasUuids, SoftDeletes;
     protected $guarded = [];
 
+    // public function projects()
+    // {
+    //     return $this->belongsToMany(Project::class);
+    // }
+
     public function projects()
     {
-        return $this->belongsToMany(Project::class);
+        return $this->belongsToMany(Project::class, 'personel_project')
+            ->withPivot('user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
+            ->withTimestamps();
     }
 
     public function user()
@@ -33,5 +40,10 @@ class Personel extends Model
         }
 
         return 'Tersedia';
+    }
+
+    public function pembayaranPersonel()
+    {
+        return $this->hasMany(PembayaranPersonel::class);
     }
 }

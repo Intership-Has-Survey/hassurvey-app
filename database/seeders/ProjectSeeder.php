@@ -16,7 +16,7 @@ class ProjectSeeder extends Seeder
         $startDate = Carbon::create(2023, 1, 1);
         $endDate = Carbon::now();
 
-        Project::factory()->count(50)->create()->each(function ($project) use ($startDate, $endDate) {
+        Project::factory()->count(3)->create()->each(function ($project) use ($startDate, $endDate) {
             $project->created_at = $this->randomDate($startDate, $endDate);
             $project->updated_at = $project->created_at;
             $project->save();
@@ -44,12 +44,7 @@ class ProjectSeeder extends Seeder
             $project->personels()->sync($syncData);
 
             // Assign perorangan customers
-            $perorangan = Perorangan::inRandomOrder()->limit(3)->get();
-            if ($perorangan->count() < 3) {
-                $missingCount = 3 - $perorangan->count();
-                $newPerorangan = Perorangan::factory()->count($missingCount)->create();
-                $perorangan = $perorangan->concat($newPerorangan);
-            }
+            $perorangan = Perorangan::inRandomOrder()->limit(1)->get();
             $project->perorangan()->sync($perorangan->pluck('id')->toArray());
         });
     }

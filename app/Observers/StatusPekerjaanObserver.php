@@ -14,6 +14,13 @@ class StatusPekerjaanObserver
         }
     }
 
+    public function deleted(StatusPekerjaan $statusPekerjaan): void
+    {
+        if ($statusPekerjaan->project) {
+            $this->updateProjectWorkStatus($statusPekerjaan->project);
+        }
+    }
+
     protected function updateProjectWorkStatus(Project $project): void
     {
         $requiredStages = ['pekerjaan_lapangan', 'data_gambar', 'laporan'];
@@ -25,7 +32,7 @@ class StatusPekerjaanObserver
         $missingStages = array_diff($requiredStages, $existingStages);
 
         if (count($missingStages) > 0) {
-            $project->status_pekerjaan = 'Belum Selesai';
+            $project->status_pekerjaan = 'Dalam Proses';
             $project->saveQuietly();
             return;
         }
@@ -34,7 +41,7 @@ class StatusPekerjaanObserver
             return in_array($stage->status, ['Selesai', 'Tidak Perlu']);
         });
 
-        $statusBaru = $isFullyFinished ? 'Selesai' : 'Belum Selesai';
+        $statusBaru = $isFullyFinished ? 'Selesai' : 'Dalam Proses';;
 
         $project->status_pekerjaan = $statusBaru;
         $project->saveQuietly();

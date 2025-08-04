@@ -4,27 +4,22 @@ namespace App\Filament\Resources\SewaResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use Filament\Support\RawJs;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-
-use Filament\Support\RawJs;
-
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class StatusPembyaranRelationManager extends RelationManager
 {
@@ -75,13 +70,14 @@ class StatusPembyaranRelationManager extends RelationManager
                     ->prefix('Rp')
                     ->maxlength(20),
 
-                FileUpload::make('bukti_pembayaran')
+                FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
-                    ->acceptedFileTypes(['image/*', 'application/pdf'])
-                    ->maxSize(1024) // 1 MB
-                    ->required()
                     ->image()
-                    ->directory('bukti-pembayaran'),
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
+                    ->directory('bukti-pembayaran')
+                    ->columnSpanFull(),
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
@@ -104,6 +100,13 @@ class StatusPembyaranRelationManager extends RelationManager
                 TextColumn::make('nilai')
                     ->money('IDR')
                     ->sortable(),
+
+                ImageColumn::make('bukti_pembayaran_path')
+                    ->label('Bukti Pembayaran')
+                    ->disk('public')
+                    ->square()
+                    ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
+                    ->openUrlInNewTab(),
 
                 TextColumn::make('user.name')
                     ->label('Diinput oleh')
