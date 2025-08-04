@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\PeroranganResource\RelationManagers\RiwayatLayananRelationManager;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -20,6 +21,8 @@ use Filament\Resources\RelationManagers\RelationGroup;
 use App\Filament\Resources\PeroranganResource\RelationManagers\SewaRelationManager;
 use App\Filament\Resources\PeroranganResource\RelationManagers\ProjectsRelationManager;
 use App\Filament\Resources\PeroranganResource\RelationManagers\CorporateRelationManager;
+use App\Filament\Resources\PeroranganResource\RelationManagers\RiwayatKalibrasisRelationManager;
+use App\Filament\Resources\PeroranganResource\RelationManagers\RiwayatPenjualansRelationManager;
 
 class PeroranganResource extends Resource
 {
@@ -55,11 +58,11 @@ class PeroranganResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationGroup::make('Riwayat Pesanan', [
-                ProjectsRelationManager::class,
-                SewaRelationManager::class,
-            ]),
             CorporateRelationManager::class,
+            ProjectsRelationManager::class,
+            SewaRelationManager::class,
+            RiwayatKalibrasisRelationManager::class,
+            RiwayatPenjualansRelationManager::class,
         ];
     }
 

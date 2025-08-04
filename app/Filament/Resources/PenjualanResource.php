@@ -93,7 +93,14 @@ class PenjualanResource extends Resource
                     ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                     ->saveRelationshipsUsing(function (Model $record, array $state): void {
                         $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                        $record->perorangan()->sync($ids);
+                        $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+
+                        // Sync dengan project dan simpan peran
+                        $syncData = [];
+                        foreach ($ids as $id) {
+                            $syncData[$id] = ['peran' => $peran];
+                        }
+                        $record->perorangan()->sync($syncData);
 
                         if ($record->corporate_id) {
                             $corporate = $record->corporate;

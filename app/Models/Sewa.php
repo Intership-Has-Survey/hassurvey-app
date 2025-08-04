@@ -49,6 +49,11 @@ class Sewa extends Model
         });
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function projects()
     {
         return $this->hasMany(Project::class, 'sewa_id');
@@ -62,7 +67,7 @@ class Sewa extends Model
     public function perorangan(): BelongsToMany
     {
         return $this->belongsToMany(Perorangan::class, 'sewa_perorangan')
-            ->withPivot('perorangan_id', 'sewa_id')
+            ->withPivot('perorangan_id', 'sewa_id', 'peran')
             ->withTimestamps();
     }
 

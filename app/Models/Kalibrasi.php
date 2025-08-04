@@ -6,6 +6,7 @@ use App\Models\Customer;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kalibrasi extends Model
@@ -22,6 +23,15 @@ class Kalibrasi extends Model
     public function customer()
     {
         return $this->belongsTo(Corporate::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function ($pemilik) {
+            if (!$pemilik->user_id && Auth::check()) {
+                $pemilik->user_id = Auth::id();
+            }
+        });
     }
 
     public function user()
@@ -41,7 +51,9 @@ class Kalibrasi extends Model
 
     public function perorangan()
     {
-        return $this->belongsTo(Perorangan::class, 'perorangan_id');
+        return $this->belongsToMany(Perorangan::class, 'kalibrasi_perorangan')
+            ->withPivot('kalibrasi_id', 'perorangan_id', 'peran')
+            ->withTimestamps();
     }
 
     public function pengajuanDanas()

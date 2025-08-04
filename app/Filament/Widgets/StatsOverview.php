@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Kalibrasi;
+use App\Models\Penjualan;
 use Carbon\Carbon;
 use App\Models\Sewa;
 use App\Models\Project;
@@ -28,13 +30,19 @@ class StatsOverview extends BaseWidget
         //     Carbon::parse($this->filters['endDate']) :
         //     null;
         // $serviceType = $this->filters['serviceType'] ?? 'Semua';
+
         $startDate = $this->filters['created_at']['start'] ?? null;
         $endDate = $this->filters['created_at']['end'] ?? null;
         $serviceType = $this->filters['serviceType'] ?? 'Semua';
 
-        $formatNumber = function (int $number): string {
-            if ($number < 1000) return (string) Number::format($number, 0);
-            if ($number < 1000000) return Number::format($number / 1000, 2) . 'k';
+        $startDate ??= Carbon::parse('2000-01-01');
+        $endDate ??= now();
+
+        $formatNumber = function (float|int $number): string {
+            if ($number < 1000)
+                return (string) Number::format($number, 0);
+            if ($number < 1000000)
+                return Number::format($number / 1000, 2) . 'k';
             return Number::format($number / 1000000, 2) . 'm';
         };
 
@@ -59,10 +67,35 @@ class StatsOverview extends BaseWidget
             ->when($startDate, fn($query) => $query->whereDate('tgl_mulai', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('tgl_mulai', '<=', $endDate));
 
+        $kalibrasisQuery = Kalibrasi::query()
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        $penjualansQuery = Penjualan::query()
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
         $pesananBaru = 0;
         $customerBaru = 0;
         $pendapatanBersih = 0;
 
+        if ($serviceType === 'Layanan Servis dan Kalibrasi' || $serviceType === 'Semua') {
+            $pesananBaru += $kalibrasisQuery->clone()->count();
+            $kalibrasiCorporateIds = $kalibrasisQuery->clone()->whereNotNull('corporate_id')->pluck('corporate_id');
+            $individualkalibrasiIds = $kalibrasisQuery->clone()->whereNull('corporate_id')->pluck('id');
+            $kalibrasiPeroranganIds = DB::table('kalibrasi_perorangan')
+                ->whereIn('kalibrasi_id', $individualkalibrasiIds)
+                ->distinct()
+                ->pluck('perorangan_id');
+        }
+        if ($serviceType === 'Layanan Penjualan Alat' || $serviceType === 'Semua') {
+            $pesananBaru += $penjualansQuery->clone()->count();
+            $penjualanCorporateIds = $penjualansQuery->clone()->whereNotNull('corporate_id')->pluck('corporate_id');
+            $individualpenjualanIds = $penjualansQuery->clone()->whereNull('corporate_id')->pluck('id');
+            $penjualanPeroranganIds = DB::table('penjualan_perorangan')
+                ->whereIn('penjualan_id', $individualpenjualanIds)
+                ->distinct()
+                ->pluck('perorangan_id');
+        }
         if ($serviceType === 'Layanan Pemetaan' || $serviceType === 'Semua') {
             $pesananBaru += $projectsQuery->clone()->count();
             $projectCorporateIds = $projectsQuery->clone()->whereNotNull('corporate_id')->pluck('corporate_id');
@@ -89,6 +122,10 @@ class StatsOverview extends BaseWidget
             $customerBaru = ($projectCorporateIds ?? collect())->unique()->count() + ($projectPeroranganIds ?? collect())->unique()->count();
         } elseif ($serviceType === 'Layanan Sewa') {
             $customerBaru = ($sewaCorporateIds ?? collect())->unique()->count() + ($sewaPeroranganIds ?? collect())->unique()->count();
+        } elseif ($serviceType === 'Layanan Servis dan Kalibrasi') {
+            $customerBaru = ($kalibrasiCorporateIds ?? collect())->unique()->count() + ($kalibrasiPeroranganIds ?? collect())->unique()->count();
+        } elseif ($serviceType === 'Layanan Penjualan Alat') {
+            $customerBaru = ($penjualanCorporateIds ?? collect())->unique()->count() + ($penjualanPeroranganIds ?? collect())->unique()->count();
         }
 
         return [

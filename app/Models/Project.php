@@ -50,7 +50,7 @@ class Project extends Model
     public function perorangan(): BelongsToMany
     {
         return $this->belongsToMany(Perorangan::class, 'project_perorangan')
-            ->withPivot('perorangan_id', 'project_id')
+            ->withPivot('perorangan_id', 'project_id', 'peran')
             ->withTimestamps();
     }
 
