@@ -229,7 +229,7 @@ trait GlobalForms
                     'Closing' => 'Closing',
                     'Failed' => 'Failed',
                 ])
-
+                ->required()
                 ->native(false),
         ];
     }

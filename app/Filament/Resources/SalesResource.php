@@ -10,6 +10,8 @@ use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
+use App\Traits\GlobalForms;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
@@ -25,6 +27,7 @@ use App\Filament\Resources\SalesResource\RelationManagers;
 
 class SalesResource extends Resource
 {
+    use GlobalForms;
     protected static ?string $model = Sales::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
@@ -85,7 +88,7 @@ class SalesResource extends Resource
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->action(function ($record) {
-                        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.sales', ['record' => $record]);
+                        $pdf = Pdf::loadView('exports.sales', ['record' => $record]);
 
                         return response()->streamDownload(function () use ($pdf) {
                             echo $pdf->stream();
