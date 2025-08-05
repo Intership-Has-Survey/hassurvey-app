@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Sewa;
+use App\Models\Sales;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -119,6 +120,19 @@ class SewaResource extends Resource
                             ->placeholder('Masukkan Judul Penyewaan')
                             ->label('Judul Penyewaan')
                             ->columnSpanFull(),
+                        Select::make('sales_id')
+                            ->relationship('sales', 'nama')
+                            ->label('Sales')
+                            ->options(function () {
+                                return Sales::query()
+                                    ->select('id', 'nama', 'nik')
+                                    ->get()
+                                    ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
+                            })
+                            ->placeholder('Pilih sales')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm(self::getSalesForm()),
                         Grid::make(2)
                             ->schema([
                                 DatePicker::make('tgl_mulai')
@@ -191,7 +205,7 @@ class SewaResource extends Resource
                             ->saveRelationshipsUsing(function (Model $record, array $state): void {
                                 $ids = array_map(fn($item) => $item['perorangan_id'], $state);
                                 $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-                                
+
                                 // Sync dengan project dan simpan peran
                                 $syncData = [];
                                 foreach ($ids as $id) {

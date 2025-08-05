@@ -62,7 +62,6 @@ class ProjectResource extends Resource
                         ->placeholder('Pilih sales')
                         ->searchable()
                         ->preload()
-
                         ->createOptionForm(self::getSalesForm()),
                     DatePicker::make('tanggal_informasi_masuk')->native(false)->default(now()),
                     Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->native(false),
