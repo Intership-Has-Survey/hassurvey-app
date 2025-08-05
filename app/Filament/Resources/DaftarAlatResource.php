@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Tables;
 use Filament\Forms\Form;
 use App\Models\DaftarAlat;
+use App\Models\Pemilik;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Filament\Resources\Resource;
@@ -67,6 +68,12 @@ class DaftarAlatResource extends Resource
                     ->relationship('pemilik', 'nama')
                     ->searchable()
                     ->preload()
+                    ->options(function () {
+                        return Pemilik::query()
+                            ->select('id', 'nama', 'nik')
+                            ->get()
+                            ->mapWithKeys(fn($pemilik) => [$pemilik->id => "{$pemilik->nama} - {$pemilik->nik}"]);
+                    })
                     ->createOptionForm([
                         Section::make('Informasi Pribadi')
                             ->schema([
