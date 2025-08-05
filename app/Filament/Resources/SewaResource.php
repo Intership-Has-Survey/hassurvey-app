@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
 use App\Models\Sewa;
 use App\Models\Sales;
 use Filament\Forms\Get;
@@ -42,10 +43,6 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\SewaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SewaResource\Pages\EditSewa;
-use App\Filament\Resources\SewaResource\Pages\ListSewa;
-use App\Filament\Resources\SewaResource\Pages\CreateSewa;
-use App\Filament\Resources\SewaResource\RelationManagers;
 use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
 use Filament\Notifications\Notification; // Tambahkan ini di atas
 use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
@@ -370,6 +367,20 @@ class SewaResource extends Resource
             StatusPembyaranRelationManager::class,
             PengajuanDanasRelationManager::class,
 
+        ];
+    }
+
+    // public function getWidgets(): array
+    // {
+    //     return [
+    //         StatsOverviewSewa::class,
+    //     ];
+    // }
+
+    public static function getHeaderWidgets(): array
+    {
+        return [
+            StatsOverviewSewa::class,
         ];
     }
 

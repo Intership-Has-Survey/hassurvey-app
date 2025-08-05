@@ -23,14 +23,6 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        // $startDate = !is_null($this->filters['startDate'] ?? null) ?
-        //     Carbon::parse($this->filters['startDate']) :
-        //     null;
-        // $endDate = !is_null($this->filters['endDate'] ?? null) ?
-        //     Carbon::parse($this->filters['endDate']) :
-        //     null;
-        // $serviceType = $this->filters['serviceType'] ?? 'Semua';
-
         $startDate = $this->filters['created_at']['start'] ?? null;
         $endDate = $this->filters['created_at']['end'] ?? null;
         $serviceType = $this->filters['serviceType'] ?? 'Semua';
@@ -46,19 +38,6 @@ class StatsOverview extends BaseWidget
             return Number::format($number / 1000000, 2) . 'm';
         };
 
-        // $pendapatanBersih = 0;
-        // $customerBaru = 0;
-        // $pesananBaru = 0;
-
-        // // Set default startDate and endDate if null
-        // if (is_null($startDate)) {
-        //     $earliestProjectDate = Project::min('tanggal_informasi_masuk');
-        //     $earliestSewaDate = Sewa::min('tgl_mulai');
-        //     $startDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
-        // }
-        // if (is_null($endDate)) {
-        //     $endDate = now();
-        // }
         $projectsQuery = Project::query()
             ->when($startDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '<=', $endDate));
