@@ -38,6 +38,7 @@ class TransaksiPembayaranResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 // Forms\Components\Select::make('pengajuan_dana_id')
@@ -71,6 +72,8 @@ class TransaksiPembayaranResource extends Resource
                     ->columnSpanFull(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

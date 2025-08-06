@@ -68,6 +68,8 @@ class PemilikResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Pribadi')
@@ -117,6 +119,9 @@ class PemilikResource extends Resource
                             ->required(),
                     ])->columns(1)
                     ->visibleOn('edit'),
+
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

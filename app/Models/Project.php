@@ -84,4 +84,9 @@ class Project extends Model
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

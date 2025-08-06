@@ -125,4 +125,9 @@ class Sewa extends Model
 
         return true;
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

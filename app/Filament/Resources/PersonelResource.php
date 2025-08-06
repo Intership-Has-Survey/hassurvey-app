@@ -40,6 +40,8 @@ class PersonelResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Pribadi')
@@ -93,6 +95,8 @@ class PersonelResource extends Resource
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

@@ -31,4 +31,9 @@ class StatusPembayaran extends Model
     {
         return $record->id ?? $record->payable_id ?? uniqid();
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

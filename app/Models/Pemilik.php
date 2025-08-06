@@ -76,4 +76,9 @@ class Pemilik extends Model
 
         return 'Belum Dibayar';
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

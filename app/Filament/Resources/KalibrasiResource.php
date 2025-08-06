@@ -13,6 +13,7 @@ use App\Traits\GlobalForms;
 use Filament\Support\RawJs;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
@@ -35,6 +36,7 @@ class KalibrasiResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Customer')
@@ -146,6 +148,8 @@ class KalibrasiResource extends Resource
                             ->default('dalam_proses')
                             ->native(false),
                     ]),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

@@ -73,4 +73,9 @@ class Perorangan extends Model
             ->withPivot('user_id')
             ->withTimestamps();
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

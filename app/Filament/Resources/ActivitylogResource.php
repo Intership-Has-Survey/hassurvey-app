@@ -48,7 +48,16 @@ class ActivitylogResource extends Resource
     protected static ?string $pluralModelLabel = 'Log Aktifitas';
     protected static ?string $slug = 'activitylogs';
 
+    // protected static ?string $tenantOwnershipRelationshipName = 'tenant';
+
     protected static bool $shouldRegisterNavigation = true;
+
+    public static function isTenantAware(): bool
+    {
+        return false;
+    }
+
+
 
     public static function getModel(): string
     {
@@ -673,7 +682,7 @@ class ActivitylogResource extends Resource
         }
     }
 
-    // public static function canAccess()
+    // private static function canAccess()
     // {
     //     return auth()->user()?->hasRole('Super Admin');
     // }

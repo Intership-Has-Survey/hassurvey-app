@@ -35,8 +35,11 @@ class SalesResource extends Resource
     protected static ?int $navigationSort = 5;
     protected static ?string $pluralModelLabel = 'Sales';
 
+
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
+
         return $form
             ->schema([
                 Section::make('Informasi Sales')
@@ -63,6 +66,8 @@ class SalesResource extends Resource
                     ->schema(self::getAddressFields())->columns(2),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

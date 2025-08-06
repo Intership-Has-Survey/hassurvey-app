@@ -46,4 +46,9 @@ class Personel extends Model
     {
         return $this->hasMany(PembayaranPersonel::class);
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

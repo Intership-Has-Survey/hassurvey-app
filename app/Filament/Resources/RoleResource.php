@@ -27,6 +27,10 @@ use Illuminate\Database\Eloquent\Model;
 class RoleResource extends Resource
 {
 
+    public static function isTenantAware(): bool
+    {
+        return false; // 🚫 Matikan tenant-awareness
+    }
 
     protected static ?string $navigationLabel = 'Jabatan';
 

@@ -108,6 +108,8 @@ class SewaResource extends Resource
             }
         };
 
+        $uuid = request()->segment(2);
+
         return $form
             ->schema([
                 Section::make('Informasi Kontrak')
@@ -220,6 +222,8 @@ class SewaResource extends Resource
                                 }
                             }),
                     ]),
+                Hidden::make('company_id')
+                    ->default($uuid),
 
                 Section::make('Informasi Harga Penyewaan')
                     ->schema([

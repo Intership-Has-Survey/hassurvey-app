@@ -44,6 +44,7 @@ class ProjectResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
@@ -129,7 +130,7 @@ class ProjectResource extends Resource
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
                             $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-                            
+
                             // Sync dengan project dan simpan peran
                             $syncData = [];
                             foreach ($selectedIds as $id) {
@@ -165,6 +166,8 @@ class ProjectResource extends Resource
 
 
             Hidden::make('user_id')->default(auth()->id()),
+            Hidden::make('company_id')
+                ->default($uuid),
         ]);
     }
 

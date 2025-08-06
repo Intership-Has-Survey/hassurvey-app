@@ -65,4 +65,9 @@ class Kalibrasi extends Model
     {
         return $this->morphMany(StatusPembayaran::class, 'payable');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

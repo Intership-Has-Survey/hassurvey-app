@@ -21,6 +21,7 @@ class CorporatePage extends Page implements HasTable
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $navigationGroup = 'Customer';
     protected static ?string $title = 'Customer Perusahaan';
+    protected static bool $shouldRegisterNavigation = false;
 
     // INI YANG MEMPERBAIKI ERROR ANDA:
     // Setiap Page wajib menunjuk ke file view Blade.

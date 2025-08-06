@@ -12,6 +12,7 @@ use App\Models\AlatCustomer;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -30,9 +31,12 @@ class AlatCustomerResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Alat Customer';
     protected static ?string $navigationGroup = 'Customer';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Select::make('jenis_alat_id')
@@ -116,6 +120,8 @@ class AlatCustomerResource extends Resource
                             ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                             ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
                     ]),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
