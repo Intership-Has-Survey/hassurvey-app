@@ -77,18 +77,16 @@ class Project extends Model
     {
         return $this->belongsTo(Sewa::class);
     }
-
-    // public function customers()
-    // {
-    //     return $this->morphTo();
-    // }
-
-
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'project_id', 'daftar_alat_id')
             ->using(AlatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

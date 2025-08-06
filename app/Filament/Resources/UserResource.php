@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+    protected static ?string $tenantOwnershipRelationshipName = 'companies';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -57,6 +58,11 @@ class UserResource extends Resource
                     ->relationship('roles', 'name')
                     ->preload()
                     ->label('Assign Roles'),
+                Select::make('companies')
+                    ->multiple()
+                    ->relationship('companies', 'name')
+                    ->preload()
+                    ->label('Akses Perusahaan'),
                 // Select::make('roles')->multiple()->relationship('roles', 'name')
             ]);
     }

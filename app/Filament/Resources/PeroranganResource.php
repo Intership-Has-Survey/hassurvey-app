@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
@@ -28,9 +29,16 @@ class PeroranganResource extends Resource
 {
     use GlobalForms;
     protected static ?string $model = Perorangan::class;
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
+
+    // protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationLabel = 'Perorangan';
+    protected static ?string $navigationGroup = 'Customer';
+    protected static ?int $navigationSort = 2;
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form->schema([
             Section::make('Informasi Pribadi')
                 ->schema([
@@ -52,6 +60,8 @@ class PeroranganResource extends Resource
                     FileUpload::make('foto_ktp')->image()->nullable(),
                     FileUpload::make('foto_kk')->image()->nullable(),
                 ])->columns(2),
+            Hidden::make('company_id')
+                ->default($uuid),
         ]);
     }
 

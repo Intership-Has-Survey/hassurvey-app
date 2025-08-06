@@ -17,6 +17,7 @@ class PeroranganPage extends Page implements HasTable
     use InteractsWithTable;
 
     // Properti untuk navigasi dan tampilan halaman
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?string $navigationGroup = 'Customer';
     protected static ?string $title = 'Customer Perorangan';

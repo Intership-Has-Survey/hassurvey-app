@@ -50,4 +50,9 @@ class AlatCustomer extends Model
             ->withPivot('alat_customers_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

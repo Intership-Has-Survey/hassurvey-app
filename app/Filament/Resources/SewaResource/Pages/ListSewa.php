@@ -26,4 +26,9 @@ class ListSewa extends ListRecords
         return 'Daftar';
     }
 
+    protected function getHeaderWidgets(): array
+    {
+        return SewaResource::getHeaderWidgets();
+    }
+
 }

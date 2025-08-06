@@ -17,11 +17,6 @@ class StatusPembayaran extends Model
         parent::boot();
     }
 
-    // public function project()
-    // {
-    //     return $this->belongsTo(Project::class);
-    // }
-
     public function payable()
     {
         return $this->morphTo();
@@ -35,5 +30,10 @@ class StatusPembayaran extends Model
     protected function getTableRecordKey($record): string
     {
         return $record->id ?? $record->payable_id ?? uniqid();
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

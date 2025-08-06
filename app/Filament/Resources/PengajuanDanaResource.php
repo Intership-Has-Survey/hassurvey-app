@@ -38,6 +38,7 @@ class PengajuanDanaResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Pengajuan')
@@ -106,6 +107,7 @@ class PengajuanDanaResource extends Resource
                 Hidden::make('dalam_review')
                     ->default('0'),
                 Hidden::make('user_id')->default(auth()->id()),
+                Hidden::make('user_id')->default($uuid),
             ]);
     }
 

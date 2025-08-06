@@ -138,4 +138,9 @@ class PengajuanDana extends Model
     {
         return $this->morphMany(TransaksiPembayaran::class, 'payable');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

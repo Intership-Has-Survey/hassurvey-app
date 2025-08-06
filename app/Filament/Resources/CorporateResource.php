@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use App\Filament\Resources\CorporateResource\Pages;
 use Filament\Resources\RelationManagers\RelationGroup;
 use App\Filament\Resources\CorporateResource\RelationManagers\SewaRelationManager;
@@ -21,11 +22,16 @@ class CorporateResource extends Resource
 {
     use GlobalForms;
     protected static ?string $model = Corporate::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationLabel = 'Perusahaan';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static ?string $navigationGroup = 'Customer';
+    protected static ?string $title = 'Customer Perusahaan';
+    protected static ?int $navigationSort = 1;
+    // protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Perusahaan')
@@ -45,6 +51,8 @@ class CorporateResource extends Resource
                     ])->columns(2),
                 Section::make('Alamat Perusahaan')
                     ->schema(self::getAddressFields())->columns(2),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 

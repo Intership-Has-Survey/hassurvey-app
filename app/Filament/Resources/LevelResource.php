@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\LevelResource\Pages\EditLevel;
@@ -31,6 +32,8 @@ class LevelResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 //
@@ -42,6 +45,8 @@ class LevelResource extends Resource
                     ->prefix('Rp ')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(','),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
