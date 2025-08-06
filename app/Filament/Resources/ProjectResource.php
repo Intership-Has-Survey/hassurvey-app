@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
@@ -129,7 +131,7 @@ class ProjectResource extends Resource
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
                             $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
                             $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-                            
+
                             // Sync dengan project dan simpan peran
                             $syncData = [];
                             foreach ($selectedIds as $id) {
@@ -295,6 +297,14 @@ class ProjectResource extends Resource
             'create' => Pages\CreateProject::route('/create'),
             'view' => Pages\ViewProject::route('/{record}'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getHeaderWidgets(): array
+    {
+        return [
+            ProjectStatsOverview::class,
+            // ProjectStatusChart::class,
         ];
     }
 }

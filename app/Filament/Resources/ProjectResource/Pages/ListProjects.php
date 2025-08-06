@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
-use App\Filament\Resources\ProjectResource;
 use Filament\Actions;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ProjectResource;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
 
 class ListProjects extends ListRecords
 {
@@ -24,5 +27,23 @@ class ListProjects extends ListRecords
     public function getBreadcrumb(): string
     {
         return 'Daftar';
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return ProjectResource::getHeaderWidgets();
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            null => Tab::make('All'),
+            'Prospect' => Tab::make()->query(fn($query) => $query->where('status', 'Prospect')),
+            'Follow up 1' => Tab::make()->query(fn($query) => $query->where('status', 'Follow up 1')),
+            'Follow up 2' => Tab::make()->query(fn($query) => $query->where('status', 'Follow up 2')),
+            'Follow up 3' => Tab::make()->query(fn($query) => $query->where('status', 'Follow up 3')),
+            'Closing' => Tab::make()->query(fn($query) => $query->where('status', 'Closing')),
+            'Failed' => Tab::make()->query(fn($query) => $query->where('status', 'Failed')),
+        ];
     }
 }
