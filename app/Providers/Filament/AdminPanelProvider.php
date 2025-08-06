@@ -24,6 +24,10 @@ use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugi
 use Romalramos\FilamentLogger\FilamentLoggerPlugin;
 use Filament\Facades\Filament;
 use Filament\Navigation\UserMenuItem;
+use App\Models\Company;
+// use App\Scopes\ApplyTenantScopes;
+use App\Http\Middleware\ApplyTenantScopes;
+// use App\Http\Middleware\ApplyTenantScopes;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,6 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->tenant(Company::class)
             ->login()
             ->userMenuItems([
                 UserMenuItem::make()
@@ -81,9 +86,11 @@ class AdminPanelProvider extends PanelProvider
                 'Jasa Pemetaan',
                 'Jasa Sewa',
             ])
+            ->tenantMiddleware([
+                ApplyTenantScopes::class,
+            ], isPersistent: true)
             ->plugins([
                 ActivitylogPlugin::make(),
-            ])
-        ;
+            ]);
     }
 }

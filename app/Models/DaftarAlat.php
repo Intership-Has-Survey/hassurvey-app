@@ -98,4 +98,20 @@ class DaftarAlat extends Model
             },
         );
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+
+    //     static::creating(function ($model) {
+    //         if (session()->has('company_id')) {
+    //             $model->company_id = session('company_id');
+    //         }
+    //     });
+    // }
 }

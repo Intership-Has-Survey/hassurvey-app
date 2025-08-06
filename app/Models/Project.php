@@ -77,13 +77,6 @@ class Project extends Model
     {
         return $this->belongsTo(Sewa::class);
     }
-
-    // public function customers()
-    // {
-    //     return $this->morphTo();
-    // }
-
-
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'project_id', 'daftar_alat_id')

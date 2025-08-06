@@ -32,6 +32,9 @@ class DaftarAlatResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
+
         return $form
             ->schema([
                 Select::make('jenis_alat_id')
@@ -130,6 +133,9 @@ class DaftarAlatResource extends Resource
                         false => 'Dipakai',
                     ])
                     ->visibleOn('edit'),
+
+                Select::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
