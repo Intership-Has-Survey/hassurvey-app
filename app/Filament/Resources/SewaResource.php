@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SewaResource\Widgets\PesananSewa;
 use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
 use App\Models\Sewa;
 use App\Models\Sales;
@@ -370,17 +371,11 @@ class SewaResource extends Resource
         ];
     }
 
-    // public function getWidgets(): array
-    // {
-    //     return [
-    //         StatsOverviewSewa::class,
-    //     ];
-    // }
-
     public static function getHeaderWidgets(): array
     {
         return [
             StatsOverviewSewa::class,
+            PesananSewa::class,
         ];
     }
 
