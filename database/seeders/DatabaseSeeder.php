@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             JenisAlatSeeder::class,
             DaftarAlatSeeder::class,
             BankSeeder::class,
-            ProjectSeeder::class,
+            ProjectSeeder::class, 
             // SewaSeeder::class,
         ]);
     }
