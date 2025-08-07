@@ -60,6 +60,9 @@ class PengajuanDanaResource extends Resource
                             ->preload()
                             ->label('Daftar Bank')
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Nama bank wajib diisi.',
+                            ])
                             ->reactive()
                             ->live()
                             ->native(false)
@@ -79,13 +82,17 @@ class PengajuanDanaResource extends Resource
                                     });
                             })
                             ->reactive()
+                            ->validationMessages([
+                                'required' => 'Nomor Rekening wajib diisi.',
+                            ])
                             ->searchable()
                             ->native(false)
                             ->placeholder('Pilih Nomor Rekening')
                             ->createOptionForm([
                                 TextInput::make('no_rek')
                                     ->label('Nomor Rekening')
-                                    ->required(),
+                                    ->required()
+                                    ->numeric(),
                                 TextInput::make('nama_pemilik')
                                     ->label('Nama Pemilik')
                                     ->required(),

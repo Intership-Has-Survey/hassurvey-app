@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
+// use App\Filament\Resources\Auth;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,6 +37,14 @@ class UserResource extends Resource
 
     protected static ?int $navigationGroupSort = 1;
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'Super Admin');
+            });
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -46,6 +56,10 @@ class UserResource extends Resource
                 TextInput::make('email')
                     ->label('Email')
                     ->placeholder('Budi@gmail.com')
+                    ->email()
+                    ->validationMessages([
+                        'required' => 'Email wajib diisi',
+                    ])
                     ->required(),
                 TextInput::make('password')
                     ->label('Password')
@@ -57,12 +71,21 @@ class UserResource extends Resource
                     ->multiple()
                     ->relationship('roles', 'name')
                     ->preload()
-                    ->label('Assign Roles'),
+                    ->label('Beri role'),
                 Select::make('companies')
+                    ->label('Akses Perusahaan')
                     ->multiple()
+                    ->required()
                     ->relationship('companies', 'name')
                     ->preload()
-                    ->label('Akses Perusahaan'),
+                    ->options(function () {
+                        return Auth::user()
+                            ->companies() // relasi many-to-many
+                            ->pluck('name', 'id'); // key = id, value = name
+                    })
+                    ->validationMessages([
+                        'required' => 'Pilih setidaknya satu perusahaan/company',
+                    ]),
                 // Select::make('roles')->multiple()->relationship('roles', 'name')
             ]);
     }
