@@ -3,12 +3,13 @@
 namespace App\Filament\Resources;
 
 use Filament\Tables;
+use App\Models\Pemilik;
 use Filament\Forms\Form;
 use App\Models\DaftarAlat;
-use App\Models\Pemilik;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
@@ -41,6 +42,10 @@ class DaftarAlatResource extends Resource
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis alat wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         TextInput::make('nama')
                             ->label('Nama Jenis Alat')
@@ -51,7 +56,7 @@ class DaftarAlatResource extends Resource
                     ]),
                 TextInput::make('nomor_seri')
                     ->required()
-                    ->unique()
+                    ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -61,6 +66,9 @@ class DaftarAlatResource extends Resource
                     ->relationship('merk', 'nama')
                     ->searchable()
                     ->preload()
+                    ->validationMessages([
+                        'required' => 'Merk wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         TextInput::make('nama')
                             ->label('Nama Merk')
@@ -77,6 +85,9 @@ class DaftarAlatResource extends Resource
                             ->get()
                             ->mapWithKeys(fn($pemilik) => [$pemilik->id => "{$pemilik->nama} - {$pemilik->nik}"]);
                     })
+                    ->validationMessages([
+                        'required' => 'Pemilik wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         Section::make('Informasi Pribadi')
                             ->schema([
@@ -130,11 +141,11 @@ class DaftarAlatResource extends Resource
                     ->required()
                     ->options([
                         true => 'Baik',
-                        false => 'Dipakai',
+                        false => 'Bermasalah',
                     ])
                     ->visibleOn('edit'),
 
-                Select::make('company_id')
+                Hidden::make('company_id')
                     ->default($uuid),
             ]);
     }
@@ -184,11 +195,9 @@ class DaftarAlatResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('jenis_alat')
-                    ->options([
-                        'GPS' => 'GPS',
-                        'Drone' => 'Drone',
-                        'OTS' => 'OTS',
-                    ]),
+                    ->relationship('jenisAlat', 'nama')
+                    ->searchable()
+                    ->preload(),
                 TernaryFilter::make('kondisi')
                     ->label('Kondisi')
                     ->placeholder('Semua Kondisi')
