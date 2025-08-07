@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             ProjectSeeder::class,
             SewaSeeder::class,
-            CompanySeeder::class
+            CompanySeeder::class,
+            UserCompanySeeder::class
         ]);
     }
 }

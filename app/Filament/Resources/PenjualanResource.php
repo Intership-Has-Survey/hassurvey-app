@@ -43,7 +43,7 @@ class PenjualanResource extends Resource
         $uuid = request()->segment(2);
         return $form
             ->schema([
-                TextInput::make('nama')
+                TextInput::make('nama_penjualan')
                     ->label('Nama Penjualan')
                     ->required()
                     ->unique(ignoreRecord: true),
