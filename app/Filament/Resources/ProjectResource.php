@@ -10,9 +10,11 @@ use Filament\Forms\Form;
 use App\Models\Perorangan;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Support\RawJs;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Actions\EditAction;
@@ -22,6 +24,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
@@ -50,7 +53,19 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')->columnSpanFull()->placeholder('Masukkan Nama Proyek'),
+                    TextInput::make('nama_project')->placeholder('Masukkan Nama Proyek'),
+                    Select::make('status')
+                        ->label('Status Proyek')
+                        ->options([
+                            'Prospect' => 'Prospect',
+                            'Follow up 1' => 'Follow up 1',
+                            'Follow up 2' => 'Follow up 2',
+                            'Follow up 3' => 'Follow up 3',
+                            'Closing' => 'Closing',
+                            'Failed' => 'Failed',
+                        ])
+                        ->required()
+                        ->native(false),
                     Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
@@ -77,7 +92,7 @@ class ProjectResource extends Resource
                     Select::make('customer_flow_type')
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                        ->live()->dehydrated(false)->native(false)
+                        ->live()->dehydrated(false)->native(false)->required()
                         ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                     Select::make('corporate_id')
@@ -125,6 +140,7 @@ class ProjectResource extends Resource
                         ])
                         ->minItems(1)
                         ->distinct()
+                        ->required()
                         ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                         ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                         ->addActionLabel('Tambah PIC')
@@ -164,7 +180,43 @@ class ProjectResource extends Resource
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
             Section::make('Lokasi Proyek')->schema(self::getAddressFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
-            Section::make('Keuangan & Status')->schema(self::getKeuanganFields())->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
+            Section::make('Keuangan')->schema([
+                TextInput::make('nilai_project_awal')
+                    ->label('Nilai Proyek')
+                    ->numeric()
+                    ->prefix('Rp ')
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(',')
+                    ->live()
+                    ->placeholder('Masukkan anggaran proyek')
+                    ->disabled(fn(callable $get) => $get('status') === 'Closing'),
+
+                Placeholder::make('nilai_ppn_display')
+                    ->label('Nilai PPN (12%)')
+                    ->content(function (Get $get): string {
+                        if ($get('dikenakan_ppn')) {
+                            $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
+                            $nilaiBulat = floor($nilai);
+                            return 'Rp. ' . number_format($nilaiBulat * 0.12, 0, ',');
+                        }
+                        return 'Rp. 0';
+                    }),
+                Toggle::make('dikenakan_ppn')
+                    ->label('Kenakan PPN (12%)')
+                    ->live()
+                    ->disabled(fn(callable $get) => $get('status') === 'Closing'),
+                Placeholder::make('nilai_project')
+                    ->label('Total Tagihan')
+                    ->content(function (Get $get): string {
+                        $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
+                        $nilaiBulat = floor($nilai);
+                        $total = $nilaiBulat;
+                        if ($get('dikenakan_ppn')) {
+                            $total = $nilaiBulat + ($nilaiBulat * 0.12);
+                        }
+                        return 'Rp. ' . number_format($total, 0, ',');
+                    }),
+            ])->columns(2)->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
 
 
             Hidden::make('user_id')->default(auth()->id()),

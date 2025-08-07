@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('nama_project')->nullable();
             $table->foreignUuid('kategori_id')->constrained('kategoris')->nullable();
             $table->uuid('sales_id')->constrained('sales')->nullable();
-            $table->date('tanggal_informasi_masuk');
-            $table->string('sumber');
+            $table->date('tanggal_informasi_masuk')->nullable();
+            $table->string('sumber')->nullable();
 
             $table->string('provinsi', 2)->nullable();
             $table->string('kota', 5)->nullable();
@@ -26,10 +26,10 @@ return new class extends Migration {
             $table->string('detail_alamat')->nullable();
 
             // keuangan & status
-            $table->decimal('nilai_project_awal', 15, 2)->default(0);
-            $table->boolean('dikenakan_ppn')->default(false);
-            $table->decimal('nilai_ppn', 15, 2)->default(0);
-            $table->decimal('nilai_project', 15, 2)->default(0);
+            $table->decimal('nilai_project_awal', 15, 2)->default(0)->nullable();
+            $table->boolean('dikenakan_ppn')->default(false)->nullable();
+            $table->decimal('nilai_ppn', 15, 2)->default(0)->nullable();
+            $table->decimal('nilai_project', 15, 2)->default(0)->nullable();
             $table->string('status');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
             $table->string('status_pekerjaan')->nullable()->default('Belum Dikerjakan');
