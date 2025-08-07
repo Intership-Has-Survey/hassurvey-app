@@ -7,19 +7,23 @@ use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Tables;
+use Filament\Pages\Actions;
 use Illuminate\Support\Number;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PemilikResource\Pages\EditPemilik;
 use App\Filament\Resources\PemilikResource\Pages\ListPemiliks;
 use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
@@ -74,20 +78,17 @@ class PemilikResource extends Resource
             ->schema([
                 Section::make('Informasi Pribadi')
                     ->schema([
-                        TextInput::make('NIK')
+                        TextInput::make('nik')
                             ->label('Nomor Induk Kependudukan (NIK)')
-                            ->unique(ignoreRecord: true)
-                            ->length(16)
                             ->required()
-                            ->validationMessages([
-                                'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
-                            ])
                             ->length(16)
+                            ->rule('regex:/^\d+$/')
+                            ->unique(ignoreRecord: true)
                             ->validationMessages([
-                                'required' => 'NIK wajib diisi.',
-                            ])
-
-                            ->required(),
+                                'required' => 'NIK tidak boleh kosong',
+                                'unique' => 'NIK sudah pernah terdaftar',
+                                'regex' => 'NIK hanya boleh berisi angka',
+                            ]),
                         TextInput::make('nama')
                             ->label('Nama Lengkap (Sesuai KTP)')
                             ->required()
@@ -107,7 +108,14 @@ class PemilikResource extends Resource
                         TextInput::make('telepon')
                             ->label('Nomor Telepon')
                             ->tel()
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Telepon tidak boleh kosong',
+                                'regex' => 'Nomor Telepon tidak valid',
+                                'max' => 'Nomor Telepon terlalu panjang',
+                            ])
+                            ->maxLength(15)
+
                     ])->columns(2),
 
                 Section::make('Alamat')
@@ -148,19 +156,38 @@ class PemilikResource extends Resource
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')->dateTime()->label('Tanggal Dibuat')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('deleted_at')
+                    ->label('Dihapus pada')
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\TrashedFilter::make(),
+            ])
             ->actions([
                 EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Pemilik/Investor Alat yang Terdaftar')
             ->emptyStateDescription('Silahkan buat data pemilik/investor baru untuk memulai.')
             ->defaultSort('created_at', 'desc');
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
     }
 
     public static function getRelations(): array
@@ -179,5 +206,11 @@ class PemilikResource extends Resource
             'create' => CreatePemilik::route('/create'),
             'edit' => EditPemilik::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

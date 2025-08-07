@@ -54,6 +54,9 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 
@@ -93,6 +96,9 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 
@@ -178,6 +184,8 @@ trait GlobalForms
                 ->label('Detail Alamat')
                 ->rows(3)
                 ->columnSpanFull(),
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 
@@ -214,6 +222,9 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 
@@ -235,6 +246,8 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 
@@ -329,6 +342,8 @@ trait GlobalForms
                         ->createItemButtonLabel('Tambah Rincian')
                         ->columns(3),
                 ]),
+            Hidden::make('company_id')->default(request()->segment(2)),
+
         ];
     }
 }

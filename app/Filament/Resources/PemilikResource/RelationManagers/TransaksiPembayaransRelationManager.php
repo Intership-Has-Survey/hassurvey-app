@@ -72,7 +72,7 @@ class TransaksiPembayaransRelationManager extends RelationManager
 
                         return $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
                     })
-                    ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
+                    ->live(),
 
                 Placeholder::make('total_tagihan')
                     ->label('Total Tagihan')
@@ -125,9 +125,9 @@ class TransaksiPembayaransRelationManager extends RelationManager
                         $bulanInt = (int) $bulan;
                         $paymentDate = now()->month($bulanInt)->setDay(27);
                         if (now()->gte($paymentDate)) {
-                            return 'Belum Dibayar - Tombol Bayar Tersedia';
+                            return 'Belum Dibayar';
                         } else {
-                            return 'Belum Dibayar - Tombol Bayar Akan Tersedia pada Tanggal 27 ' . now()->month($bulanInt)->format('F');
+                            return 'Belum Dibayar - ' . now()->month($bulanInt)->format('F');
                         }
                     })
                     ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
@@ -136,8 +136,14 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp')
                     ->maxlength(20)
+                    ->validationMessages([
+                        'required' => 'Nilai pembayaran tidak boleh kosong',
+                        'regex' => 'Nilai pembayaran harus berupa angka',
+                        'max' => 'Nilai pembayaran tidak boleh melebihi 20 digit',
+                    ])
                     ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
 
                 DatePicker::make('tanggal_transaksi')
@@ -156,12 +162,15 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->directory('bukti-pembayaran')
                     ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
 
-                TextColumn::make('keterangan')
+                TextInput::make('keterangan')
                     ->label('Keterangan')
                     ->maxlength(500)
-                    ->nullable(),
+                    ->nullable()
+                    ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
 
                 Hidden::make('user_id')->default(auth()->id()),
+                Hidden::make('company_id')->default(request()->segment(2)),
+
             ])
             ->columns(1);
     }

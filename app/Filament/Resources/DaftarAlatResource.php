@@ -8,15 +8,19 @@ use Filament\Forms\Form;
 use App\Models\DaftarAlat;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Pages\Actions;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Actions\BulkActionGroup;
 use App\Filament\Resources\DaftarAlatResource\Pages;
 
 
@@ -106,7 +110,7 @@ class DaftarAlatResource extends Resource
                                 TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
-                                    ->unique(ignoreRecord: true)
+                                    ->unique()
                                     ->validationMessages([
                                         'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -115,7 +119,7 @@ class DaftarAlatResource extends Resource
                                     ->required(),
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->unique(ignoreRecord: true)
+                                    ->unique()
                                     ->validationMessages([
                                         'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -209,19 +213,39 @@ class DaftarAlatResource extends Resource
                     ->placeholder('Semua Status')
                     ->trueLabel('Tersedia')
                     ->falseLabel('Tidak Tersedia'),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Alat Terdaftar')
             ->emptyStateDescription('Silahkan buat data alat baru untuk memulai.')
             ->defaultSort('created_at', 'desc');
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 
     public static function getRelations(): array

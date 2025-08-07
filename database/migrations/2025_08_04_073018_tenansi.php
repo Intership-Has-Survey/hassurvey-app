@@ -16,6 +16,12 @@ return new class extends Migration {
         Schema::table('projects', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
+        Schema::table('activity_log', function (Blueprint $table) {
+            $table->ForeignUuid('company_id');
+        });
+        Schema::table('transaksi_pembayarans', function (Blueprint $table) {
+            $table->ForeignUuid('company_id');
+        });
         Schema::table('sewa', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
@@ -25,7 +31,6 @@ return new class extends Migration {
         Schema::table('penjualans', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
-
         Schema::table('daftar_alat', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
@@ -57,9 +62,15 @@ return new class extends Migration {
             $table->ForeignUuid('company_id');
         });
 
-        //
-    }
+        $tableNames = config('permission.table_names', [
+            'roles' => 'roles',
+        ]);
 
+        Schema::table($tableNames['roles'], function (Blueprint $table) {
+            $table->uuid('company_id')->nullable()->after('id');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+        });
+    }
     /**
      * Reverse the migrations.
      */

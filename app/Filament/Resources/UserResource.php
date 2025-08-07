@@ -2,23 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
-// use App\Filament\Resources\Auth;
-use Illuminate\Support\Facades\Auth;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\User;
 use Filament\Tables;
+// use App\Filament\Resources\Auth;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Hash;
+use App\Filament\Resources\UserResource\RelationManagers;
 
 class UserResource extends Resource
 {
@@ -51,27 +56,34 @@ class UserResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->label('Nama')
-                    ->placeholder('Budi')
+                    ->placeholder('Masukkan nama User')
                     ->required(),
                 TextInput::make('email')
                     ->label('Email')
-                    ->placeholder('Budi@gmail.com')
+                    ->unique(ignoreRecord: true)
+                    ->placeholder('Masukkan Email yang bener bos!')
                     ->email()
                     ->validationMessages([
-                        'required' => 'Email wajib diisi',
+                        'unique' => 'Email sudah pernah terdaftar',
                     ])
                     ->required(),
                 TextInput::make('password')
                     ->label('Password')
-                    ->placeholder('Kosongkan jika tidak ingin mengubah password')
+                    ->placeholder(fn(string $context) => $context === 'create' ? 'Gunakan password yang kuat' : 'Kosongkan jika tidak ingin mengubah password')
                     ->dehydrated(fn($state) => filled($state))
+                    ->password()
+                    ->revealable()
                     ->required(fn(string $context) => $context === 'create')
                     ->mutateDehydratedStateUsing(fn($state) => filled($state) ? Hash::make($state) : null),
                 Select::make('roles')
                     ->multiple()
                     ->relationship('roles', 'name')
                     ->preload()
-                    ->label('Beri role'),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jabatan wajib diisi',
+                    ])
+                    ->label('Beri Jabatan'),
                 Select::make('companies')
                     ->label('Akses Perusahaan')
                     ->multiple()
@@ -99,16 +111,18 @@ class UserResource extends Resource
                 TextColumn::make('email')->sortable()->searchable(),
                 TextColumn::make('roles.name')->sortable()->searchable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Pengguna Terdaftar')

@@ -7,8 +7,12 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Hidden;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Actions\BulkActionGroup;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -82,18 +86,34 @@ class DaftarAlatRelationManager extends RelationManager
                     }),
             ])
             ->filters([
-                //
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                SelectFilter::make('jenis_alat')
+                    ->relationship('jenisAlat', 'nama')
+                    ->searchable()
+                    ->preload(),
+                TernaryFilter::make('kondisi')
+                    ->label('Kondisi')
+                    ->placeholder('Semua Kondisi')
+                    ->trueLabel('Baik')
+                    ->falseLabel('Bermasalah'),
+
+                TernaryFilter::make('status')
+                    ->label('Ketersediaan')
+                    ->placeholder('Semua Status')
+                    ->trueLabel('Tersedia')
+                    ->falseLabel('Tidak Tersedia'),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

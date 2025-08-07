@@ -81,7 +81,7 @@ class SalesResource extends Resource
                                 'tel' => 'Nomor Telepon tidak valid',
                                 'regex' => 'Nomor Telepon tidak valid'
                             ])
-                            ->maxLength(50),
+                            ->maxLength(15),
                     ])->columns(2),
                 Section::make('Alamat')
                     ->schema(self::getAddressFields())->columns(2),
