@@ -32,13 +32,14 @@ class PengajuanDanaResource extends Resource
     protected static ?string $navigationGroup = 'Keuangan';
     protected static ?string $navigationLabel = 'Pengajuan Dana';
 
+    protected static ?string $tenantRelationshipName = 'pengajuanDanas';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $pluralModelLabel = 'Pengajuan Dana';
 
     public static function form(Form $form): Form
     {
-        $uuid = request()->segment(2);
         return $form
             ->schema([
                 Section::make('Informasi Pengajuan')
@@ -48,12 +49,10 @@ class PengajuanDanaResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Hidden::make('tipe_pengajuan')
-                            ->default('inhouse'),
-
                         Textarea::make('deskripsi_pengajuan')
                             ->label('Deskripsi Umum')
                             ->columnSpanFull(),
+
                         Select::make('bank_id')
                             ->relationship('bank', 'nama_bank')
                             ->placeholder('Pilih Bank')
@@ -94,20 +93,18 @@ class PengajuanDanaResource extends Resource
                                     ->default(auth()->id()),
                             ])
                             ->createOptionUsing(function (array $data, callable $get): string {
-                                // Ambil bank_id dari form utama
                                 $data['bank_id'] = $get('bank_id');
-
                                 $account = BankAccount::create($data);
                                 return $account->id;
                             })
                             ->required(),
                     ])->columns(2),
                 Hidden::make('nilai')
-                    ->default('0'),
+                    ->default(0),
                 Hidden::make('dalam_review')
-                    ->default('0'),
-                Hidden::make('user_id')->default(auth()->id()),
-                Hidden::make('user_id')->default($uuid),
+                    ->default(0),
+                Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -181,7 +178,7 @@ class PengajuanDanaResource extends Resource
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
                             $roleId = optional($firstStep?->roles)->id;
                             $record->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleId,
                             ]);
                         }

@@ -23,6 +23,24 @@ class Company extends Model
         return $this->hasMany(DaftarAlat::class);
     }
 
+    public function Levels()
+    {
+        return $this->hasMany(Level::class);
+    }
+
+    public function pengajuanDanas()
+    {
+        return $this->hasMany(PengajuanDana::class);
+    }
+
+    public function statusPembayarans()
+    {
+        return $this->hasMany(StatusPembayaran::class);
+    }
+
+
+
+
     public function personels()
     {
         return $this->hasMany(Personel::class);

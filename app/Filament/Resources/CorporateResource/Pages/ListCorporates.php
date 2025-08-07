@@ -10,10 +10,12 @@ class ListCorporates extends ListRecords
 {
     protected static string $resource = CorporateResource::class;
 
+    protected static ?string $title = 'Customer Perusahaan';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
 }

@@ -46,7 +46,7 @@ class AlatCustomer extends Model
 
     public function perorangan()
     {
-        return $this->belongsToMany(Perorangan::class, 'alat_customers_perorangan')
+        return $this->belongsToMany(Perorangan::class, 'alat_customers_perorangan','alat_customers_id', 'perorangan_id')
             ->withPivot('alat_customers_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
