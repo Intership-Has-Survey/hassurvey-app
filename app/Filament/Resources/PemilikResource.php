@@ -74,21 +74,27 @@ class PemilikResource extends Resource
             ->schema([
                 Section::make('Informasi Pribadi')
                     ->schema([
+                        TextInput::make('NIK')
+                            ->label('Nomor Induk Kependudukan (NIK)')
+                            ->unique(ignoreRecord: true)
+                            ->length(16)
+                            ->required()
+                            ->validationMessages([
+                                'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
+                            ->length(16)
+                            ->validationMessages([
+                                'required' => 'NIK wajib diisi.',
+                            ])
+
+                            ->required(),
                         TextInput::make('nama')
-                            ->label('Nama Pemilik (Sesuai KTP)')
+                            ->label('Nama Lengkap (Sesuai KTP)')
                             ->required()
                             ->maxLength(255),
                         Select::make('gender')
                             ->options(['Pria' => 'Pria', 'Wanita' => 'Wanita'])
                             ->label('Jenis Kelamin')
-                            ->required(),
-                        TextInput::make('NIK')
-                            ->label('Nomor Induk Kependudukan (NIK)')
-                            ->unique(ignoreRecord: true)
-                            ->validationMessages([
-                                'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
-                            ])
-                            ->length(16)
                             ->required(),
                         TextInput::make('email')
                             ->label('Email')
@@ -96,8 +102,8 @@ class PemilikResource extends Resource
                             ->validationMessages([
                                 'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                             ])
-                            ->email()
-                            ->required(),
+                            ->required()
+                            ->email(),
                         TextInput::make('telepon')
                             ->label('Nomor Telepon')
                             ->tel()
@@ -129,8 +135,8 @@ class PemilikResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama')->label('Nama Pemilik')->searchable()->sortable(),
                 TextColumn::make('NIK')->label('NIK')->searchable(),
+                TextColumn::make('nama')->label('Nama Lengkap')->searchable()->sortable(),
                 TextColumn::make('telepon')->label('No. Telepon')->searchable(),
                 TextColumn::make('status_pembayaran_bulan_ini')
                     ->label('Status Pembayaran')
