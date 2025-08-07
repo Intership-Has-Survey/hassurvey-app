@@ -27,4 +27,10 @@ class CreateUser extends CreateRecord
             $this->getCancelFormAction()->label('Batal'),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        // Redirect ke halaman yang aman setelah create
+        return $this->getResource()::getUrl('index'); // atau 'create'
+    }
 }

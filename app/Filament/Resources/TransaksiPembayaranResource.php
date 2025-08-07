@@ -138,4 +138,9 @@ class TransaksiPembayaranResource extends Resource
             'edit' => Pages\EditTransaksiPembayaran::route('/{record}/edit'),
         ];
     }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 }

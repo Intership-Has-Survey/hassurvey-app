@@ -181,6 +181,11 @@ class StatusPembayaranResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
     // public static function getWidgets(): array
     // {
     //     return [
