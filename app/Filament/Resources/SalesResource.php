@@ -47,19 +47,40 @@ class SalesResource extends Resource
                         TextInput::make('nama')
                             ->label('Nama Sales')
                             ->required()
-                            ->maxLength(50),
+                            ->maxLength(50)
+                            ->validationMessages([
+                                'required' => 'Nama Sales harus diisi'
+                            ]),
                         TextInput::make('nik')
-                            ->label('NIK')
+                            ->label('Nomor Induk Kependudukan (NIK)')
                             ->required()
-                            ->maxLength(16)
-                            ->unique(ignoreRecord: true),
+                            ->length(16)
+                            ->rule('regex:/^\d+$/')
+                            ->unique(ignoreRecord: true)
+                            ->validationMessages([
+                                'required' => 'NIK tidak boleh kosong',
+                                'unique' => 'NIK sudah pernah terdaftar',
+                                'regex' => 'NIK hanya boleh berisi angka',
+                            ]),
                         TextInput::make('email')
                             ->label('Email')
                             ->required()
-                            ->maxLength(50),
+                            ->email()
+                            ->maxLength(50)
+                            ->validationMessages([
+                                'required' => 'Email tidak boleh kosong',
+                                'email' => 'Email tidak valid',
+                                'regex' => 'Email tidak valid',
+                            ]),
                         TextInput::make('telepon')
                             ->label('Telepon')
                             ->required()
+                            ->tel()
+                            ->validationMessages([
+                                'required' => 'Telepon tidak boleh kosong',
+                                'tel' => 'Nomor Telepon tidak valid',
+                                'regex' => 'Nomor Telepon tidak valid'
+                            ])
                             ->maxLength(50),
                     ])->columns(2),
                 Section::make('Alamat')

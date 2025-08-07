@@ -16,11 +16,11 @@ return new class extends Migration {
             $table->string('nik', 16)->unique();
             $table->string('email')->unique();
             $table->string('telepon');
-            $table->string('provinsi', 2);
-            $table->string('kota', 5);
-            $table->string('kecamatan', 8);
-            $table->string('desa', 13);
-            $table->text('detail_alamat');
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->text('detail_alamat')->nullable();
             $table->timestamps();
 
             $table->foreignUuid('user_id')->constrained('users');
