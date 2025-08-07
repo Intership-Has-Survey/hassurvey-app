@@ -136,7 +136,9 @@ class ProjectResource extends Resource
                                 })
                                 ->searchable()
                                 ->createOptionForm(self::getPeroranganForm())
-                                ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                                ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+                                ->required()
+                                ->rules(['required', 'uuid']),
                         ])
                         ->minItems(1)
                         ->distinct()
@@ -146,15 +148,26 @@ class ProjectResource extends Resource
                         ->addActionLabel('Tambah PIC')
                         ->visible(fn(Get $get) => filled($get('customer_flow_type')))
                         ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                            $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
+                            // Filter out empty or null perorangan_id values
+                            $selectedIds = array_filter(array_map(fn($item) => $item['perorangan_id'] ?? null, $state));
+
+                            if (empty($selectedIds)) {
+                                return; // Don't sync if no valid IDs
+                            }
+
                             $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
 
                             // Sync dengan project dan simpan peran
                             $syncData = [];
                             foreach ($selectedIds as $id) {
-                                $syncData[$id] = ['peran' => $peran];
+                                if (!empty($id)) {
+                                    $syncData[$id] = ['peran' => $peran];
+                                }
                             }
-                            $record->perorangan()->sync($syncData);
+
+                            if (!empty($syncData)) {
+                                $record->perorangan()->sync($syncData);
+                            }
 
                             if ($record->corporate_id) {
                                 $corporate = $record->corporate;
