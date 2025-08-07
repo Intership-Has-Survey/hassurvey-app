@@ -40,7 +40,6 @@ class PersonelResource extends Resource
 
     public static function form(Form $form): Form
     {
-
         $uuid = request()->segment(2);
         return $form
             ->schema([
@@ -51,16 +50,24 @@ class PersonelResource extends Resource
                             ->required(),
                         TextInput::make('nik')
                             ->label('Nomor Induk Kependudukan (NIK)')
-                            ->numeric()
+                            ->required()
                             ->length(16)
-                            ->required(),
-                        DatePicker::make('tanggal_lahir')
-                            ->label('Tanggal Lahir')
-                            ->native(false),
+                            ->rule('regex:/^\d+$/')
+                            ->unique(ignoreRecord: true)
+                            ->validationMessages([
+                                'required' => 'NIK tidak boleh kosong',
+                                'unique' => 'NIK sudah pernah terdaftar',
+                                'regex' => 'NIK hanya boleh berisi angka',
+                            ]),
                         TextInput::make('nomor_wa')
                             ->label('Nomor WhatsApp')
                             ->required()
-                            ->tel(),
+                            ->tel()
+                            ->validationMessages([
+                                'required' => 'Nomor WhatsApp tidak boleh kosong',
+                                'tel' => 'Nomor WhatsApp harus berformat nomor telepon',
+                                'regex' => 'Nomor WhatsApp harus berformat nomor telepon',
+                            ]),
                     ])->columns(2),
 
                 Section::make('Informasi Pekerjaan')
@@ -72,6 +79,9 @@ class PersonelResource extends Resource
                                 'freelance' => 'Freelance',
                             ])
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Tipe Personel tidak boleh kosong',
+                            ])
                             ->native(false),
 
                         Select::make('jabatan')
@@ -82,14 +92,18 @@ class PersonelResource extends Resource
                                 'drafter' => 'Drafter',
                             ])
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Jabatan tidak boleh kosong',
+                            ])
                             ->native(false),
 
-                        Textarea::make('keterangan')
-                            ->label('Keterangan')
-                            ->nullable()
-                            ->placeholder('Kosongkan jika tidak ada keterangan khusus')
-                            ->columnSpanFull(),
+                        // Textarea::make('keterangan')
+                        //     ->label('Keterangan')
+                        //     ->nullable()
+                        //     ->placeholder('Kosongkan jika tidak ada keterangan khusus')
+                        //     ->columnSpanFull(),
                     ])->columns(2),
+
                 Section::make('Alamat')
                     ->schema(self::getAddressFields())->columns(2),
 
@@ -169,11 +183,10 @@ class PersonelResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
-
     public static function getRelations(): array
     {
         return [
-            //
+                //
             RelationManagers\ProjectPersonelRelationManager::class,
             RelationManagers\PembayaranPersonelRelationManager::class,
         ];
