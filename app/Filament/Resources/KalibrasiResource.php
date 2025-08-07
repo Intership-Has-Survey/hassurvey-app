@@ -44,7 +44,7 @@ class KalibrasiResource extends Resource
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
                             ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->dehydrated(false)->native(false)
+                            ->live()->dehydrated(false)->native(false)->required()
                             ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                         Select::make('corporate_id')
@@ -92,6 +92,7 @@ class KalibrasiResource extends Resource
                             ])
                             ->minItems(1)
                             ->distinct()
+                            ->required()
                             ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                             ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                             ->addActionLabel('Tambah PIC')

@@ -26,7 +26,8 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Perusahaan')
-                        ->maxLength(200),
+                        ->maxLength(200)
+                        ->required(),
                     TextInput::make('nib')
                         ->label('NIB')
                         ->maxLength(20),
@@ -63,7 +64,7 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
-
+                        ->required()
                         ->maxLength(100),
                     TextInput::make('nik')
                         ->label('NIK')
@@ -180,60 +181,6 @@ trait GlobalForms
         ];
     }
 
-    private static function getKeuanganFields(): array
-    {
-        return [
-            TextInput::make('nilai_project_awal')
-                ->label('Nilai Proyek')
-                ->numeric()
-                ->prefix('Rp ')
-                ->mask(RawJs::make('$money($input)'))
-                ->stripCharacters(',')
-                ->live()
-                ->placeholder('Masukkan anggaran proyek')
-                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
-            Toggle::make('dikenakan_ppn')
-                ->label('Kenakan PPN (12%)')
-                ->live()
-                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
-
-            Placeholder::make('nilai_ppn_display')
-                ->label('Nilai PPN (12%)')
-                ->content(function (Get $get): string {
-                    if ($get('dikenakan_ppn')) {
-                        $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
-                        $nilaiBulat = floor($nilai);
-                        return 'Rp ' . number_format($nilaiBulat * 0.12, 0, ',');
-                    }
-                    return 'Rp 0';
-                }),
-
-            Placeholder::make('nilai_project')
-                ->label('Total Tagihan')
-                ->content(function (Get $get): string {
-                    $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
-                    $nilaiBulat = floor($nilai);
-                    $total = $nilaiBulat;
-                    if ($get('dikenakan_ppn')) {
-                        $total = $nilaiBulat + ($nilaiBulat * 0.12);
-                    }
-                    return 'Rp ' . number_format($total, 0, ',');
-                }),
-            Select::make('status')
-                ->label('Status Proyek')
-                ->options([
-                    'Prospect' => 'Prospect',
-                    'Follow up 1' => 'Follow up 1',
-                    'Follow up 2' => 'Follow up 2',
-                    'Follow up 3' => 'Follow up 3',
-                    'Closing' => 'Closing',
-                    'Failed' => 'Failed',
-                ])
-                ->required()
-                ->native(false),
-        ];
-    }
-
     private static function getSalesForm(): array
     {
         return [
@@ -241,22 +188,19 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Sales')
-
+                        ->required()
                         ->maxLength(100),
                     TextInput::make('nik')
                         ->label('NIK')
-
                         ->maxLength(16)
                         ->unique(ignoreRecord: true)
                         ->numeric(),
                     TextInput::make('email')
                         ->label('Email')
-
                         ->email()
                         ->maxLength(100),
                     TextInput::make('telepon')
                         ->label('Telepon')
-
                         ->tel()
                         ->maxLength(15),
                 ])->columns(2),
@@ -277,7 +221,8 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Kategori')
-
+                        ->nullable()
+                        ->required()
                         ->maxLength(100),
                     Textarea::make('keterangan')
                         ->label('Deskripsi')
