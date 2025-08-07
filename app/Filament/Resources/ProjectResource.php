@@ -54,7 +54,9 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
-                    TextInput::make('nama_project')->placeholder('Masukkan Nama Proyek'),
+                    TextInput::make('nama_project')
+                        ->required()
+                        ->placeholder('Masukkan Nama Proyek'),
                     Select::make('status')
                         ->label('Status Proyek')
                         ->options([
@@ -83,7 +85,13 @@ class ProjectResource extends Resource
                         ->preload()
                         ->createOptionForm(self::getSalesForm()),
                     DatePicker::make('tanggal_informasi_masuk')->native(false)->default(now()),
-                    Select::make('sumber')->options(['Online' => 'Online', 'Offline' => 'Offline'])->native(false),
+                    Select::make('sumber')
+                        ->options([
+                            'Online' => 'Online',
+                            'Offline' => 'Offline'
+                        ])
+                        ->required()
+                        ->native(false),
                 ])
                 ->columns(2)
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
@@ -139,6 +147,9 @@ class ProjectResource extends Resource
                                 ->createOptionForm(self::getPeroranganForm())
                                 ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
                                 ->required()
+                                ->validationMessages([
+                                    'required' => 'Kolom Customer wajib diisi',
+                                ])
                                 ->rules(['required', 'uuid']),
                         ])
                         ->minItems(1)
@@ -198,6 +209,7 @@ class ProjectResource extends Resource
                 TextInput::make('nilai_project_awal')
                     ->label('Nilai Proyek')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp ')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')

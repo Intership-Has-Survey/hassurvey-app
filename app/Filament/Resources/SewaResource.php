@@ -119,6 +119,19 @@ class SewaResource extends Resource
                             ->placeholder('Masukkan Judul Penyewaan')
                             ->label('Judul Penyewaan')
                             ->columnSpanFull(),
+                        // Select::make('sales_id')
+                        // ->relationship('sales', 'nama')
+                        // ->label('Sales')
+                        // ->options(function () {
+                        //     return Sales::query()
+                        //         ->select('id', 'nama', 'nik')
+                        //         ->get()
+                        //         ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
+                        // })
+                        // ->placeholder('Pilih sales')
+                        // ->searchable()
+                        // ->preload()
+                        // ->createOptionForm(self::getSalesForm()),
                         Select::make('sales_id')
                             ->relationship('sales', 'nama')
                             ->label('Sales')
@@ -172,6 +185,9 @@ class SewaResource extends Resource
                             ->label('Tipe Customer')
                             ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                             ->live()->required()->dehydrated(false)->native(false)
+                            ->validationMessages([
+                                'required' => 'Kolom ini wajib diisi',
+                            ])
                             ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
                         Select::make('corporate_id')
@@ -179,6 +195,10 @@ class SewaResource extends Resource
                             ->label('Pilih Perusahaan')
                             ->live()
                             ->createOptionForm(self::getCorporateForm())
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Kolom ini wajib diisi',
+                            ])
                             ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                         Repeater::make('perorangan')
@@ -192,7 +212,11 @@ class SewaResource extends Resource
                                         $selectedPicIds = array_diff($selectedPicIds, [$state]);
                                         return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
                                     })
-                                    ->searchable()->required()
+                                    ->searchable()
+                                    ->required()
+                                    ->validationMessages([
+                                        'required' => 'Kolom ini wajib diisi',
+                                    ])
                                     ->createOptionForm(self::getPeroranganForm())
                                     ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
                             ])

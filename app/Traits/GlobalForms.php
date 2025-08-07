@@ -191,15 +191,18 @@ trait GlobalForms
                         ->required()
                         ->maxLength(100),
                     TextInput::make('nik')
+                        ->required()
                         ->label('NIK')
                         ->maxLength(16)
                         ->unique(ignoreRecord: true)
                         ->numeric(),
                     TextInput::make('email')
+                        ->required()
                         ->label('Email')
                         ->email()
                         ->maxLength(100),
                     TextInput::make('telepon')
+                        ->required()
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),

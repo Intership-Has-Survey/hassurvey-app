@@ -40,13 +40,21 @@ class LevelResource extends Resource
             ->schema([
                 //
                 TextInput::make('nama')
-                    ->label('Nama tingkatan pengajuan'),
+                    ->required()
+                    ->label('Nama tingkatan pengajuan')
+                    ->validationMessages([
+                        'required' => 'Kolom ini wajib diisi',
+                    ]),
                 TextInput::make('max_nilai')
                     ->label('Maksimal pengajuan')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp ')
                     ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(','),
+                    ->stripCharacters(',')
+                    ->validationMessages([
+                        'required' => 'Kolom ini wajib diisi',
+                    ]),
                 Hidden::make('company_id')
                     ->default($uuid),
             ]);

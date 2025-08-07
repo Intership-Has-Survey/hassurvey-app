@@ -130,4 +130,9 @@ class Sewa extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function sales(): BelongsTo
+    {
+        return $this->belongsTo(Sales::class);
+    }
 }

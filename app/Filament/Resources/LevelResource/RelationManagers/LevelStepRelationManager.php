@@ -9,6 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 
 class LevelStepRelationManager extends RelationManager
 {
@@ -22,8 +23,11 @@ class LevelStepRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('step')
                     ->label('urutan ke')
+                    ->required()
                     ->numeric(),
+
                 Forms\Components\Select::make('role_id')
+                    ->required()
                     ->relationship('role', 'name')
                     ->preload()
                     ->label('Jabatan'),
@@ -47,7 +51,9 @@ class LevelStepRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->recordTitle(fn(Model $record) => "data ini?"), // Ini kuncinya
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
