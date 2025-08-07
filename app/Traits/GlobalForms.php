@@ -284,6 +284,7 @@ trait GlobalForms
                         ->createOptionForm([
                             TextInput::make('no_rek')
                                 ->label('Nomor Rekening')
+                                ->numeric()
                                 ->required(),
                             TextInput::make('nama_pemilik')
                                 ->label('Nama Pemilik')

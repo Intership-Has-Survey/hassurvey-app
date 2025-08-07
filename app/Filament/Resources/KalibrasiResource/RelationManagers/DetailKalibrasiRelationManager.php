@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Illuminate\Validation\Rule;
 use Filament\Tables\Table;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Hidden;
@@ -51,6 +52,13 @@ class DetailKalibrasiRelationManager extends RelationManager
                             ->preload()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('nama')
+                                    ->unique(ignoreRecord: true)
+                                    ->rules([
+                                        Rule::unique('merk', 'nama')->whereNull('deleted_at'),
+                                    ])
+                                    ->validationMessages([
+                                        'unique' => 'Nama merk ini sudah terdaftar.',
+                                    ])
                                     ->required(),
                             ]),
                         Forms\Components\TextInput::make('nomor_seri')
@@ -216,19 +224,23 @@ class DetailKalibrasiRelationManager extends RelationManager
                         ->required()
                         ->maxLength(100),
                     TextInput::make('nik')
+                        ->required()
                         ->label('NIK')
                         ->length(16)
                         ->numeric()
                         ->unique(ignoreRecord: true),
                     TextInput::make('email')
+                        ->required()
                         ->label('Email')
                         ->email()
                         ->maxLength(100),
                     TextInput::make('telepon')
+                        ->required()
                         ->label('Telepon')
                         ->tel()
                         ->maxLength(15),
                     Forms\Components\Select::make('gender')
+                        ->required()
                         ->label('Jenis Kelamin')
                         ->options([
                             'Pria' => 'Pria',

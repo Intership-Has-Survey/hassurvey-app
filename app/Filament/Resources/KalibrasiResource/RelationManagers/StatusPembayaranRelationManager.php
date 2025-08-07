@@ -76,6 +76,7 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp')
                     ->maxlength(20),
 
