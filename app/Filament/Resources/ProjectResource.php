@@ -28,6 +28,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
@@ -332,6 +333,7 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
