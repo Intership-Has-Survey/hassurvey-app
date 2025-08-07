@@ -30,6 +30,8 @@ class LevelResource extends Resource
 
     protected static ?string $navigationGroup = 'Keuangan';
 
+    protected static ?string $tenantRelationshipName = 'Levels';
+
     public static function form(Form $form): Form
     {
 

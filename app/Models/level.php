@@ -8,7 +8,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class level extends Model
+class Level extends Model
 {
     //
     use HasRoles, HasUuids;

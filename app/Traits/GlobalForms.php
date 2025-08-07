@@ -303,8 +303,8 @@ trait GlobalForms
                         ->label('Deskripsi Umum')
                         ->columnSpanFull(),
 
-                    Hidden::make('tipe_pengajuan')
-                        ->default('project'),
+                    // Hidden::make('tipe_pengajuan')
+                    //     ->default('project'),
                     Hidden::make('nilai')
                         ->default('0'),
                     Hidden::make('user_id')

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transaksi_pembayarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('payable_id');
+            $table->foreignUuid('payable_id')->nullable();
             $table->string('payable_type')->nullable();
             $table->string('bulan_pembayaran')->nullable();
             $table->decimal('nilai', 15, 2);

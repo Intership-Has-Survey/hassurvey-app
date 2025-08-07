@@ -6,8 +6,9 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\Perorangan;
+use Filament\Forms\Components\Repeater;
 use Filament\Tables\Table;
-use App\Traits\GlobalForms;
+use App\Traits\GlolForms;
 use App\Models\AlatCustomer;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use App\Traits\GlobalForms;
 use App\Filament\Resources\AlatCustomerResource\Pages\EditAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\Pages\ListAlatCustomers;
 use App\Filament\Resources\AlatCustomerResource\Pages\CreateAlatCustomer;
@@ -53,7 +55,7 @@ class AlatCustomerResource extends Resource
                     ]),
                 TextInput::make('nomor_seri')
                     ->required()
-                    ->unique()
+                    ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -85,41 +87,92 @@ class AlatCustomerResource extends Resource
                     ->schema([
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
-                            ->options([
-                                'perorangan' => 'Perorangan',
-                                'corporate' => 'Corporate'
-                            ])
-                            ->live()
-                            ->required()
-                            ->dehydrated(false) // karena ini bukan field database
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('corporate_id', null);
-                                $set('perorangan_id', null);
-                            }),
+                            ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
+                            ->live()->dehydrated(false)->native(false)
+                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
 
-                        // Jika corporate
                         Select::make('corporate_id')
-                            ->label('Pilih Perusahaan')
                             ->relationship('corporate', 'nama')
-                            ->createOptionForm(self::getCorporateForm())
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                        // Jika perorangan
-                        Select::make('perorangan_id')
-                            ->label('Pilih Customer')
-                            ->options(function (Get $get) {
-                                if ($get('customer_flow_type') !== 'perorangan') {
-                                    return [];
-                                }
-                                return Perorangan::all()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                            })
+                            ->label('Pilih Perusahaan')
+                            ->live()
                             ->searchable()
-                            ->createOptionForm(self::getPeroranganForm())
-                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                            ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+                            ->preload()
+                            ->createOptionForm(self::getCorporateForm())
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if (!$state) {
+                                    $set('perorangan', []);
+                                    return;
+                                }
+
+                                $corporate = \App\Models\Corporate::with('perorangan')->find($state);
+
+                                if (!$corporate) {
+                                    $set('perorangan', []);
+                                    return;
+                                }
+
+                                $perorangan = $corporate->perorangan->map(fn($p) => [
+                                    'perorangan_id' => $p->id,
+                                ])->toArray();
+
+                                $set('perorangan', $perorangan);
+                            })
+                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+                        Repeater::make('perorangan')
+                            ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
+                            ->relationship()
+                            ->schema([
+                                Select::make('perorangan_id')
+                                    ->label(false)
+                                    ->options(function (Get $get, $state): array {
+                                        $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
+                                        $selectedPicIds = array_diff($selectedPicIds, [$state]);
+                                        return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
+                                    })
+                                    ->searchable()
+                                    ->createOptionForm(self::getPeroranganForm())
+                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                            ])
+                            ->minItems(1)
+                            ->distinct()
+                            ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
+                            ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
+                            ->addActionLabel('Tambah PIC')
+                            ->visible(fn(Get $get) => filled($get('customer_flow_type')))
+                            ->saveRelationshipsUsing(function ($record, array $state): void {
+                                $selectedIds = array_map(fn($item) => $item['perorangan_id'], $state);
+                                $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+
+                                // Sync dengan project dan simpan peran
+                                $syncData = [];
+                                foreach ($selectedIds as $id) {
+                                    $syncData[$id] = ['peran' => $peran];
+                                }
+                                $record->perorangan()->sync($syncData);
+
+                                if ($record->corporate_id) {
+                                    $corporate = $record->corporate;
+
+                                    // Ambil semua ID PIC yang terhubung sebelumnya
+                                    $existingIds = $corporate->perorangan()->pluck('perorangan_id')->toArray();
+
+                                    // Tambahkan PIC baru yang belum terhubung
+                                    foreach ($selectedIds as $peroranganId) {
+                                        if (!in_array($peroranganId, $existingIds)) {
+                                            $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                                        }
+                                    }
+
+                                    // Hapus PIC yang tidak ada di list sekarang
+                                    $toDetach = array_diff($existingIds, $selectedIds);
+                                    if (!empty($toDetach)) {
+                                        $corporate->perorangan()->detach($toDetach);
+                                    }
+                                }
+                            })
                     ]),
+
                 Hidden::make('company_id')
                     ->default($uuid),
             ]);
@@ -156,7 +209,7 @@ class AlatCustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+                //
             DetailKalibrasiRelationManager::class,
         ];
     }

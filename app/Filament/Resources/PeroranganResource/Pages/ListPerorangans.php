@@ -10,10 +10,12 @@ class ListPerorangans extends ListRecords
 {
     protected static string $resource = PeroranganResource::class;
 
+    protected static ?string $title = "Customer Perorangan";
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
 }
