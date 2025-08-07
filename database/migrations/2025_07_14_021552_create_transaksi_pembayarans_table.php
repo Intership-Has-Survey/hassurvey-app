@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('tanggal_transaksi');
             $table->string('metode_pembayaran');
             $table->string('bukti_pembayaran_path')->nullable();
+            $table->string('keterangan')->nullable();
             $table->timestamps();
             $table->foreignUuid('user_id')->constrained('users');
         });

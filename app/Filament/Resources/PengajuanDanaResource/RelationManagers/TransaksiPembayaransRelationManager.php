@@ -56,6 +56,10 @@ class TransaksiPembayaransRelationManager extends RelationManager
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->directory('bukti-pembayaran'),
+                TextColumn::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxlength(500)
+                    ->nullable(),
                 Hidden::make('user_id')->default(auth()->id()),
             ]);
     }

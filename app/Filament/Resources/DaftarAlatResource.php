@@ -106,7 +106,7 @@ class DaftarAlatResource extends Resource
                                 TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
-                                    ->unique()
+                                    ->unique(ignoreRecord: true)
                                     ->validationMessages([
                                         'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -115,7 +115,7 @@ class DaftarAlatResource extends Resource
                                     ->required(),
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->unique()
+                                    ->unique(ignoreRecord: true)
                                     ->validationMessages([
                                         'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])

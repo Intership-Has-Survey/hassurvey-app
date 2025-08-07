@@ -104,6 +104,10 @@ class TransaksiPembayaranResource extends Resource
                     ->square()
                     ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
                     ->openUrlInNewTab(),
+                TextColumn::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxlength(500)
+                    ->nullable(),
                 TextColumn::make('user.name')
                     ->label('Dibuat oleh')
                     ->sortable(),

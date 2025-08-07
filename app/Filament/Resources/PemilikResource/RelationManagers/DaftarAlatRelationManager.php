@@ -3,13 +3,14 @@
 namespace App\Filament\Resources\PemilikResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Hidden;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Resources\RelationManagers\RelationManager;
 
 
 class DaftarAlatRelationManager extends RelationManager
@@ -24,7 +25,7 @@ class DaftarAlatRelationManager extends RelationManager
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
-                Forms\Components\Select::make('jenis_alat')
+                Forms\Components\Select::make('jenis_alat_id')
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
@@ -35,9 +36,11 @@ class DaftarAlatRelationManager extends RelationManager
                         Forms\Components\TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->nullable(),
+                    ])->validationMessages([
+                        'required' => 'Jenis alat wajib dipilih.',
                     ])
                     ->required(),
-                Forms\Components\Select::make('merk')
+                Forms\Components\Select::make('merk_id')
                     ->relationship('merk', 'nama')
                     ->searchable()
                     ->preload()
@@ -45,7 +48,13 @@ class DaftarAlatRelationManager extends RelationManager
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Merk')
                             ->required(),
-                    ])->required(),
+                    ])->required()
+                    ->validationMessages([
+                        'required' => 'Merk wajib dipilih.',
+                    ]),
+
+                Hidden::make('company_id')
+                    ->default(fn() => $this->ownerRecord->company_id),
             ])->columns(2);
     }
 
@@ -65,8 +74,6 @@ class DaftarAlatRelationManager extends RelationManager
                         true => 'success',
                         false => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status Alat'),
                 BadgeColumn::make('status')
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Tidak Tersedia')
                     ->color(fn(bool $state): string => match ($state) {

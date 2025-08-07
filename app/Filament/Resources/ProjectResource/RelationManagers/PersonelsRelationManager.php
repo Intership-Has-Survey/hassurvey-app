@@ -6,10 +6,11 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
 use Filament\Forms\Components\Hidden;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Support\RawJs;
 
 class PersonelsRelationManager extends RelationManager
 {
@@ -149,6 +150,11 @@ class PersonelsRelationManager extends RelationManager
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
                             ]),
+                        TextColumn::make('keterangan')
+                            ->label('Keterangan')
+                            ->maxlength(500)
+                            ->disabled()
+                            ->nullable(),
                     ])
                     ->visible(function ($record) {
                         $project = $this->getOwnerRecord();
@@ -209,6 +215,10 @@ class PersonelsRelationManager extends RelationManager
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
                             ]),
+                        TextColumn::make('keterangan')
+                            ->label('Keterangan')
+                            ->maxlength(500)
+                            ->nullable(),
                     ])
                     ->action(function (array $data, $record) {
                         // Simpan ke tabel pembayaran_personel

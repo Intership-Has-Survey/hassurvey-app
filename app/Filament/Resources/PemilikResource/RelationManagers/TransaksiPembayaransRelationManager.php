@@ -156,6 +156,11 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->directory('bukti-pembayaran')
                     ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
 
+                TextColumn::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxlength(500)
+                    ->nullable(),
+
                 Hidden::make('user_id')->default(auth()->id()),
             ])
             ->columns(1);
