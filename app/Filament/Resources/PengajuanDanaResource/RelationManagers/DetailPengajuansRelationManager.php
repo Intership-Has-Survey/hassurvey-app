@@ -70,7 +70,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
                                 'level_id'     => $level->id,
@@ -97,7 +97,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
                                 'level_id'     => $level->id,
@@ -121,7 +121,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
                                 'level_id'     => $level->id,

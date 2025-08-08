@@ -103,10 +103,10 @@ class PermissionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
+                TetColumn::make('id')
                     ->label('ID')
                     ->searchable(),
-                TextColumn::make('name')
+                TextColumxn::make('name')
                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.name'))
                     ->searchable(),
                 TextColumn::make('guard_name')
@@ -159,7 +159,7 @@ class PermissionResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
                 BulkAction::make('Attach to roles')
-                    ->label(__('filament-spatie-roles-permissions::filament-spatie.action.attach_to_roles'))
+                    ->label('Tambahkan ke')
                     ->action(function (Collection $records, array $data): void {
                         Role::whereIn('id', $data['roles'])->each(function (Role $role) use ($records): void {
                             $records->each(fn(Permission $permission) => $role->givePermissionTo($permission));
