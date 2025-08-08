@@ -35,6 +35,7 @@ class DaftarAlatProjectRelationManager extends BaseAlatSewaRelationManager
             'detail_alamat' => $project->detail_alamat ?? '',
             'user_id' => auth()->id(),
             'corporate_id' => Corporate::where('nama', 'CV HAS Survey')->first()?->id,
+            'company_id' => $project->company_id,
         ]);
 
         $project->update(['sewa_id' => $newSewa->id]);

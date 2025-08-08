@@ -68,7 +68,9 @@ class ProjectPersonelRelationManager extends RelationManager
                                 ->whereColumn('p.project_id', 'projects.id')
                                 ->where('p.personel_id', $personel->id);
                         });
-                    })
+                    }),
+                Tables\Filters\TrashedFilter::make(),
+
             ])
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),
@@ -97,7 +99,8 @@ class ProjectPersonelRelationManager extends RelationManager
                             ->options([
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
-                            ]),
+                            ])
+                            ->required(),
                         Forms\Components\TextInput::make('nilai')
                             ->numeric()
                             ->mask(RawJs::make('$money($input)'))
@@ -189,13 +192,15 @@ class ProjectPersonelRelationManager extends RelationManager
                         $pembayaran = $record->pembayaranPersonel;
                         // dd($pembayaran); // akan dieksekusi saat tombol/icon diklik
                     }),
-
-
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

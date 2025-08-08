@@ -16,9 +16,9 @@ return new class extends Migration {
         Schema::table('projects', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
-        Schema::table('activity_log', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
+        // Schema::table('activity_log', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
         Schema::table('transaksi_pembayarans', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
@@ -61,6 +61,10 @@ return new class extends Migration {
         Schema::table('levels', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
+        Schema::table('riwayat_sewa', function (Blueprint $table) {
+            $table->ForeignUuid('company_id');
+        });
+
 
         $tableNames = config('permission.table_names', [
             'roles' => 'roles',

@@ -56,6 +56,7 @@ class ProjectResource extends Resource
                 ->schema([
                     TextInput::make('nama_project')
                         ->required()
+                        ->label('Nama Proyek')
                         ->placeholder('Masukkan Nama Proyek'),
                     Select::make('status')
                         ->label('Status Proyek')
@@ -68,7 +69,11 @@ class ProjectResource extends Resource
                             'Failed' => 'Failed',
                         ])
                         ->required()
-                        ->native(false),
+                        ->default('Closing')
+                        ->native(false)
+                        ->validationMessages([
+                            'required' => 'Status proyek tidak boleh kosong',
+                        ]),
                     Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
                     Select::make('sales_id')
@@ -84,14 +89,19 @@ class ProjectResource extends Resource
                         ->searchable()
                         ->preload()
                         ->createOptionForm(self::getSalesForm()),
-                    DatePicker::make('tanggal_informasi_masuk')->native(false)->default(now()),
+                    DatePicker::make('tanggal_informasi_masuk')->label('Tanggal Informasi Masuk')->native(false)->required()->default(now())->validationMessages([
+                        'required' => 'Tanggal tidak boleh kosong',
+                    ]),
                     Select::make('sumber')
                         ->options([
                             'Online' => 'Online',
                             'Offline' => 'Offline'
                         ])
                         ->required()
-                        ->native(false),
+                        ->native(false)
+                        ->validationMessages([
+                            'required' => 'Sumber tidak boleh kosong',
+                        ]),
                 ])
                 ->columns(2)
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
@@ -102,7 +112,10 @@ class ProjectResource extends Resource
                         ->label('Tipe Customer')
                         ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                         ->live()->dehydrated(false)->native(false)->required()
-                        ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
+                        ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
+                        ->validationMessages([
+                            'required' => 'Customer tidak boleh kosong',
+                        ]),
 
                     Select::make('corporate_id')
                         ->relationship('corporate', 'nama')
@@ -130,6 +143,10 @@ class ProjectResource extends Resource
 
                             $set('perorangan', $perorangan);
                         })
+                        ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                        ->validationMessages([
+                            'required' => 'Perusahaan wajib diisi',
+                        ])
                         ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                     Repeater::make('perorangan')
@@ -215,7 +232,7 @@ class ProjectResource extends Resource
                     ->stripCharacters(',')
                     ->live()
                     ->placeholder('Masukkan anggaran proyek')
-                    ->disabled(fn(callable $get) => $get('status') === 'Closing'),
+                    ->disabled(fn(?Model $record, callable $get) => $record && $record->exists && $get('status') === 'Closing'),
 
                 Placeholder::make('nilai_ppn_display')
                     ->label('Nilai PPN (12%)')

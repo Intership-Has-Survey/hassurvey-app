@@ -32,8 +32,6 @@ class StatusPembayaranRelationManager extends RelationManager
 
     protected static ?string $title = 'Riwayat Pembayaran';
 
-    protected static bool $isLazy = false;
-
     public function form(Form $form): Form
     {
         $project = $this->ownerRecord;
@@ -76,8 +74,7 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
-                    ->prefix('Rp')
-                    ->maxlength(20),
+                    ->prefix('Rp'),
 
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
@@ -90,10 +87,10 @@ class StatusPembayaranRelationManager extends RelationManager
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
-                
+
                 Hidden::make('payable_id')
                     ->default(fn() => $this->ownerRecord->id),
-                
+
                 Hidden::make('payable_type')
                     ->default(fn() => get_class($this->ownerRecord)),
             ]);

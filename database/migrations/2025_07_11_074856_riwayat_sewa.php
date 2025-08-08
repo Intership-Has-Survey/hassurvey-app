@@ -28,8 +28,8 @@ return new class extends Migration {
             $table->decimal('pendapatanhas_final', 15, 2)->default(0);
 
             $table->text('catatan')->nullable();
-            
-            $table->string('foto_bukti')->nullable();
+
+            $table->string('foto_bukti_path')->nullable();
             $table->string('recordId')->nullable(); // Tambahkan kolom recordId untuk menyimpan ID record terkait
             $table->boolean(('needs_replacement'))->default(false); // Tambahkan kolom untuk kebutuhan penggantian alat
             $table->integer('diskon_hari')->nullable(); // Tambahkan kolom untuk

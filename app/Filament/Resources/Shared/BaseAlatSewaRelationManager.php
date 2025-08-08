@@ -20,6 +20,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Get;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 
 abstract class BaseAlatSewaRelationManager extends RelationManager
 {
@@ -48,7 +49,15 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated(),
                 Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
                 Forms\Components\Textarea::make('catatan')->label('catatan')->columnSpanFull(),
-                FileUpload::make('foto_bukti')->label('Foto Bukti')->image()->directory('bukti-pengembalian')->required()->columnSpanFull(),
+                FileUpload::make('foto_bukti_path')
+                    ->label('Bukti Pengembalian')
+                    ->image()
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
+                    ->directory('bukti-pengembalian')
+                    ->columnSpanFull(),
+                Hidden::make('company_id')->default(request()->segment(2)),
             ])
             ->disabled(fn(): bool => $this->getSewaRecord()->is_locked);
     }
@@ -80,7 +89,6 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 $pendapatanInvFinal = $biayaSewaAlatFinal * $persentasePemilik;
                 $pendapatanHasFinal = $biayaSewaAlatFinal - $pendapatanInvFinal;
             }
-
         } else {
             // If total biaya_sewa_alat is zero, fallback to original values
             $biayaSewaAlatFinal = $pivotData->biaya_sewa_alat ?? 0;
@@ -153,7 +161,10 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         $sewa = $this->getSewaRecord();
                         $alreadyAttachedAlatIds = $sewa->daftarAlat()->pluck('daftar_alat.id');
                         return [
-                            Forms\Components\Select::make('jenis_alat_id_filter')->label('Filter Berdasarkan Jenis Alat')->options(JenisAlat::pluck('nama', 'id'))->live()->dehydrated(false),
+                            Forms\Components\Select::make('jenis_alat_id_filter')->label('Filter Berdasarkan Jenis Alat')->options(JenisAlat::pluck('nama', 'id'))->live()->dehydrated(false)->required()
+                                ->validationMessages([
+                                    'required' => 'Jenis Alat harus dipilih',
+                                ]),
                             Forms\Components\Select::make('recordId')->label('Pilih Nomor Seri')->options(function (Get $get) use ($alreadyAttachedAlatIds): array {
                                 $jenisAlatId = $get('jenis_alat_id_filter');
                                 if (!$jenisAlatId) {
@@ -164,7 +175,9 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                     $query->where('jenis_alat_id', $jenisAlatId);
                                 }
                                 return $query->pluck('nomor_seri', 'id')->all();
-                            })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+                            })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))->validationMessages([
+                                'required' => 'Nomor seri harus dipilih',
+                            ]),
 
                             Forms\Components\DatePicker::make('tgl_keluar')
                                 ->label('Tanggal Keluar')
@@ -183,6 +196,8 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')
                                 ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+                            Hidden::make('company_id')
+                                ->default(fn() => $this->ownerRecord->company_id),
                         ];
                     })
             ])
@@ -222,6 +237,15 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             ->disabled()
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(','),
+                        FileUpload::make('foto_bukti_path')
+                            ->label('Bukti Pengembalian')
+                            ->image()
+                            ->maxSize(1024)
+                            ->required()
+                            ->disk('public')
+                            ->directory('bukti-pengembalian')
+                            ->columnSpanFull(),
+                        Hidden::make('company_id')->default(request()->segment(2)),
                     ]),
                 Tables\Actions\EditAction::make()
                     ->label('Kembalikan')
@@ -256,9 +280,10 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             $record->pivot->pendapataninv = $pendapatanInvestor;
                             $record->pivot->pendapatanhas = $pendapatanHasSurvey;
                             $record->pivot->catatan = $data['catatan'];
-                            $record->pivot->foto_bukti = $data['foto_bukti'];
+                            $record->pivot->foto_bukti_path = $data['foto_bukti_path'];
                             $record->pivot->kondisi_kembali = $data['kondisi_kembali'];
                             $record->pivot->needs_replacement = $data['needs_replacement'] ?? false;
+                            $record->pivot->company_id = $data['company_id'];
                             $record->pivot->save();
                         }
                         return $record;

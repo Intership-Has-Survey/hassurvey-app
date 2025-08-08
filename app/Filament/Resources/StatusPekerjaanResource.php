@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\StatusPekerjaanResource\Pages;
-use App\Models\StatusPekerjaan;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Pages\Actions;
+use App\Models\StatusPekerjaan;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use App\Filament\Resources\StatusPekerjaanResource\Pages;
 
 class StatusPekerjaanResource extends Resource
 {
@@ -54,8 +57,21 @@ class StatusPekerjaanResource extends Resource
                 Tables\Columns\TextColumn::make('laporan')->badge(),
                 Tables\Columns\TextColumn::make('user.name')->label('Dibuat Oleh'),
             ])
+            ->filters([
+                Tables\Filters\TrashedFilter::make(),
+            ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                ]),
             ]);
     }
 
@@ -65,6 +81,14 @@ class StatusPekerjaanResource extends Resource
             'index' => Pages\ListStatusPekerjaans::route('/'),
             'create' => Pages\CreateStatusPekerjaan::route('/create'),
             'edit' => Pages\EditStatusPekerjaan::route('/{record}/edit'),
+        ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }

@@ -70,6 +70,10 @@ class TransaksiPembayaranResource extends Resource
                     ->disk('public')
                     ->directory('bukti-pembayaran')
                     ->columnSpanFull(),
+                TextInput::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxlength(500)
+                    ->nullable(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
                 Hidden::make('company_id')
@@ -104,10 +108,6 @@ class TransaksiPembayaranResource extends Resource
                     ->square()
                     ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
                     ->openUrlInNewTab(),
-                TextColumn::make('keterangan')
-                    ->label('Keterangan')
-                    ->maxlength(500)
-                    ->nullable(),
                 TextColumn::make('user.name')
                     ->label('Dibuat oleh')
                     ->sortable(),

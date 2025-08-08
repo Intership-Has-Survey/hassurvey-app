@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
@@ -16,7 +17,6 @@ class PersonelsRelationManager extends RelationManager
 {
     protected static string $relationship = 'personels';
     protected static ?string $title = 'Tim Personel Proyek';
-    protected static bool $isLazy = false;
     public function form(Form $form): Form
     {
         return $form
@@ -81,7 +81,11 @@ class PersonelsRelationManager extends RelationManager
                         Forms\Components\Placeholder::make('label_personel')
                             ->label('Pilih Personel'),
                         $action
-                            ->getRecordSelect(),
+                            ->getRecordSelect()
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Personel tidak boleh kosong',
+                            ]),
                         Forms\Components\Select::make('peran')
                             ->options([
                                 'surveyor' => 'Surveyor',
@@ -90,10 +94,16 @@ class PersonelsRelationManager extends RelationManager
                                 'drafter' => 'Drafter',
                             ])
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Peran tidak boleh kosong',
+                            ])
                             ->native(false),
                         Forms\Components\DatePicker::make('tanggal_mulai')
                             ->label('Tanggal Mulai')
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Tanggal mulai tidak boleh kosong',
+                            ])
                             ->default(now())
                             ->native(false),
                         Hidden::make('user_id')
@@ -114,13 +124,17 @@ class PersonelsRelationManager extends RelationManager
                                 'drafter' => 'Drafter',
                             ])
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->validationMessages([
+                                'required' => 'Peran harus diisi',
+                            ]),
                         Forms\Components\DatePicker::make('tanggal_mulai')
                             ->label('Tanggal Mulai')
                             ->disabled()
                             ->native(false),
                         Forms\Components\DatePicker::make('tanggal_berakhir')
                             ->label('Tanggal Berakhir')
+                            ->minDate(fn(Get $get) => $get('tanggal_mulai'))
                             ->native(false),
                     ]),
                 // Tables\Actions\ViewAction::make(),
@@ -150,7 +164,7 @@ class PersonelsRelationManager extends RelationManager
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
                             ]),
-                        TextColumn::make('keterangan')
+                        TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->maxlength(500)
                             ->disabled()
@@ -200,25 +214,46 @@ class PersonelsRelationManager extends RelationManager
                         Forms\Components\TextInput::make('nilai')
                             ->numeric()
                             ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
+                            ->stripCharacters(',')
+                            ->required()
+                            ->prefix('Rp')
+                            ->validationMessages([
+                                'required' => 'Nilai harus diisi',
+                            ]),
                         Forms\Components\FileUpload::make('bukti_bayar')
-                            ->disk('public') // sesuaikan dengan disk kamu
-                            ->directory('bukti-bayar'),
+                            ->label('Bukti Pembayaran')
+                            ->image()
+                            ->maxSize(1024)
+                            ->disk('public')
+                            ->directory('bukti-pembayaran')
+                            ->columnSpanFull()
+                            ->validationMessages([
+                                'max' => 'Ukuran file maksimal 1 MB',
+                            ]),
                         Forms\Components\DatePicker::make('tanggal_transaksi')
-                            ->label('Tanggal transaksi')
-                            ->required(),
+                            ->label('Tanggal Transaksi')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Tanggal transaksi harus diisi',
+                            ])
+                            ->default(now()),
                         Forms\Components\Hidden::make('user_id')
                             ->default(auth()->id()),
                         Forms\Components\Select::make('metode_pembayaran')
                             ->label('Metode Pembayaran')
+                            ->required()
                             ->options([
                                 'transfer' => 'Transfer',
                                 'tunai' => 'Tunai',
+                            ])
+                            ->validationMessages([
+                                'required' => 'Metode pembayaran harus dipilih',
                             ]),
-                        TextColumn::make('keterangan')
+                        TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->maxlength(500)
                             ->nullable(),
+                        Hidden::make('company_id')->default(request()->segment(2)),
                     ])
                     ->action(function (array $data, $record) {
                         // Simpan ke tabel pembayaran_personel

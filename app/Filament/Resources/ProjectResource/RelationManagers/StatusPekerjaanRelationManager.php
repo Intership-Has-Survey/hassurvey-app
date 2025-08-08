@@ -22,8 +22,6 @@ class StatusPekerjaanRelationManager extends RelationManager
 {
     protected static string $relationship = 'statusPekerjaan';
 
-    protected static bool $isLazy = false;
-
     public function form(Form $form): Form
     {
         return $form
@@ -60,7 +58,6 @@ class StatusPekerjaanRelationManager extends RelationManager
                     ->label('Bukti Pekerjaan')
                     ->image()
                     ->maxSize(1024)
-                    ->required()
                     ->disk('public')
                     ->directory('bukti-pekerjaan')
                     ->columnSpanFull(),

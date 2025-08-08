@@ -8,6 +8,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Personel;
 use Filament\Forms\Form;
+use Filament\Pages\Actions;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
@@ -168,14 +169,21 @@ class PersonelResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
+
+                Tables\Filters\TrashedFilter::make(),
             ])
 
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Personel Terdaftar')
@@ -186,7 +194,7 @@ class PersonelResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
+            //
             RelationManagers\ProjectPersonelRelationManager::class,
             RelationManagers\PembayaranPersonelRelationManager::class,
         ];
@@ -199,5 +207,19 @@ class PersonelResource extends Resource
             'create' => Pages\CreatePersonel::route('/create'),
             'edit' => Pages\EditPersonel::route('/{record}/edit'),
         ];
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

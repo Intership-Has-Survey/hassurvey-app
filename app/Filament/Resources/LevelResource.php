@@ -24,9 +24,9 @@ class LevelResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $pluralModelLabel = 'Jenis Tingkatan Pengajuan';
+    protected static ?string $pluralModelLabel = 'Level Pengajuan';
 
-    protected static ?string $navigationLabel = 'Jenis Tingkatan Pengajuan';
+    protected static ?string $navigationLabel = 'Level Pengajuan';
 
     protected static ?string $navigationGroup = 'Keuangan';
 
@@ -41,12 +41,12 @@ class LevelResource extends Resource
                 //
                 TextInput::make('nama')
                     ->required()
-                    ->label('Nama tingkatan pengajuan')
+                    ->label('Level pengajuan')
                     ->validationMessages([
                         'required' => 'Kolom ini wajib diisi',
                     ]),
                 TextInput::make('max_nilai')
-                    ->label('Maksimal pengajuan')
+                    ->label('Maksimal Pengajuan Sebesar')
                     ->numeric()
                     ->required()
                     ->prefix('Rp ')
@@ -78,8 +78,8 @@ class LevelResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->emptyStateHeading('Belum Ada Jenis Tingkatan Pengajuan')
-            ->emptyStateDescription('Silahkan buat jenis tingkatan pengajuan baru untuk memulai.');
+            ->emptyStateHeading('Belum Ada Level Pengajuan')
+            ->emptyStateDescription('Silahkan buat Level pengajuan baru untuk memulai.');
     }
 
     public static function getRelations(): array

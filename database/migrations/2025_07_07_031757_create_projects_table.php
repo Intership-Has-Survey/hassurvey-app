@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             // info utama
             $table->string('nama_project')->nullable();
-            $table->foreignUuid('kategori_id')->nullable();
-            $table->uuid('sales_id')->nullable();
+            $table->Uuid('kategori_id')->constrained('kategoris')->nullable();
+            $table->uuid('sales_id')->constrained('sales')->nullable();
             $table->date('tanggal_informasi_masuk')->nullable();
             $table->string('sumber')->nullable();
 
