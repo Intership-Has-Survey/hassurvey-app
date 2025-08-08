@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Kalibrasi extends Model
 {
     //
-    use HasUuids;
+    use HasUuids, LogsActivity;
 
     protected $guarded = ['id'];
 
@@ -74,8 +76,19 @@ class Kalibrasi extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nama_project', 'kategori_id', 'sales_id', 'tanggal_informasi_masuk', 'sumber', 'provinsi', 'kota', 'kecamatan', 'desa', 'detail_alamat', 'nilai_project_awal', 'dikenakan_ppn', 'nilai_ppn', 'nilai_project', 'status', 'status_pembayaran', 'status_pekerjaan', 'corporate_id', 'sewa_id'])
+            ->logOnly([
+                'id',
+                'nama',
+                'corporate_id',
+                'perorangan_id',
+                'user_id',
+                'harga',
+                'status',
+                'created_at',
+                'updated_at',
+                'company_id',
+            ])
             ->logOnlyDirty()
-            ->useLogName('Project');
+            ->useLogName('Kalibrasi');
     }
 }

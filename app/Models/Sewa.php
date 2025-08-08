@@ -14,11 +14,13 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 
 class Sewa extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivity;
     protected $table = 'sewa';
     protected $guarded = [];
 
@@ -139,8 +141,31 @@ class Sewa extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nama_project', 'kategori_id', 'sales_id', 'tanggal_informasi_masuk', 'sumber', 'provinsi', 'kota', 'kecamatan', 'desa', 'detail_alamat', 'nilai_project_awal', 'dikenakan_ppn', 'nilai_ppn', 'nilai_project', 'status', 'status_pembayaran', 'status_pekerjaan', 'corporate_id', 'sewa_id'])
+            ->logOnly([
+                'sales_id',
+                'judul',
+                'tgl_mulai',
+                'tgl_selesai',
+                'rentang',
+                'provinsi',
+                'kota',
+                'kecamatan',
+                'desa',
+                'detail_alamat',
+                'harga_perkiraan',
+                'harga_real',
+                'harga_fix',
+                'status',
+                'needs_replacement',
+                'is_locked',
+                'created_at',
+                'updated_at',
+                'corporate_id',
+                'user_id',
+                'deleted_at',
+                'company_id',
+            ])
             ->logOnlyDirty()
-            ->useLogName('Project');
+            ->useLogName('Sewa');
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('sewa', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('saled_id')->nullable();
+            $table->uuid('sales_id')->nullable();
             $table->text('judul');
             $table->date('tgl_mulai');
             $table->date('tgl_selesai')->nullable();
