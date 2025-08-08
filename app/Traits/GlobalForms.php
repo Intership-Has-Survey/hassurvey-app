@@ -278,6 +278,9 @@ trait GlobalForms
                         ->label('Daftar Bank')
                         ->required()
                         ->reactive()
+                        ->validationMessages([
+                            'required' => 'Bank wajib diisi',
+                        ])
                         ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
                     Select::make('bank_account_id')
                         ->label('Nomor Rekening')
@@ -294,11 +297,16 @@ trait GlobalForms
                                 });
                         })
                         ->reactive()
+                        ->maxItems(1)
                         ->createOptionForm([
                             TextInput::make('no_rek')
                                 ->label('Nomor Rekening')
                                 ->numeric()
-                                ->required(),
+                                ->required()
+                                ->placeholder('Contoh: 1234567890')
+                                ->validationMessages([
+                                    'required' => 'Nomor rekening wajib diisi',
+                                ]),
                             TextInput::make('nama_pemilik')
                                 ->label('Nama Pemilik')
                                 ->required(),
@@ -315,7 +323,11 @@ trait GlobalForms
                         })
                         ->searchable()
                         ->native(false)
-                        ->required(),
+                        ->required()
+                        ->visible(fn(callable $get) => !empty($get('bank_id')))
+                        ->validationMessages([
+                            'required' => 'Nomor Rekening wajib diisi',
+                        ]),
 
                     Repeater::make('detailPengajuans')
                         ->relationship()
@@ -337,6 +349,8 @@ trait GlobalForms
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')
                                 ->required(),
+                            Textinput::make('satuan')->required(),
+
                         ])
                         ->defaultItems(1)
                         ->createItemButtonLabel('Tambah Rincian')

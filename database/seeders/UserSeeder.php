@@ -13,16 +13,20 @@ class UserSeeder extends Seeder
     {
         // Buat roles
         $superadmin    = Role::firstOrCreate(['name' => 'Super Admin']);
-        $financeRole  = Role::firstOrCreate(['name' => 'Keuangan']);
-        $directorRole = Role::firstOrCreate(['name' => 'Direktur Utama']);
-        $operasionalRole = Role::firstOrCreate(['name' => 'Operasional']);
-
-        // Buat users & assign role
+        // $financeRole  = Role::firstOrCreate(['name' => 'Keuangan']);
+        // $directorRole = Role::firstOrCreate(['name' => 'Direktur Utama']);
+        // $operasionalRole = Role::firstOrCreate(['name' => 'Operasional']);` // Buat users & assign role
         $admin = User::firstOrCreate(
             ['email' => 'superadmin@gmail.com'],
             ['name' => 'Super Admin', 'password' => Hash::make('12345')]
         );
         $admin->assignRole($superadmin);
+
+        // $operasional = User::firstOrCreate(
+        //     ['email' => 'operasional@gmail.com'],
+        //     ['name' => 'Operasional', 'password' => Hash::make('12345')]
+        // );
+        // $operasional->assignRole($operasionalRole);
 
         // $karel = User::firstOrCreate(
         //     ['email' => 'karelriyan@gmail.com'],
@@ -36,6 +40,11 @@ class UserSeeder extends Seeder
         // );
         // $hipdi->assignRole($operasionalRole);
 
+        // $finance = User::firstOrCreate(
+        //     ['email' => 'finance@gmail.com'],
+        //     ['name' => 'Diaz', 'password' => Hash::make('12345')]
+        // );
+        // $finance->assignRole($financeRole);
         // $diaz = User::firstOrCreate(
         //     ['email' => 'diaz@gmail.com'],
         //     ['name' => 'Diaz', 'password' => Hash::make('12345')]

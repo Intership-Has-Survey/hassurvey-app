@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('pengajuan_dana_id')->constrained('pengajuan_danas')->cascadeOnDelete();
             $table->string('deskripsi');
             $table->integer('qty');
+            $table->string('satuan');
             $table->decimal('harga_satuan', 15, 2);
             $table->timestamps();
         });

@@ -10,12 +10,12 @@ return new class extends Migration {
         Schema::create('penjualans', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->string('nama_penjualan')->unique();
+            $table->string('nama_penjualan');
             $table->date('tanggal_penjualan');
 
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
 
-            $table->foreignUuid('sales_id')->nullable()->constrained('sales')->onDelete('set null');
+            $table->foreignUuid('sales_id')->nullable()->constrained('sales');
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->string('status_pembayaran')->nullable()->default('Belum Dibayar');
 

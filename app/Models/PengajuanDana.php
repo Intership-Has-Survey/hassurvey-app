@@ -19,7 +19,7 @@ class PengajuanDana extends Model
     use HasFactory, HasUuids, SoftDeletes, LogsActivity, HasRoles;
 
     protected $guarded = ['id'];
-    
+
     protected $fillable = [
         'judul_pengajuan',
         'deskripsi_pengajuan',
@@ -68,6 +68,11 @@ class PengajuanDana extends Model
     public function bank()
     {
         return $this->belongsTo(Bank::class);
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount::class);
     }
 
     public function getActivitylogOptions(): LogOptions

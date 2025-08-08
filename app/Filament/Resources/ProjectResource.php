@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Models\Sales;
 use App\Models\Project;
+use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Pages\Actions;
 use Filament\Forms\Form;
 use App\Models\Perorangan;
 use Filament\Tables\Table;
@@ -25,6 +27,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
@@ -359,10 +362,15 @@ class ProjectResource extends Resource
                         'Belum Dikerjakan' => 'Belum Dikerjakan',
                         'Dalam Proses' => 'Dalam Proses',
                     ])->native(false),
+                TrashedFilter::make(),
+
             ])
             ->actions([
                 EditAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -404,6 +412,14 @@ class ProjectResource extends Resource
         return [
             ProjectStatsOverview::class,
             // ProjectStatusChart::class,
+        ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }

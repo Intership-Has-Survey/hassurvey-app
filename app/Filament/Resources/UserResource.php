@@ -8,14 +8,14 @@ use Filament\Tables;
 // use App\Filament\Resources\Auth;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
-use Filament\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
@@ -76,7 +76,7 @@ class UserResource extends Resource
                     ->required(fn(string $context) => $context === 'create')
                     ->mutateDehydratedStateUsing(fn($state) => filled($state) ? Hash::make($state) : null),
                 Select::make('roles')
-                    ->multiple()
+                    // ->multiple()
                     ->relationship('roles', 'name')
                     ->preload()
                     ->required()

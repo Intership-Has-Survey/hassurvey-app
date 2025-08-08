@@ -3,14 +3,15 @@
 namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Level;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use App\Models\Level;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DetailPengajuansRelationManager extends RelationManager
 {
@@ -21,10 +22,22 @@ class DetailPengajuansRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('deskripsi')->required()->columnSpan(2),
-                Forms\Components\TextInput::make('qty')->required()->numeric()->default(1),
-                Forms\Components\TextInput::make('harga_satuan')->required()->numeric()->prefix('Rp'),
-            ])->columns(4);
+                Forms\Components\TextInput::make('deskripsi')
+                    ->required()->columnSpan(2),
+                Forms\Components\TextInput::make('qty')->label('Jumlah')->required()->numeric()->default(1)->minValue(1),
+                Forms\Components\Textinput::make('satuan')->required(),
+                Forms\Components\TextInput::make('harga_satuan')
+                    ->mask(RawJs::make('$money($input)'))
+                    ->label('Harga Satuan')
+                    ->stripCharacters(',')
+                    ->numeric()
+                    ->required()
+                    ->prefix('Rp')
+                    ->validationMessages([
+                        'required' => 'Nilai wajib diisi',
+                    ]),
+
+            ])->columns(5);
     }
 
     public function table(Table $table): Table
@@ -34,6 +47,7 @@ class DetailPengajuansRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('deskripsi'),
                 Tables\Columns\TextColumn::make('qty'),
+                Tables\Columns\TextColumn::make('satuan'),
                 Tables\Columns\TextColumn::make('harga_satuan')->money('IDR'),
                 Tables\Columns\TextColumn::make('total')
                     ->state(fn($record) => $record->qty * $record->harga_satuan)

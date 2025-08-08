@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             TrefRegionSeeder::class,
-            // PermissionSeeder::class,
+            PermissionSeeder::class,
             UserSeeder::class,
             // KategoriSeeder::class,
             //PemilikSeeder::class,

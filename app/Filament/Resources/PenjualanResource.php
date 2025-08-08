@@ -47,8 +47,7 @@ class PenjualanResource extends Resource
             ->schema([
                 TextInput::make('nama_penjualan')
                     ->label('Nama Penjualan')
-                    ->required()
-                    ->unique(ignoreRecord: true),
+                    ->required(),
                 DatePicker::make('tanggal_penjualan')
                     ->required()
                     ->default(now())
@@ -57,6 +56,10 @@ class PenjualanResource extends Resource
                     ->native(false),
                 Select::make('customer_flow_type')
                     ->label('Tipe Customer')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Tipe Customer harus dipilih',
+                    ])
                     ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                     ->live()->dehydrated(false)->native(false)
                     ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
@@ -71,14 +74,19 @@ class PenjualanResource extends Resource
                     ->preload()
                     ->createOptionForm(self::getCorporateForm())
                     ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                 Repeater::make('perorangan')
                     ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                     ->relationship()
+                    ->validationMessages([
+                        'required' => 'PIC harus dipilih',
+                    ])
                     ->schema([
                         Select::make('perorangan_id')
                             ->label(false)
+                            ->required()
                             ->options(function (Get $get, $state): array {
                                 $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
                                 $selectedPicIds = array_diff($selectedPicIds, [$state]);
@@ -116,16 +124,17 @@ class PenjualanResource extends Resource
                         }
                     }),
                 Select::make('sales_id')
+                    ->relationship('sales', 'nama')
                     ->label('Sales')
                     ->options(function () {
                         return Sales::query()
                             ->select('id', 'nama', 'nik')
                             ->get()
                             ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                    })->searchable()
-                    ->required()
+                    })
+                    ->placeholder('Pilih sales')
+                    ->searchable()
                     ->preload()
-                    ->columnSpanFull()
                     ->createOptionForm(self::getSalesForm()),
 
                 Textarea::make('catatan'),
@@ -140,7 +149,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama')->searchable()
+                TextColumn::make('nama_penjualan')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),
                 TextColumn::make('tanggal_penjualan')->date(),
@@ -175,9 +184,7 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-
                 ActivityLogTimelineTableAction::make('Log'),
-                ActivitylogRelationManager::class,
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
