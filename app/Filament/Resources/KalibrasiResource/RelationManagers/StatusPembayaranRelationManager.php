@@ -91,6 +91,15 @@ class StatusPembayaranRelationManager extends RelationManager
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+
+                Hidden::make('payable_id')
+                    ->default(fn() => $this->ownerRecord->id),
+
+                Hidden::make('payable_type')
+                    ->default(fn() => get_class($this->ownerRecord)),
+
+                Hidden::make('company_id')
+                    ->default(fn() => $this->ownerRecord->company_id),
             ]);
     }
 

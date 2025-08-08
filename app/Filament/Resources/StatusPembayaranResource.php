@@ -102,7 +102,7 @@ class StatusPembayaranResource extends Resource
                             'App\\Models\\Project' => $record->payable?->nama_project,
                             'App\\Models\\Sewa' => $record->payable?->judul,
                             'App\\Models\\Kalibrasi' => $record->payable?->nama,
-                            'App\\Models\\Penjualan' => $record->payable?->nama,
+                            'App\\Models\\Penjualan' => $record->payable?->nama_penjualan,
                             default => '-'
                         };
                     }),

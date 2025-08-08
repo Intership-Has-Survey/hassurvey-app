@@ -76,8 +76,12 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp')
-                    ->maxlength(20),
+                    ->maxlength(20)
+                    ->validationMessages([
+                        'required' => 'Nilai wajib diisi',
+                    ]),
 
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
@@ -86,10 +90,22 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->required()
                     ->disk('public')
                     ->directory('bukti-pembayaran')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->validationMessages([
+                        'required' => 'Bukti pembayaran wajib diisi',
+                    ]),
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+
+                Hidden::make('payable_id')
+                    ->default(fn() => $this->ownerRecord->id),
+
+                Hidden::make('payable_type')
+                    ->default(fn() => get_class($this->ownerRecord)),
+
+                Hidden::make('company_id')
+                    ->default(fn() => $this->ownerRecord->company_id),
             ]);
     }
 
