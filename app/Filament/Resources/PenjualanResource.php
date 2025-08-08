@@ -27,6 +27,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use App\Filament\Resources\PenjualanResource\Pages;
 use App\Filament\Resources\PenjualanResource\RelationManagers;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class PenjualanResource extends Resource
 {
@@ -173,6 +175,9 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
+                ActivityLogTimelineTableAction::make('Log'),
+                ActivitylogRelationManager::class,
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

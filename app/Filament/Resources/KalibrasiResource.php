@@ -23,6 +23,8 @@ use App\Filament\Resources\KalibrasiResource\RelationManagers\DetailKalibrasiRel
 use App\Filament\Resources\KalibrasiResource\RelationManagers\StatusPembayaranRelationManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class KalibrasiResource extends Resource
 {
@@ -213,6 +215,8 @@ class KalibrasiResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -228,6 +232,7 @@ class KalibrasiResource extends Resource
             PengajuanDanasRelationManager::class,
             DetailKalibrasiRelationManager::class,
             StatusPembayaranRelationManager::class,
+            ActivitylogRelationManager::class,
         ];
     }
 

@@ -135,4 +135,12 @@ class Sewa extends Model
     {
         return $this->belongsTo(Sales::class);
     }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nama_project', 'kategori_id', 'sales_id', 'tanggal_informasi_masuk', 'sumber', 'provinsi', 'kota', 'kecamatan', 'desa', 'detail_alamat', 'nilai_project_awal', 'dikenakan_ppn', 'nilai_ppn', 'nilai_project', 'status', 'status_pembayaran', 'status_pekerjaan', 'corporate_id', 'sewa_id'])
+            ->logOnlyDirty()
+            ->useLogName('Project');
+    }
 }

@@ -30,6 +30,8 @@ use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
 use App\Filament\Resources\PemilikResource\RelationManagers\DaftarAlatRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\RiwayatSewaPemilikRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\TransaksiPembayaransRelationManager;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class PemilikResource extends Resource
 {
@@ -169,6 +171,7 @@ class PemilikResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -196,6 +199,7 @@ class PemilikResource extends Resource
             DaftarAlatRelationManager::class,
             RiwayatSewaPemilikRelationManager::class,
             TransaksiPembayaransRelationManager::class,
+            ActivitylogRelationManager::class,
         ];
     }
 

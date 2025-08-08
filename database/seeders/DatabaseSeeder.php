@@ -16,15 +16,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             TrefRegionSeeder::class,
-            PermissionSeeder::class,
+            // PermissionSeeder::class,
             UserSeeder::class,
-            KategoriSeeder::class,
+            // KategoriSeeder::class,
             //PemilikSeeder::class,
             //CorporateSeeder::class,
             //PeroranganSeeder::class,
             //PersonelSeeder::class,
             //SalesSeeder::class,
-            MerkSeeder::class,
+            // MerkSeeder::class,
             // JenisAlatSeeder::class,
             //DaftarAlatSeeder::class,
             BankSeeder::class,

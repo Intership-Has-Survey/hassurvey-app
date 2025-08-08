@@ -81,4 +81,12 @@ class Pemilik extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['judul_pengajuan', 'status', 'deskripsi_pengajuan', 'nama_bank', 'nomor_rekening', 'nama_pemilik_rekening'])
+            ->logOnlyDirty()
+            ->useLogName('Pengajuan');
+    }
 }

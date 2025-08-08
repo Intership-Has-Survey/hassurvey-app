@@ -49,6 +49,8 @@ use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\StatusPembyaranRelationManager;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class SewaResource extends Resource
 {
@@ -365,6 +367,8 @@ class SewaResource extends Resource
             ->actions([
                 EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
+
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -394,6 +398,7 @@ class SewaResource extends Resource
             RiwayatSewasRelationManager::class,
             StatusPembyaranRelationManager::class,
             PengajuanDanasRelationManager::class,
+            ActivitylogRelationManager::class,
 
         ];
     }
