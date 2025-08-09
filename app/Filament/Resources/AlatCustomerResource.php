@@ -42,6 +42,7 @@ class AlatCustomerResource extends Resource
         return $form
             ->schema([
                 Select::make('jenis_alat_id')
+                    ->label('Jenis Alat')
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
@@ -63,6 +64,7 @@ class AlatCustomerResource extends Resource
                     ]),
                 TextInput::make('nomor_seri')
                     ->required()
+                    ->label('Nomor Seri')
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->validationMessages([
@@ -157,6 +159,9 @@ class AlatCustomerResource extends Resource
                                     ->rules(['required', 'uuid']),
                             ])
                             ->minItems(1)
+                            ->validationMessages([
+                                'required' => 'Kolom Customer wajib diisi'
+                            ])
                             ->distinct()
                             ->required()
                             ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
@@ -232,7 +237,7 @@ class AlatCustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+                //
             DetailKalibrasiRelationManager::class,
         ];
     }
