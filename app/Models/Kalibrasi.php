@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kalibrasi extends Model
 {
     //
-    use HasUuids, LogsActivity;
+    use HasUuids, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 

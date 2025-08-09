@@ -367,10 +367,10 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
-                ActivityLogTimelineTableAction::make('Log'),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

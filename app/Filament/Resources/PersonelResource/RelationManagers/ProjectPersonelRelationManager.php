@@ -3,13 +3,14 @@
 namespace App\Filament\Resources\PersonelResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Tables\Actions\ViewAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Support\RawJs;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class ProjectPersonelRelationManager extends RelationManager
 {
@@ -76,6 +77,15 @@ class ProjectPersonelRelationManager extends RelationManager
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('view')
+                    ->label('Lihat Proyek')
+                    ->color('gray')
+                    ->icon('heroicon-m-eye')
+                    ->url(fn($record) => route('filament.admin.resources.projects.edit', [
+                        'tenant' => filament()->getTenant()?->getKey() ?? request()->route('tenant'),
+                        'record' => $record
+                    ]))
+                    ->openUrlInNewTab(),
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
 

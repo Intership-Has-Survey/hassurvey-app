@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->decimal('harga', 15, 2)->nullable();
             $table->string('status')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
