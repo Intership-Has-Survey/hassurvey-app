@@ -36,7 +36,6 @@ class PersonelFactory extends Factory
             'nik' => $this->faker->unique()->numerify('332708########000#'),
             'jabatan' => $this->faker->randomElement($jabatanOptions),
             'nomor_wa' => $this->faker->phoneNumber(),
-            'tanggal_lahir' => $this->faker->date('Y-m-d'),
             'provinsi' => $provinceCode,
             'kota' => $cityCode,
             'kecamatan' => $districtCode,

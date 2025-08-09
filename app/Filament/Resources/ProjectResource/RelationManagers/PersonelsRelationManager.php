@@ -77,6 +77,10 @@ class PersonelsRelationManager extends RelationManager
                 // Tables\Actions\ViewAction::make(),
                 Tables\Actions\AttachAction::make()
                     ->preloadRecordSelect()
+                    ->recordSelectOptionsQuery(function ($query) {
+                        $project = $this->getOwnerRecord();
+                        return $query->where('company_id', $project->company_id);
+                    })
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         Forms\Components\Placeholder::make('label_personel')
                             ->label('Pilih Personel'),
@@ -148,7 +152,7 @@ class PersonelsRelationManager extends RelationManager
                             ->mask(RawJs::make('$money($input)'))
                             ->disabled()
                             ->stripCharacters(','),
-                        Forms\Components\FileUpload::make('bukti_bayar')
+                        Forms\Components\FileUpload::make('bukti_pembayaran_path')
                             ->disk('public')
                             ->disabled()
                             ->directory('bukti-pembayaran'),
@@ -188,7 +192,7 @@ class PersonelsRelationManager extends RelationManager
                         if ($pembayaran) {
                             $form->fill([
                                 'nilai' => $pembayaran->nilai,
-                                'bukti_pembayaran' => $pembayaran->bukti_pembayaran,
+                                'bukti_pembayaran_path' => $pembayaran->bukti_pembayaran_path,
                                 'tanggal_transaksi' => $pembayaran->tanggal_transaksi,
                                 'user_id' => $pembayaran->user_id,
                                 'metode_pembayaran' => $pembayaran->metode_pembayaran, // atau bank_account->no_rek
@@ -220,7 +224,7 @@ class PersonelsRelationManager extends RelationManager
                             ->validationMessages([
                                 'required' => 'Nilai harus diisi',
                             ]),
-                        Forms\Components\FileUpload::make('bukti_bayar')
+                        Forms\Components\FileUpload::make('bukti_pembayaran_path')
                             ->label('Bukti Pembayaran')
                             ->image()
                             ->maxSize(1024)
@@ -253,7 +257,7 @@ class PersonelsRelationManager extends RelationManager
                             ->label('Keterangan')
                             ->maxlength(500)
                             ->nullable(),
-                        Hidden::make('company_id')->default(request()->segment(2)),
+                        Hidden::make('company_id')->default(fn() => $this->getOwnerRecord()->company_id),
                     ])
                     ->action(function (array $data, $record) {
                         // Simpan ke tabel pembayaran_personel
@@ -263,17 +267,18 @@ class PersonelsRelationManager extends RelationManager
                             'project_id' => $project->id,
                             'personel_id' => $record->id,
                             'nilai' => $data['nilai'],
-                            'bukti_pembayaran_path' => $data['bukti_bayar'],
+                            'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
                             'tanggal_transaksi' => $data['tanggal_transaksi'],
                             'metode_pembayaran' => $data['metode_pembayaran'],
                             'user_id' => $data['user_id'],
                         ]);
                         $pembayaran->statusPengeluarans()->create([
-                            'user_id' => $data['user_id'], // atau auth()->id()
+                            'user_id' => $data['user_id'],
                             'nilai' => $data['nilai'],
                             'tanggal_transaksi' => $data['tanggal_transaksi'],
-                            'metode_pembayaran' => $data['metode_pembayaran'], // atau bisa juga pakai enum atau TextInput
-                            'bukti_pembayaran_path' => $data['bukti_bayar'],
+                            'metode_pembayaran' => $data['metode_pembayaran'],
+                            'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
+                            'company_id' => $data['company_id'] ?? $project->company_id,
                         ]);
                     })
                     ->color('success')
