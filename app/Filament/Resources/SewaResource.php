@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Filament\Support\RawJs;
 use Ramsey\Uuid\Type\Integer;
+use Filament\Pages\Actions;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
@@ -423,6 +424,19 @@ class SewaResource extends Resource
             'index' => Pages\ListSewa::route('/'),
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }

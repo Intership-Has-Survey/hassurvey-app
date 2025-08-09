@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\SalesResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SalesResource\RelationManagers;
@@ -106,7 +108,7 @@ class SalesResource extends Resource
 
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -120,10 +122,16 @@ class SalesResource extends Resource
                             echo $pdf->stream();
                         }, 'sales-' . $record->id . '.pdf');
                     }),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Sales Terdaftar')
@@ -144,6 +152,20 @@ class SalesResource extends Resource
             'index' => Pages\ListSales::route('/'),
             'create' => Pages\CreateSales::route('/create'),
             'edit' => Pages\EditSales::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }
