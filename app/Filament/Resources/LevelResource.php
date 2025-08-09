@@ -55,7 +55,7 @@ class LevelResource extends Resource
                     ->stripCharacters(',')
                     ->validationMessages([
                         'required' => 'Kolom ini wajib diisi',
-                        'min_value' => 'Tidak boleh kurang dari 0',
+                        'min' => 'Tidak boleh kurang dari 0',
                     ]),
                 Hidden::make('company_id')
                     ->default($uuid),
