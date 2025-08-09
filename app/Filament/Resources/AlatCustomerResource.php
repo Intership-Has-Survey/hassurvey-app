@@ -45,10 +45,18 @@ class AlatCustomerResource extends Resource
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis Alat wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         TextInput::make('nama')
                             ->label('Nama Jenis Alat')
-                            ->required(),
+                            ->unique(ignoreRecord: true)
+                            ->required()
+                            ->validationMessages([
+                                'unique' => 'Nama alat ini sudah terdaftar, silakan gunakan yang lain.',
+                            ]),
                         TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->nullable(),
@@ -70,7 +78,10 @@ class AlatCustomerResource extends Resource
                             ->label('Nama Merk')
                             ->required(),
                     ])
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Merk wajib dipilih.',
+                    ]),
 
                 Select::make('kondisi')
                     ->label('Kondisi Alat')
@@ -88,9 +99,11 @@ class AlatCustomerResource extends Resource
                         Select::make('customer_flow_type')
                             ->label('Tipe Customer')
                             ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->dehydrated(false)->native(false)
-                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null)),
-
+                            ->live()->dehydrated(false)->native(false)->required()
+                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
+                            ->validationMessages([
+                                'required' => 'Customer tidak boleh kosong.',
+                            ]),
                         Select::make('corporate_id')
                             ->relationship('corporate', 'nama')
                             ->label('Pilih Perusahaan')
@@ -117,6 +130,10 @@ class AlatCustomerResource extends Resource
 
                                 $set('perorangan', $perorangan);
                             })
+                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                            ->validationMessages([
+                                'required' => 'Perusahaan wajib diisi',
+                            ])
                             ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                         Repeater::make('perorangan')
@@ -132,10 +149,16 @@ class AlatCustomerResource extends Resource
                                     })
                                     ->searchable()
                                     ->createOptionForm(self::getPeroranganForm())
-                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
+                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+                                    ->required()
+                                    ->validationMessages([
+                                        'required' => 'Kolom Customer wajib diisi',
+                                    ])
+                                    ->rules(['required', 'uuid']),
                             ])
                             ->minItems(1)
                             ->distinct()
+                            ->required()
                             ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                             ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                             ->addActionLabel('Tambah PIC')
@@ -209,7 +232,7 @@ class AlatCustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
+            //
             DetailKalibrasiRelationManager::class,
         ];
     }
