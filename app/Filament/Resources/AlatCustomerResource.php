@@ -5,22 +5,30 @@ namespace App\Filament\Resources;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
-use App\Models\Perorangan;
-use Filament\Forms\Components\Repeater;
-use Filament\Tables\Table;
+use App\Models\Corporate;
 use App\Traits\GlolForms;
+use App\Models\Perorangan;
+use Filament\Tables\Table;
+use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\AlatCustomer;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use App\Traits\GlobalForms;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\AlatCustomerResource\Pages\EditAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\Pages\ListAlatCustomers;
 use App\Filament\Resources\AlatCustomerResource\Pages\CreateAlatCustomer;
@@ -222,14 +230,18 @@ class AlatCustomerResource extends Resource
                 TextColumn::make('nomor_seri'),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
                 EditAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -237,7 +249,7 @@ class AlatCustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
+            //
             DetailKalibrasiRelationManager::class,
         ];
     }
@@ -249,5 +261,18 @@ class AlatCustomerResource extends Resource
             'create' => CreateAlatCustomer::route('/create'),
             'edit' => EditAlatCustomer::route('/{record}/edit'),
         ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

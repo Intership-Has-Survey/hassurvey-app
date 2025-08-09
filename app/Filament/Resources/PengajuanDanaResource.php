@@ -6,6 +6,7 @@ use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
+use Filament\Pages\Actions;
 use App\Models\PengajuanDana;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
@@ -19,9 +20,21 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use App\Filament\Resources\PengajuanDanaResource\Pages\EditPengajuanDana;
+use App\Filament\Resources\PengajuanDanaResource\Pages\ListPengajuanDanas;
+use App\Filament\Resources\PengajuanDanaResource\Pages\CreatePengajuanDana;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\TransaksiPembayaransRelationManager;
 
@@ -169,6 +182,9 @@ class PengajuanDanaResource extends Resource
             ->emptyStateHeading('Belum Ada Pengajuan Dana Terdaftar')
             ->emptyStateDescription('Silahkan buat pengajuan dana untuk memulai.')
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                TrashedFilter::make(),
+            ])
             ->actions([
                 ViewAction::make(),
                 EditAction::make()
@@ -224,6 +240,15 @@ class PengajuanDanaResource extends Resource
                     }),
 
                 ActivityLogTimelineTableAction::make('Log'),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                ]),
             ]);
     }
 
@@ -243,5 +268,19 @@ class PengajuanDanaResource extends Resource
             'create' => Pages\CreatePengajuanDana::route('/create'),
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
         ];
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }
