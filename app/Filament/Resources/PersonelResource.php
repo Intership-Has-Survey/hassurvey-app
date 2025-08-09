@@ -145,7 +145,8 @@ class PersonelResource extends Resource
                 TextColumn::make('keterangan')
                     ->label('Keterangan')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user.name')
                     ->label('Dibuat Oleh')
                     ->sortable()
