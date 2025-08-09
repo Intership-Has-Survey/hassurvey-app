@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->text('catatan')->nullable();
             $table->integer('total_items')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

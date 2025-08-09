@@ -186,11 +186,15 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                ActivityLogTimelineTableAction::make('Log'),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -212,11 +216,6 @@ class PenjualanResource extends Resource
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
         ];
     }
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withTrashed();
-    }
     protected function getActions(): array
     {
         return [
@@ -224,5 +223,10 @@ class PenjualanResource extends Resource
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }
