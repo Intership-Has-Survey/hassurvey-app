@@ -48,12 +48,14 @@ class LevelResource extends Resource
                 TextInput::make('max_nilai')
                     ->label('Maksimal Pengajuan Sebesar')
                     ->numeric()
+                    ->minValue(0)
                     ->required()
                     ->prefix('Rp ')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->validationMessages([
                         'required' => 'Kolom ini wajib diisi',
+                        'min_value' => 'Tidak boleh kurang dari 0',
                     ]),
                 Hidden::make('company_id')
                     ->default($uuid),
