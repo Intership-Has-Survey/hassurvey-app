@@ -19,11 +19,10 @@ class GrafikCustomer extends ChartWidget implements HasForms
 
     protected static ?int $sort = 1;
 
-    public ?string $companyId; // Pastikan properti ini ada
+    public ?string $companyId;
 
     public function mount(): void
     {
-        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
         if ($tenant = Filament::getTenant()) {
             $this->companyId = $tenant->id;
         } else {
@@ -51,21 +50,21 @@ class GrafikCustomer extends ChartWidget implements HasForms
                     'label' => 'Semua',
                     'data' => array_values($data['all']),
                     'fill' => 'start',
-                    'backgroundColor' => 'rgba(107, 114, 128, 0.3)', // Gray 500 with 30% opacity
-                    'borderColor' => '#6B7280', // Solid line
+                    'backgroundColor' => 'rgba(107, 114, 128, 0.3)',
+                    'borderColor' => '#6B7280',
                 ],
                 [
                     'label' => 'Perorangan',
                     'data' => array_values($data['perorangan']),
                     'fill' => 'start',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.3)', // Green 500 with 30% opacity
+                    'backgroundColor' => 'rgba(16, 185, 129, 0.3)',
                     'borderColor' => '#10B981',
                 ],
                 [
                     'label' => 'Perusahaan',
                     'data' => array_values($data['corporate']),
                     'fill' => 'start',
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.3)', // Blue 500 with 30% opacity
+                    'backgroundColor' => 'rgba(59, 130, 246, 0.3)',
                     'borderColor' => '#3B82F6',
                 ],
             ],
@@ -73,8 +72,16 @@ class GrafikCustomer extends ChartWidget implements HasForms
         ];
     }
 
+    /**
+     * Ganti metode ini dengan kode yang baru.
+     */
     protected function getChartData(): array
     {
+        // 1. Tetapkan rentang tanggal untuk 12 bulan terakhir
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        // Query dasar dengan filter tenant
         $peroranganQuery = Perorangan::when($this->companyId, function ($query) {
             return $query->where('company_id', $this->companyId);
         });
@@ -83,43 +90,11 @@ class GrafikCustomer extends ChartWidget implements HasForms
             return $query->where('company_id', $this->companyId);
         });
 
-        $earliestPerorangan = $peroranganQuery->clone()->min('created_at');
-        $earliestCorporate = $corporateQuery->clone()->min('created_at');
+        // 2. Hitung total customer SEBELUM rentang 12 bulan untuk nilai awal kumulatif
+        $initialPeroranganCount = $peroranganQuery->clone()->where('created_at', '<', $startDate)->count();
+        $initialCorporateCount = $corporateQuery->clone()->where('created_at', '<', $startDate)->count();
 
-        $earliestDate = null;
-
-        if ($earliestPerorangan && $earliestCorporate) {
-            $earliestDate = min($earliestPerorangan, $earliestCorporate);
-        } elseif ($earliestPerorangan) {
-            $earliestDate = $earliestPerorangan;
-        } elseif ($earliestCorporate) {
-            $earliestDate = $earliestCorporate;
-        }
-
-        if (is_null($earliestDate)) {
-            // If no data, default to the last 12 months for a meaningful chart
-            $startDate = now()->subMonths(11)->startOfMonth();
-        } else {
-            $startDate = Carbon::parse($earliestDate)->startOfMonth();
-        }
-
-        $endDate = now()->endOfMonth();
-
-        $allCustomers = [];
-        $peroranganCustomers = [];
-        $corporateCustomers = [];
-        $labels = [];
-
-        $currentMonth = $startDate->copy();
-        while ($currentMonth->lessThanOrEqualTo($endDate)) {
-            $formattedMonth = $currentMonth->format('Y-m-01'); // Use Y-m-01 for time scale
-            $labels[] = $formattedMonth;
-            $allCustomers[$formattedMonth] = 0;
-            $peroranganCustomers[$formattedMonth] = 0;
-            $corporateCustomers[$formattedMonth] = 0;
-            $currentMonth->addMonth();
-        }
-
+        // 3. Ambil data customer BARU per bulan HANYA dalam rentang 12 bulan
         $peroranganData = $peroranganQuery->clone()
             ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m-01") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -134,29 +109,36 @@ class GrafikCustomer extends ChartWidget implements HasForms
             ->pluck('total', 'month')
             ->toArray();
 
-        foreach ($labels as $label) {
-            $key = Carbon::parse($label)->format('Y-m-01');
-            $peroranganCustomers[$label] = $peroranganData[$key] ?? 0;
-            $corporateCustomers[$label] = $corporateData[$key] ?? 0;
-            $allCustomers[$label] = $peroranganCustomers[$label] + $corporateCustomers[$label];
-        }
-
-        $cumulativePerorangan = 0;
-        $cumulativeCorporate = 0;
-        $cumulativeAll = 0;
-
+        // Inisialisasi variabel untuk menyimpan hasil
+        $cumulativeAllCustomers = [];
         $cumulativePeroranganCustomers = [];
         $cumulativeCorporateCustomers = [];
-        $cumulativeAllCustomers = [];
 
-        foreach ($labels as $label) {
-            $cumulativePerorangan += $peroranganCustomers[$label];
-            $cumulativeCorporate += $corporateCustomers[$label];
-            $cumulativeAll += $allCustomers[$label];
+        // Mulai hitungan kumulatif dari total sebelum periode 12 bulan
+        $cumulativePerorangan = $initialPeroranganCount;
+        $cumulativeCorporate = $initialCorporateCount;
+        $cumulativeAll = $initialPeroranganCount + $initialCorporateCount;
 
-            $cumulativePeroranganCustomers[$label] = $cumulativePerorangan;
-            $cumulativeCorporateCustomers[$label] = $cumulativeCorporate;
-            $cumulativeAllCustomers[$label] = $cumulativeAll;
+        // 4. Loop per bulan selama 12 bulan terakhir
+        $currentMonth = $startDate->copy();
+        while ($currentMonth->lessThanOrEqualTo($endDate)) {
+            $formattedMonth = $currentMonth->format('Y-m-01');
+
+            // Ambil customer baru di bulan ini (jika ada)
+            $newPerorangan = $peroranganData[$formattedMonth] ?? 0;
+            $newCorporate = $corporateData[$formattedMonth] ?? 0;
+
+            // Tambahkan customer baru ke total kumulatif
+            $cumulativePerorangan += $newPerorangan;
+            $cumulativeCorporate += $newCorporate;
+            $cumulativeAll += ($newPerorangan + $newCorporate);
+
+            // Simpan nilai kumulatif untuk bulan ini
+            $cumulativePeroranganCustomers[$formattedMonth] = $cumulativePerorangan;
+            $cumulativeCorporateCustomers[$formattedMonth] = $cumulativeCorporate;
+            $cumulativeAllCustomers[$formattedMonth] = $cumulativeAll;
+
+            $currentMonth->addMonth();
         }
 
         return [
@@ -168,6 +150,8 @@ class GrafikCustomer extends ChartWidget implements HasForms
 
     protected function getOptions(): array
     {
+        // Kode ini tidak perlu diubah, biarkan seperti aslinya.
+        // ... (isi metode getOptions Anda yang sudah ada)
         $data = $this->getChartData();
         $maxAll = empty($data['all']) ? 0 : max(array_values($data['all']));
         $maxPerorangan = empty($data['perorangan']) ? 0 : max(array_values($data['perorangan']));

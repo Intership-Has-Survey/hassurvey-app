@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Kalibrasi;
+use App\Models\Penjualan;
 use App\Models\Project;
 use App\Models\Sewa;
 use Carbon\Carbon;
@@ -9,14 +11,27 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
+use Filament\Facades\Filament;
 
 class GrafikPesananBulan extends ChartWidget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $heading = 'Pesanan Per Bulan (1 Tahun Terakhir)';
+    protected static ?string $heading = 'Pesanan Baru';
 
     protected static ?int $sort = 4;
+
+    public ?string $companyId; // Pastikan properti ini ada
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
 
     protected function getFormSchema(): array
     {
@@ -52,6 +67,18 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
                     'backgroundColor' => '#3B82F6', // Blue 
                     'borderSkipped' => true,
                 ],
+                [
+                    'label' => 'Servis & Kalibrasi',
+                    'data' => array_values($data['Kalibrasi']),
+                    'backgroundColor' => '#f34141ff', // Blue 
+                    'borderSkipped' => true,
+                ],
+                [
+                    'label' => 'Penjualan',
+                    'data' => array_values($data['Penjualan']),
+                    'backgroundColor' => '#a5a313ff', // Blue 
+                    'borderSkipped' => true,
+                ],
             ],
             'labels' => array_keys($data['all']),
         ];
@@ -62,9 +89,27 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
         $endDate = now()->endOfMonth();
         $startDate = $endDate->copy()->subMonths(11)->startOfMonth();
 
+        $projectQuery = Project::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
+        $sewaQuery = Sewa::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
+        $kalibrasiQuery = Kalibrasi::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
+        $penjualanQuery = Penjualan::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
         $allOrders = [];
         $SewaOrders = [];
         $ProjectOrders = [];
+        $KalibrasiOrders = [];
+        $PenjualanOrders = [];
         $labels = [];
 
         $currentMonth = $startDate->copy();
@@ -77,28 +122,49 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
             $currentMonth->addMonth();
         }
 
-        $SewaData = Sewa::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $SewaData = $sewaQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
-        $ProjectData = Project::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $ProjectData = $projectQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        $KalibrasiData = $kalibrasiQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        $PenjualanData = $penjualanQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
         foreach ($labels as $label) {
-            $SewaOrders[$label] = $SewaData[$label] ?? 0;
-            $ProjectOrders[$label] = $ProjectData[$label] ?? 0;
-            $allOrders[$label] = $SewaOrders[$label] + $ProjectOrders[$label];
+            $key = Carbon::parse($label)->format('Y-m-01');
+            $SewaOrders[$label] = $SewaData[$key] ?? 0;
+            $ProjectOrders[$label] = $ProjectData[$key] ?? 0;
+            $KalibrasiOrders[$label] = $KalibrasiData[$key] ??
+                $PenjualanOrders[$label] = $PenjualanData[$key] ?? 0;
+            $allOrders[$label] = $SewaOrders[$label] + $ProjectOrders[$label] + $KalibrasiOrders[$label] + $PenjualanOrders[$label];
         }
 
         return [
             'all' => $allOrders,
             'Sewa' => $SewaOrders,
             'Project' => $ProjectOrders,
+            'Kalibrasi' => $KalibrasiOrders,
+            'Penjualan' => $PenjualanOrders,
         ];
     }
 
@@ -108,8 +174,10 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
         $maxAll = empty($data['all']) ? 0 : max(array_values($data['all']));
         $maxSewa = empty($data['Sewa']) ? 0 : max(array_values($data['Sewa']));
         $maxProject = empty($data['Project']) ? 0 : max(array_values($data['Project']));
+        $maxKalibrasi = empty($data['Kalibrasi']) ? 0 : max(array_values($data['Kalibrasi']));
+        $maxPenjualan = empty($data['Penjualan']) ? 0 : max(array_values($data['Penjualan']));
 
-        $overallMax = max($maxAll, $maxSewa, $maxProject);
+        $overallMax = max($maxAll, $maxSewa, $maxProject, $maxKalibrasi, $maxPenjualan);
 
         if ($overallMax == 0) {
             $overallMax = 10;

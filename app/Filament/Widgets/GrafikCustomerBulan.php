@@ -9,14 +9,27 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
+use Filament\Facades\Filament;
 
 class GrafikCustomerBulan extends ChartWidget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $heading = 'Customer Per Bulan (1 Tahun Terakhir)';
+    public ?string $companyId; // Pastikan properti ini ada
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
+    protected static ?string $heading = 'Customer Baru';
 
     protected static ?int $sort = 2;
+
 
     protected function getFormSchema(): array
     {
@@ -77,21 +90,33 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
             $currentMonth->addMonth();
         }
 
-        $peroranganData = Perorangan::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $peroranganQuery = Perorangan::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
+        $corporateQuery = Corporate::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
+
+
+        $peroranganData = $peroranganQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
-        $corporateData = Corporate::select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
+        $corporateData = $peroranganQuery->clone()
+            ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
         foreach ($labels as $label) {
-            $peroranganCustomers[$label] = $peroranganData[$label] ?? 0;
-            $corporateCustomers[$label] = $corporateData[$label] ?? 0;
+            $key = Carbon::parse($label)->format('Y-m-01');
+            $peroranganCustomers[$label] = $peroranganData[$key] ?? 0;
+            $corporateCustomers[$label] = $corporateData[$key] ?? 0;
             $allCustomers[$label] = $peroranganCustomers[$label] + $corporateCustomers[$label];
         }
 
