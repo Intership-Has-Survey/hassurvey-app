@@ -65,7 +65,10 @@ class PenjualanResource extends Resource
                     ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                     ->live()->dehydrated(false)->native(false)
                     ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
-                    ->columnSpanFull(),
+                    ->columnSpanFull()->required()
+                    ->validationMessages([
+                        'required' => 'Customer tidak boleh kosong',
+                    ]),
                 Select::make('corporate_id')
                     ->label('Pilih Perusahaan')
                     ->options(
@@ -77,13 +80,18 @@ class PenjualanResource extends Resource
                     ->createOptionForm(self::getCorporateForm())
                     ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
                     ->columnSpanFull()
+                    ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                    ->validationMessages([
+                        'required' => 'Perusahaan wajib diisi',
+                    ])
                     ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
                 Repeater::make('perorangan')
                     ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                     ->relationship()
+                    ->required()
                     ->validationMessages([
-                        'required' => 'PIC harus dipilih',
+                        'required' => 'Kolom Customer wajib diisi',
                     ])
                     ->schema([
                         Select::make('perorangan_id')
@@ -124,7 +132,8 @@ class PenjualanResource extends Resource
                                 }
                             }
                         }
-                    }),
+                    })
+                    ->rules(['required', 'uuid']),
                 Select::make('sales_id')
                     ->relationship('sales', 'nama')
                     ->label('Sales')
