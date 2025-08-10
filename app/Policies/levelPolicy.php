@@ -3,25 +3,25 @@
 namespace App\Policies;
 
 use Illuminate\Auth\Access\Response;
-use App\Models\level;
+use App\Models\Level;
 use App\Models\User;
 
-class levelPolicy
+class LevelPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any level');
+        return $user->checkPermissionTo('view-any Level');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, level $level): bool
+    public function view(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('view level');
+        return $user->checkPermissionTo('view Level');
     }
 
     /**
@@ -29,23 +29,23 @@ class levelPolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create level');
+        return $user->checkPermissionTo('create Level');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, level $level): bool
+    public function update(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('update level');
+        return $user->checkPermissionTo('update Level');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, level $level): bool
+    public function delete(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('delete level');
+        return $user->checkPermissionTo('delete Level');
     }
 
     /**
@@ -53,15 +53,15 @@ class levelPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('delete-any level');
+        return $user->checkPermissionTo('delete-any Level');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, level $level): bool
+    public function restore(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('restore level');
+        return $user->checkPermissionTo('restore Level');
     }
 
     /**
@@ -69,15 +69,15 @@ class levelPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->checkPermissionTo('restore-any level');
+        return $user->checkPermissionTo('restore-any Level');
     }
 
     /**
      * Determine whether the user can replicate the model.
      */
-    public function replicate(User $user, level $level): bool
+    public function replicate(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('replicate level');
+        return $user->checkPermissionTo('replicate Level');
     }
 
     /**
@@ -85,15 +85,15 @@ class levelPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->checkPermissionTo('reorder level');
+        return $user->checkPermissionTo('reorder Level');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, level $level): bool
+    public function forceDelete(User $user, Level $level): bool
     {
-        return $user->checkPermissionTo('force-delete level');
+        return $user->checkPermissionTo('force-delete Level');
     }
 
     /**
@@ -101,6 +101,6 @@ class levelPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('force-delete-any level');
+        return $user->checkPermissionTo('force-delete-any Level');
     }
 }

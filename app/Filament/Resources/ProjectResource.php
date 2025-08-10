@@ -155,6 +155,9 @@ class ProjectResource extends Resource
                     Repeater::make('perorangan')
                         ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                         ->relationship()
+                        ->validationMessages([
+                            'required' => 'Harap pilih Customer/PIC',
+                        ])
                         ->schema([
                             Select::make('perorangan_id')
                                 ->label(false)

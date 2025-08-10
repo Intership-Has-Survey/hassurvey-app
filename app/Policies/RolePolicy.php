@@ -2,10 +2,9 @@
 
 namespace App\Policies;
 
-// use App\Models\Spatie\Permission\Models\Role;
-use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Auth\Access\Response;
+use App\Models\Role;
+use App\Models\User;
 
 class RolePolicy
 {
@@ -14,7 +13,7 @@ class RolePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->checkPermissionTo('view-any Role');
     }
 
     /**
@@ -22,7 +21,7 @@ class RolePolicy
      */
     public function view(User $user, Role $role): bool
     {
-        return false;
+        return $user->checkPermissionTo('view Role');
     }
 
     /**
@@ -30,7 +29,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->checkPermissionTo('create Role');
     }
 
     /**
@@ -38,7 +37,7 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
-        return false;
+        return $user->checkPermissionTo('update Role');
     }
 
     /**
@@ -46,7 +45,15 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
-        return false;
+        return $user->checkPermissionTo('delete Role');
+    }
+
+    /**
+     * Determine whether the user can delete any models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('delete-any Role');
     }
 
     /**
@@ -54,7 +61,31 @@ class RolePolicy
      */
     public function restore(User $user, Role $role): bool
     {
-        return false;
+        return $user->checkPermissionTo('restore Role');
+    }
+
+    /**
+     * Determine whether the user can restore any models.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->checkPermissionTo('restore-any Role');
+    }
+
+    /**
+     * Determine whether the user can replicate the model.
+     */
+    public function replicate(User $user, Role $role): bool
+    {
+        return $user->checkPermissionTo('replicate Role');
+    }
+
+    /**
+     * Determine whether the user can reorder the models.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->checkPermissionTo('reorder Role');
     }
 
     /**
@@ -62,6 +93,14 @@ class RolePolicy
      */
     public function forceDelete(User $user, Role $role): bool
     {
-        return false;
+        return $user->checkPermissionTo('force-delete Role');
+    }
+
+    /**
+     * Determine whether the user can permanently delete any models.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('force-delete-any Role');
     }
 }

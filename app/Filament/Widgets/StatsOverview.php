@@ -7,11 +7,14 @@ use App\Models\Penjualan;
 use Carbon\Carbon;
 use App\Models\Sewa;
 use App\Models\Project;
+use Faker\Core\Uuid;
 use Illuminate\Support\Number;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use App\Helpers\TenantHelper;
+use Filament\Facades\Filament;
 
 class StatsOverview extends BaseWidget
 {
@@ -21,8 +24,36 @@ class StatsOverview extends BaseWidget
 
     protected static bool $isLazy = false;
 
+    public ?string $companyId; // Pastikan properti ini ada
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
+
+
     protected function getStats(): array
     {
+        // Handle case when no active company is set
+        if (!$this->companyId) {
+            return [
+                Stat::make('Pendapatan Bersih', 'Rp0')
+                    ->description('No active company selected')
+                    ->color('secondary'),
+                Stat::make('Total Customer', '0')
+                    ->description('No data available')
+                    ->color('primary'),
+                Stat::make('Total Pesanan', '0')
+                    ->description('No data available')
+                    ->color('success'),
+            ];
+        }
+
         $startDate = $this->filters['created_at']['start'] ?? null;
         $endDate = $this->filters['created_at']['end'] ?? null;
         $serviceType = $this->filters['serviceType'] ?? 'Semua';
@@ -38,19 +69,19 @@ class StatsOverview extends BaseWidget
             return Number::format($number / 1000000, 2) . 'm';
         };
 
-        $projectsQuery = Project::query()
+        $projectsQuery = Project::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '<=', $endDate));
 
-        $sewasQuery = Sewa::query()
+        $sewasQuery = Sewa::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('tgl_mulai', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('tgl_mulai', '<=', $endDate));
 
-        $kalibrasisQuery = Kalibrasi::query()
+        $kalibrasisQuery = Kalibrasi::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
 
-        $penjualansQuery = Penjualan::query()
+        $penjualansQuery = Penjualan::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
         $pesananBaru = 0;
@@ -94,8 +125,19 @@ class StatsOverview extends BaseWidget
                 ->pluck('perorangan_id');
         }
         if ($serviceType === 'Semua') {
-            $allCorporateIds = ($projectCorporateIds ?? collect())->merge($sewaCorporateIds ?? collect())->unique();
-            $allPeroranganIds = ($projectPeroranganIds ?? collect())->merge($sewaPeroranganIds ?? collect())->unique();
+            $allCorporateIds = ($projectCorporateIds ?? collect())
+                ->merge($sewaCorporateIds ?? collect())
+                ->merge($kalibrasiCorporateIds ?? collect())
+                ->merge($penjualanCorporateIds ?? collect())
+                ->unique();
+
+            // Gabungkan perorangan ID dari SEMUA layanan
+            $allPeroranganIds = ($projectPeroranganIds ?? collect())
+                ->merge($sewaPeroranganIds ?? collect())
+                ->merge($kalibrasiPeroranganIds ?? collect())
+                ->merge($penjualanPeroranganIds ?? collect())
+                ->unique();
+
             $customerBaru = $allCorporateIds->count() + $allPeroranganIds->count();
         } elseif ($serviceType === 'Layanan Pemetaan') {
             $customerBaru = ($projectCorporateIds ?? collect())->unique()->count() + ($projectPeroranganIds ?? collect())->unique()->count();
