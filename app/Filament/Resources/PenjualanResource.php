@@ -43,8 +43,6 @@ class PenjualanResource extends Resource
 
     public static function form(Form $form): Form
     {
-
-        $uuid = request()->segment(2);
         return $form
             ->schema([
                 TextInput::make('nama_penjualan')
@@ -56,93 +54,11 @@ class PenjualanResource extends Resource
                     ->label('Tanggal Penjualan')
                     ->displayFormat('d/m/Y')
                     ->native(false),
-                Select::make('customer_flow_type')
-                    ->label('Tipe Customer')
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Tipe Customer harus dipilih',
-                    ])
-                    ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                    ->live()->dehydrated(false)->native(false)
-                    ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
-                    ->columnSpanFull()->required()
-                    ->validationMessages([
-                        'required' => 'Customer tidak boleh kosong',
-                    ]),
-                Select::make('corporate_id')
-                    ->label('Pilih Perusahaan')
-                    ->options(
-                        Corporate::whereNotNull('nama')->pluck('nama', 'id')
-                    )
-                    ->live()
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm(self::getCorporateForm())
-                    ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                    ->columnSpanFull()
-                    ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                    ->validationMessages([
-                        'required' => 'Perusahaan wajib diisi',
-                    ])
-                    ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                Repeater::make('perorangan')
-                    ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
-                    ->relationship()
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Kolom Customer wajib diisi',
-                    ])
-                    ->schema([
-                        Select::make('perorangan_id')
-                            ->label(false)
-                            ->required()
-                            ->options(function (Get $get, $state): array {
-                                $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
-                                $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                            })
-                            ->searchable()
-                            ->createOptionForm(self::getPeroranganForm())
-                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
-                    ])
-                    ->minItems(1)
-                    ->distinct()
-                    ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
-                    ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
-                    ->addActionLabel('Tambah PIC')
-                    ->columnSpanFull()
-                    ->visible(fn(Get $get) => filled($get('customer_flow_type')))
-                    ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                        $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                        $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-
-                        // Sync dengan project dan simpan peran
-                        $syncData = [];
-                        foreach ($ids as $id) {
-                            $syncData[$id] = ['peran' => $peran];
-                        }
-                        $record->perorangan()->sync($syncData);
-
-                        if ($record->corporate_id) {
-                            $corporate = $record->corporate;
-                            foreach ($ids as $peroranganId) {
-                                if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
-                                    $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
-                                }
-                            }
-                        }
-                    })
-                    ->rules(['required', 'uuid']),
+                self::getCustomerForm(),
                 Select::make('sales_id')
-                    ->relationship('sales', 'nama')
+                    ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                     ->label('Sales')
-                    ->options(function () {
-                        return Sales::query()
-                            ->select('id', 'nama', 'nik')
-                            ->get()
-                            ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                    })
+                    ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
                     ->placeholder('Pilih sales')
                     ->searchable()
                     ->preload()
@@ -152,7 +68,7 @@ class PenjualanResource extends Resource
                 Hidden::make('user_id')
                     ->default(auth()->id()),
                 Hidden::make('company_id')
-                    ->default($uuid),
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 

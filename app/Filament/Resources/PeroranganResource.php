@@ -38,7 +38,6 @@ class PeroranganResource extends Resource
     protected static ?int $navigationSort = 2;
     public static function form(Form $form): Form
     {
-        $uuid = request()->segment(2);
         return $form->schema([
             Section::make('Informasi Pribadi')
                 ->schema([
@@ -61,7 +60,7 @@ class PeroranganResource extends Resource
                     FileUpload::make('foto_kk')->image()->nullable(),
                 ])->columns(2),
             Hidden::make('company_id')
-                ->default($uuid),
+                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
         ]);
     }
 

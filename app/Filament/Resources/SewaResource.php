@@ -111,8 +111,6 @@ class SewaResource extends Resource
             }
         };
 
-        $uuid = request()->segment(2);
-
         return $form
             ->schema([
                 Section::make('Informasi Kontrak')
@@ -136,14 +134,9 @@ class SewaResource extends Resource
                         // ->preload()
                         // ->createOptionForm(self::getSalesForm()),
                         Select::make('sales_id')
-                            ->relationship('sales', 'nama')
+                            ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                             ->label('Sales')
-                            ->options(function () {
-                                return Sales::query()
-                                    ->select('id', 'nama', 'nik')
-                                    ->get()
-                                    ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                            })
+                            ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
                             ->placeholder('Pilih sales')
                             ->searchable()
                             ->preload()
@@ -183,123 +176,9 @@ class SewaResource extends Resource
                     ->schema(self::getAddressFields())->columns(2),
 
                 Section::make('Informasi Customer')
-                    ->schema([
-                        Select::make('customer_flow_type')
-                            ->label('Tipe Customer')
-                            ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                            ->live()->dehydrated(false)->native(false)->required()
-                            ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
-                            ->validationMessages([
-                                'required' => 'Customer tidak boleh kosong',
-                            ]),
-
-                        Select::make('corporate_id')
-                            ->relationship('corporate', 'nama')
-                            ->label('Pilih Perusahaan')
-                            ->live()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm(self::getCorporateForm())
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                if (!$state) {
-                                    $set('perorangan', []);
-                                    return;
-                                }
-
-                                $corporate = \App\Models\Corporate::with('perorangan')->find($state);
-
-                                if (!$corporate) {
-                                    $set('perorangan', []);
-                                    return;
-                                }
-
-                                $perorangan = $corporate->perorangan->map(fn($p) => [
-                                    'perorangan_id' => $p->id,
-                                ])->toArray();
-
-                                $set('perorangan', $perorangan);
-                            })
-                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                            ->validationMessages([
-                                'required' => 'Perusahaan wajib diisi',
-                            ])
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                        Repeater::make('perorangan')
-                            ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
-                            ->relationship()
-                            ->validationMessages([
-                                'required' => 'Harap pilih Customer/PIC',
-                            ])
-                            ->schema([
-                                Select::make('perorangan_id')
-                                    ->label(false)
-                                    ->options(function (Get $get, $state): array {
-                                        $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
-                                        $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                        return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                                    })
-                                    ->searchable()
-                                    ->createOptionForm(self::getPeroranganForm())
-                                    ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
-                                    ->required()
-                                    ->validationMessages([
-                                        'required' => 'Kolom Customer wajib diisi',
-                                    ])
-                                    ->rules(['required', 'uuid']),
-                            ])
-                            ->minItems(1)
-                            ->distinct()
-                            ->required()
-                            ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
-                            ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
-                            ->addActionLabel('Tambah PIC')
-                            ->visible(fn(Get $get) => filled($get('customer_flow_type')))
-                            ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                                // Filter out empty or null perorangan_id values
-                                $selectedIds = array_filter(array_map(fn($item) => $item['perorangan_id'] ?? null, $state));
-
-                                if (empty($selectedIds)) {
-                                    return; // Don't sync if no valid IDs
-                                }
-
-                                $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-
-                                // Sync dengan project dan simpan peran
-                                $syncData = [];
-                                foreach ($selectedIds as $id) {
-                                    if (!empty($id)) {
-                                        $syncData[$id] = ['peran' => $peran];
-                                    }
-                                }
-
-                                if (!empty($syncData)) {
-                                    $record->perorangan()->sync($syncData);
-                                }
-
-                                if ($record->corporate_id) {
-                                    $corporate = $record->corporate;
-
-                                    // Ambil semua ID PIC yang terhubung sebelumnya
-                                    $existingIds = $corporate->perorangan()->pluck('perorangan_id')->toArray();
-
-                                    // Tambahkan PIC baru yang belum terhubung
-                                    foreach ($selectedIds as $peroranganId) {
-                                        if (!in_array($peroranganId, $existingIds)) {
-                                            $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
-                                        }
-                                    }
-
-                                    // Hapus PIC yang tidak ada di list sekarang
-                                    $toDetach = array_diff($existingIds, $selectedIds);
-                                    if (!empty($toDetach)) {
-                                        $corporate->perorangan()->detach($toDetach);
-                                    }
-                                }
-                            })
-                    ]),
+                    ->schema(self::getCustomerForm()),
                 Hidden::make('company_id')
-                    ->default($uuid),
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
 
                 Section::make('Informasi Harga Penyewaan')
                     ->schema([

@@ -10,9 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('kategoris', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
+        // Schema::table('kategoris', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
         Schema::table('projects', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
