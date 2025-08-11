@@ -296,7 +296,7 @@ class ProjectResource extends Resource
     {
         return [
             ProjectStatsOverview::class,
-            ProjectsFilter::class,
+            // ProjectsFilter::class,
             // ProjectStatusChart::class,
         ];
     }

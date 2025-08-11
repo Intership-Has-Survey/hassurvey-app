@@ -318,7 +318,6 @@ trait GlobalForms
                                 });
                         })
                         ->reactive()
-                        ->maxItems(1)
                         ->createOptionForm([
                             TextInput::make('no_rek')
                                 ->label('Nomor Rekening')
@@ -370,7 +369,9 @@ trait GlobalForms
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')
                                 ->required(),
-                            Textinput::make('satuan')->required(),
+                            Textinput::make('satuan')
+                                ->placeholder('liter/kilogram/bungkus/dll,...')
+                                ->required(),
 
                         ])
                         ->defaultItems(1)
@@ -427,6 +428,16 @@ trait GlobalForms
                 ])
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
+            Select::make('perorangan_id')
+                ->label('Pilih Customer')
+                ->relationship('perorangan', 'nama')
+                ->searchable()
+                ->createOptionForm(self::getPeroranganForm())
+                // ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+                ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+
             Repeater::make('perorangan')
                 ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
                 ->relationship()
@@ -456,7 +467,7 @@ trait GlobalForms
                 ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                 ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                 ->addActionLabel('Tambah PIC')
-                ->visible(fn(Get $get) => filled($get('customer_flow_type')))
+                ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
                 ->saveRelationshipsUsing(function (Model $record, array $state): void {
                     // Filter out empty or null perorangan_id values
                     $selectedIds = array_filter(array_map(fn($item) => $item['perorangan_id'] ?? null, $state));

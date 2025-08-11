@@ -36,6 +36,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                     ->label('Pilih Alat')
                     ->relationship('alatCustomer', 'nomor_seri')
                     ->searchable()
+                    ->validationMessages([
+                        'required' => 'Alat wajib dipilih',
+                    ])
                     ->preload()
                     ->createOptionForm([
                         Forms\Components\Select::make('jenis_alat_id')
@@ -102,6 +105,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                                     ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
                                     ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                                     ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+
+                                Hidden::make('company_id')
+                                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
                             ]),
                     ])
                     ->createOptionUsing(function (array $data): string {

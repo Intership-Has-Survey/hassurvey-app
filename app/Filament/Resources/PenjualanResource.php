@@ -14,19 +14,18 @@ use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
-use Filament\Pages\Actions;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\PenjualanResource\Pages;
 use App\Filament\Resources\PenjualanResource\RelationManagers;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
@@ -43,32 +42,41 @@ class PenjualanResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 TextInput::make('nama_penjualan')
                     ->label('Nama Penjualan')
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true),
                 DatePicker::make('tanggal_penjualan')
                     ->required()
                     ->default(now())
                     ->label('Tanggal Penjualan')
                     ->displayFormat('d/m/Y')
                     ->native(false),
-                self::getCustomerForm(),
+
+                Section::make('Informasi Customer')
+                    ->schema(self::getCustomerForm()),
                 Select::make('sales_id')
-                    ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                     ->label('Sales')
-                    ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
-                    ->placeholder('Pilih sales')
-                    ->searchable()
+                    ->options(function () {
+                        return Sales::query()
+                            ->select('id', 'nama', 'nik')
+                            ->get()
+                            ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
+                    })->searchable()
+                    ->required()
                     ->preload()
+                    ->columnSpanFull()
                     ->createOptionForm(self::getSalesForm()),
 
                 Textarea::make('catatan'),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
                 Hidden::make('company_id')
-                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+                    ->default($uuid),
             ]);
     }
 
@@ -76,7 +84,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_penjualan')->searchable()
+                TextColumn::make('nama')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),
                 TextColumn::make('tanggal_penjualan')->date(),
@@ -107,19 +115,17 @@ class PenjualanResource extends Resource
                     ->label('Total Item'),
             ])
             ->filters([
-                TrashedFilter::make(),
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+
+                ActivityLogTimelineTableAction::make('Log'),
+                // ActivitylogRelationManager::class,22
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -140,18 +146,5 @@ class PenjualanResource extends Resource
             'create' => Pages\CreatePenjualan::route('/create'),
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
         ];
-    }
-    protected function getActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
-        ];
-    }
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withTrashed();
     }
 }

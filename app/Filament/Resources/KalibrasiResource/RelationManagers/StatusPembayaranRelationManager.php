@@ -60,6 +60,9 @@ class StatusPembayaranRelationManager extends RelationManager
                         'Lainnya' => 'Lainnya',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Metode pembayaran wajib diisi',
+                    ])
                     ->native(false),
 
                 Select::make('jenis_pembayaran')
@@ -70,6 +73,9 @@ class StatusPembayaranRelationManager extends RelationManager
                         'Termin 2' => 'Termin 2',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis pembayaran wajib diisi',
+                    ])
                     ->native(false),
 
                 TextInput::make('nilai')
@@ -77,6 +83,9 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->stripCharacters(',')
                     ->numeric()
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Nilai wajib diisi',
+                    ])
                     ->prefix('Rp')
                     ->maxlength(20),
 
@@ -85,6 +94,9 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->image()
                     ->maxSize(1024)
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Bukti Pembayaran wajib diisi',
+                    ])
                     ->disk('public')
                     ->directory('bukti-pembayaran')
                     ->columnSpanFull(),
@@ -123,9 +135,16 @@ class StatusPembayaranRelationManager extends RelationManager
                 ImageColumn::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->disk('public')
-                    ->square()
-                    ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
-                    ->openUrlInNewTab(),
+                    ->square() // optional
+                    // ->visibility('public') // opsional, jaga konsistensi
+                    ->size(50),
+
+                // ImageColumn::make('bukti_pembayaran_path')
+                //     ->label('Bukti Pembayaran')
+                //     ->disk('public')
+                //     ->square()
+                //     ->url(fn(Model $record): ?string => $record->bukti_pembayaran_path ? Storage::disk('public')->url($record->bukti_pembayaran_path) : null)
+                //     ->openUrlInNewTab(),
 
                 TextColumn::make('user.name')
                     ->label('Diinput oleh')
