@@ -26,11 +26,12 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Perusahaan')
-                        ->maxLength(200)
+                        ->maxLength(60)
                         ->required(),
                     TextInput::make('nib')
                         ->label('NIB')
-                        ->maxLength(20)
+                        ->maxLength(16)
+                        ->minLength(15)
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             $rule->where('company_id', Filament::getTenant()->id);
                             return $rule;
@@ -47,6 +48,7 @@ trait GlobalForms
                         ]),
                     TextInput::make('email')
                         ->label('Email')
+                        ->maxLength(254)
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             $rule->where('company_id', Filament::getTenant()->id);
                             return $rule;
@@ -58,7 +60,7 @@ trait GlobalForms
                     TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25),
                 ])->columns(2),
 
             Section::make('Alamat Perusahaan')
@@ -69,7 +71,7 @@ trait GlobalForms
                 ->default(auth()->id()),
 
             Hidden::make('company_id')
-                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+                ->default(fn() => Filament::getTenant()?->getKey()),
 
         ];
     }
@@ -82,10 +84,10 @@ trait GlobalForms
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
                         ->required()
-                        ->maxLength(100),
+                        ->maxLength(254),
                     TextInput::make('nik')
                         ->label('Nomor Induk Kependudukan (NIK)')
-                        ->length(16)
+                        ->length(length: 16)
                         ->rule('regex:/^\d+$/')
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             $rule->where('company_id', Filament::getTenant()->id);
@@ -97,18 +99,20 @@ trait GlobalForms
                         ]),
                     TextInput::make('email')
                         ->label('Email')
+                        ->maxLength(255)
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             $rule->where('company_id', Filament::getTenant()->id);
                             return $rule;
                         })
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                            'email' => 'Email tidak valid',
                         ])
                         ->email(),
                     TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25),
                     Select::make('gender')
                         ->label('Jenis Kelamin')
                         ->options([
@@ -135,7 +139,6 @@ trait GlobalForms
         return [
             Select::make('provinsi')
                 ->label('Provinsi')
-
                 ->placeholder('Pilih provinsi')
                 ->options(TrefRegion::query()
                     ->where(DB::raw('LENGTH(code)'), 2)
@@ -226,7 +229,7 @@ trait GlobalForms
                     TextInput::make('nama')
                         ->label('Nama Sales')
                         ->required()
-                        ->maxLength(100),
+                        ->maxLength(255),
                     TextInput::make('nik')
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
@@ -249,16 +252,21 @@ trait GlobalForms
                             return $rule;
                         })
                         ->required()
-                        ->maxLength(100)
+                        ->maxLength(254)
                         ->validationMessages([
                             'unique' => 'Email sudah digunakan',
                             'required' => 'Email wajib diisi',
+                            'regex' => 'Email tidak valid',
                         ]),
                     TextInput::make('telepon')
                         ->required()
                         ->label('Telepon')
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25)
+                        ->validationMessages([
+                            'required' => 'Telepon wajib diisi',
+                            'regex' => 'Telepon tidak valid',
+                        ]),
                 ])->columns(2),
 
             Section::make('Alamat Sales')
@@ -306,7 +314,8 @@ trait GlobalForms
                         ->columnSpanFull(),
                     Textarea::make('deskripsi_pengajuan')
                         ->label('Deskripsi Umum')
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->maxLength(5000),
                     Hidden::make('nilai')
                         ->default('0'),
                     Hidden::make('user_id')
@@ -347,14 +356,18 @@ trait GlobalForms
                             TextInput::make('no_rek')
                                 ->label('Nomor Rekening')
                                 ->numeric()
+                                ->maxLength(25)
                                 ->required()
                                 ->placeholder('Contoh: 1234567890')
                                 ->validationMessages([
                                     'required' => 'Nomor rekening wajib diisi',
+                                    'max_digits' => 'Tidak boleh lebih dari 25 digit',
                                 ]),
                             TextInput::make('nama_pemilik')
                                 ->label('Nama Pemilik')
-                                ->required(),
+                                ->required()
+                                ->maxLength(255),
+
                             Hidden::make('bank_id')
                                 ->default(fn(callable $get) => $get('bank_id')),
                             Hidden::make('user_id')
@@ -382,11 +395,25 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('deskripsi')
                         ->label('Nama Item')
-                        ->required(),
+                        ->required()
+                        ->maxLength(255),
                     TextInput::make('qty')
                         ->label('Jumlah')
                         ->numeric()
-                        ->required(),
+                        ->maxLength(4)
+                        ->minValue(1)
+                        ->default(1)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Jumlah wajib diisi',
+                            'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
+                            'min_value' => 'Jumlah tidak boleh kurang dari 0',
+                        ]),
+
+                    TextInput::make('satuan')
+                        ->placeholder('liter/kilogram/bungkus/dll,...')
+                        ->required()
+                        ->maxLength(50),
 
                     TextInput::make('harga_satuan')
                         ->label('Harga Satuan')
@@ -394,14 +421,19 @@ trait GlobalForms
                         ->prefix('Rp ')
                         ->mask(RawJs::make('$money($input)'))
                         ->stripCharacters(',')
-                        ->required(),
-                    TextInput::make('satuan')
-                        ->placeholder('liter/kilogram/bungkus/dll,...')
-                        ->required(),
+                        ->required()
+                        ->minValue(0)
+                        ->maxLength(9)
+                        ->validationMessages([
+                            'required' => 'Harga Satuan wajib diisi',
+                            'max_digits' => 'Tidak boleh lebih dari 9 digit',
+                            'min_value' => 'Tidak boleh kurang dari Rp 0'
+                        ]),
+
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
-                ->columns(3),
+                ->columns(4),
 
             Hidden::make('company_id')
                 ->default(fn() => Filament::getTenant()?->getKey()),
@@ -415,7 +447,10 @@ trait GlobalForms
             Select::make('customer_flow_type')
                 ->label('Tipe Customer')
                 ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                ->live()->dehydrated(false)->native(false)->required()
+                ->live()
+                ->dehydrated(false)
+                ->native(false)
+                ->required()
                 ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
                 ->validationMessages([
                     'required' => 'Customer tidak boleh kosong',

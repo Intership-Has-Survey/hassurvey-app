@@ -24,17 +24,34 @@ class DetailPengajuansRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('deskripsi')
                     ->required()->columnSpan(2),
-                Forms\Components\TextInput::make('qty')->label('Jumlah')->required()->numeric()->default(1)->minValue(1),
-                Forms\Components\Textinput::make('satuan')->required(),
+                Forms\Components\TextInput::make('qty')
+                    ->label('Jumlah')
+                    ->required()
+                    ->numeric()
+                    ->default(1)
+                    ->minValue(1)
+                    ->maxLength(4)
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jumlah wajib diisi',
+                        'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
+                        'min_value' => 'Jumlah tidak boleh kurang dari 0',
+                    ]),
+
+                Forms\Components\Textinput::make('satuan')->required()->maxLength(50),
                 Forms\Components\TextInput::make('harga_satuan')
                     ->mask(RawJs::make('$money($input)'))
                     ->label('Harga Satuan')
                     ->stripCharacters(',')
                     ->numeric()
                     ->required()
+                    ->minValue(0)
+                    ->maxLength(9)
                     ->prefix('Rp')
                     ->validationMessages([
                         'required' => 'Nilai wajib diisi',
+                        'max_digits' => 'Tidak boleh lebih dari 9 digit',
+                        'min_value' => 'Tidak boleh kurang dari Rp 0',
                     ]),
 
             ])->columns(5);
@@ -73,7 +90,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }
@@ -100,7 +117,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }
@@ -124,7 +141,7 @@ class DetailPengajuansRelationManager extends RelationManager
                             $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }
