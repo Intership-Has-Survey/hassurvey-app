@@ -82,6 +82,7 @@ class SalesResource extends Resource
                                 'required' => 'Email tidak boleh kosong',
                                 'email' => 'Email tidak valid',
                                 'regex' => 'Email tidak valid',
+                                'unique' => 'Email sudah pernah terdaftar',
                             ]),
                         TextInput::make('telepon')
                             ->label('Telepon')

@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AlatCustomer extends Model
 {
     //
-    use HasUuids;
+    use HasUuids, SoftDeletes;
     protected $guarded = ['id'];
 
     public function kalibrasis()
@@ -46,7 +47,7 @@ class AlatCustomer extends Model
 
     public function perorangan()
     {
-        return $this->belongsToMany(Perorangan::class, 'alat_customers_perorangan','alat_customers_id', 'perorangan_id')
+        return $this->belongsToMany(Perorangan::class, 'alat_customers_perorangan', 'alat_customers_id', 'perorangan_id')
             ->withPivot('alat_customers_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }

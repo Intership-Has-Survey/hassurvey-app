@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SewaResource\Widgets;
 
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use App\Filament\Resources\SewaResource\Pages\ListSewa;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use App\Models\PengajuanDana;
 use App\Models\Sewa;
@@ -16,11 +17,17 @@ use App\Models\pengajuanDanas;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
 
 class StatsOverviewSewa extends BaseWidget
 {
+    use InteractsWithPageTable;
     // Properti untuk menyimpan state filter tanggal range
-    public ?string $dateRange = null;
+
+    public ?array $filters = [];
 
     public ?string $companyId; // Pastikan properti ini ada
 
@@ -34,70 +41,64 @@ class StatsOverviewSewa extends BaseWidget
         }
     }
 
-    protected function getHeaderActions(): array
+    protected function getTablePage(): string
     {
-        // Tombol filter dengan DateRangePicker dari package CodeWithKyrian
-        return [
-            Action::make('filter')
-                ->label('Filter Tanggal')
-                ->icon('heroicon-o-funnel')
-                ->form([
-                    DateRangePicker::make('dateRange')
-                        ->label('Rentang Tanggal')
-                        ->default($this->dateRange),
-                ])
-                ->action(function (array $data) {
-                    $this->dateRange = $data['dateRange'];
-                }),
-        ];
+        return ListSewa::class;
     }
 
     protected function getStats(): array
     {
-        // Query untuk Pemasukan
-        $pendapatanQuery = StatusPembayaran::query()
-            ->where('company_id', $this->companyId)
-            ->whereHasMorph('payable', [Sewa::class]);
+        $query = $this->getPageTableQuery();
 
-        // Query untuk Pengeluaran
-        $pengeluaranQuery = TransaksiPembayaran::query()
-            ->where('company_id', $this->companyId)
-            ->whereHasMorph('payable', [PengajuanDana::class], function ($query) {
-                $query->whereHas('sewa');
-            });
+        // Apply filters from the page
+        foreach ($this->filters ?? [] as $filterName => $filterValue) {
+            if ($filterValue === null) {
+                continue;
+            }
 
-        // ADDED: Query untuk menghitung total sewa
-        // Pastikan model Sewa juga memiliki relasi dengan company
-        $sewaQuery = Sewa::query()->where('company_id', $this->companyId);
-
-        // Terapkan filter rentang tanggal jika ada
-        if ($this->dateRange) {
-            // Pecah string tanggal menjadi tanggal awal dan akhir
-            [$startDate, $endDate] = explode(' - ', $this->dateRange);
-
-            // Terapkan filter `whereBetween` pada semua query
-            $pendapatanQuery->whereBetween('tanggal_pembayaran', [$startDate, $endDate]);
-            $pengeluaranQuery->whereBetween('tanggal_transaksi', [$startDate, $endDate]);
-            // Filter sewa berdasarkan tanggal informasi masuk
-            $sewaQuery->whereBetween('tanggal_informasi_masuk', [$startDate, $endDate]);
+            switch ($filterName) {
+                case 'status':
+                case 'status_pembayaran':
+                    $query->where($filterName, $filterValue);
+                    break;
+                case 'created_at':
+                    if (isset($filterValue['start'], $filterValue['end'])) {
+                        $query->whereBetween('created_at', [
+                            $filterValue['start'],
+                            $filterValue['end'],
+                        ]);
+                    }
+                    break;
+            }
         }
 
-        // Kalkulasi total
-        $pendapatan = $pendapatanQuery->sum('nilai');
-        $pengeluaran = $pengeluaranQuery->sum('nilai');
-        $totalSewa = $sewaQuery->count(); // Hitung jumlah sewa
+        $sewaIds = $query->clone()->pluck('id');
+
+        $pendapatan = StatusPembayaran::query()
+            ->whereIn('payable_id', $sewaIds)
+            ->where('payable_type', Sewa::class)
+            ->sum('nilai');
+
+        $pengeluaran = TransaksiPembayaran::query()
+            ->whereHasMorph('payable', [PengajuanDana::class], function (Builder $q) use ($sewaIds) {
+                $q->whereHas('Sewa', function (Builder $q2) use ($sewaIds) {
+                    $q2->whereIn('id', $sewaIds);
+                });
+            })
+            ->sum('nilai');
 
         return [
+
+            Stat::make('Jumla Penyewaan (Sesuai Filter)', $query->clone()->count())
+                ->description('Jumlah proses sewa dalam periode waktu yang dipilih')
+                ->color('info'),
             Stat::make('Pemasukan Sewa', 'Rp ' . number_format($pendapatan))
                 ->description('Total pembayaran sewa yang diterima')
                 ->color('success'),
             Stat::make('Pengeluaran Sewa', 'Rp ' . number_format($pengeluaran))
                 ->description('Total pengeluaran terkait sewa')
                 ->color('danger'),
-            // ADDED: Stat baru untuk menampilkan total sewa
-            Stat::make('Total Proses Sewa', $totalSewa)
-                ->description('Jumlah proses sewa dalam periode waktu yang dipilih')
-                ->color('info'),
+
         ];
     }
 }

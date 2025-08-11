@@ -56,11 +56,14 @@ class DetailPenjualanRelationManager extends RelationManager
                     })
                     ->required()
                     ->validationMessages([
-                        'required' => 'Nomor Seri wajib diisi',
+                        'required' => 'Jenis Alat wajib diisi',
                     ]),
                 Forms\Components\TextInput::make('harga')
-                    ->required()
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(',')
                     ->numeric()
+                    ->requiured()
+                    ->prefix('Rp')
                     ->validationMessages([
                         'required' => 'Harga wajib diisi',
                     ]),
@@ -81,7 +84,44 @@ class DetailPenjualanRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->label('Tambah Alat')
+                    ->form([
+                        Forms\Components\Select::make('jenis_alat_id')->label('Jenis Alat')->options(JenisAlat::query()->pluck('nama', 'id'))->live()->required()->searchable()
+                            ->validationMessages([
+                                'required' => 'Jenis Alat wajib diisi',
+                            ]),
+                        Forms\Components\Select::make('daftar_alat_id')->label('Nomor Seri')->options(function (Get $get) {
+                            $jenisAlatId = $get('jenis_alat_id');
+                            if (!$jenisAlatId) return [];
+                            return DaftarAlat::where('jenis_alat_id', $jenisAlatId)->where('status', true)->pluck('nomor_seri', 'id');
+                        })->searchable()->required()->validationMessages([
+                            'required' => 'Nomor Seri wajib diisi',
+                        ]),
+                        Forms\Components\TextInput::make('harga')
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Harga wajib diisi',
+                            ]),
+                    ])
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $alat = DaftarAlat::find($data['daftar_alat_id']);
+                        if ($alat) {
+                            $data['merk_id'] = $alat->merk_id;
+                            $data['jenis_alat_id'] = $alat->jenis_alat_id;
+                        }
+                        return $data;
+                    })
+                    ->after(function (Model $record) {
+                        if ($record->daftarAlat) {
+                            $record->daftarAlat->status = 2; // Terjual
+                            $record->daftarAlat->save();
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
