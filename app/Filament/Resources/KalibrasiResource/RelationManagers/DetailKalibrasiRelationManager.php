@@ -45,6 +45,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                             ->relationship('jenisAlat', 'nama')
                             ->required()
                             ->searchable()
+                            ->validationMessages([
+                                'required' => 'Jenis alat wajib diisi',
+                            ])
                             ->preload()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('nama')
@@ -55,6 +58,9 @@ class DetailKalibrasiRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
+                            ->validationMessages([
+                                'required' => 'Merk wajib diisi',
+                            ])
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('nama')
                                     ->unique(ignoreRecord: true)

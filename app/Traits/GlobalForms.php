@@ -312,6 +312,7 @@ trait GlobalForms
                     Hidden::make('user_id')
                         ->default(auth()->id()),
                 ]),
+
             Section::make('Informasi Rekening Penerima')
                 ->schema([
                     Select::make('bank_id')
@@ -326,6 +327,7 @@ trait GlobalForms
                             'required' => 'Bank wajib diisi',
                         ])
                         ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
+
                     Select::make('bank_account_id')
                         ->label('Nomor Rekening')
                         ->options(function (callable $get) {
@@ -396,7 +398,6 @@ trait GlobalForms
                     TextInput::make('satuan')
                         ->placeholder('liter/kilogram/bungkus/dll,...')
                         ->required(),
-
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
@@ -452,12 +453,25 @@ trait GlobalForms
                 ])
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
+            //buat commit
+            // Select::make('perorangan')
+            //     ->label('Pilih Customer')
+            //     ->relationship()
+            //     ->searchable()
+            //     ->validationMessages([
+            //         'required' => 'Kolom Customer wajib diisi',
+            //     ])
+            //     ->createOptionForm(self::getPeroranganForm())
+            //     // ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
+            //     ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
+            //     ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+            //     ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+
             Select::make('perorangan_id')
                 ->label('Pilih Customer')
-                ->relationship('perorangan', 'nama')
+                ->options(fn() => self::getPeroranganOptions())
                 ->searchable()
                 ->createOptionForm(self::getPeroranganForm())
-                // ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
                 ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                 ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
@@ -537,5 +551,14 @@ trait GlobalForms
                     }
                 }),
         ];
+    }
+
+    private static function getPeroranganOptions($excludeIds = []): array
+    {
+        return \App\Models\Perorangan::where('company_id', \Filament\Facades\Filament::getTenant()?->getKey())
+            ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds))
+            ->get()
+            ->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])
+            ->all();
     }
 }

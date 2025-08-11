@@ -160,10 +160,16 @@ class SewaResource extends Resource
                                     ->label('Tanggal Mulai')
                                     ->live(onBlur: true)
                                     ->native(false)
+                                    ->validationMessages([
+                                        'required' => 'Tanggal mulai wajib diisi',
+                                    ])
                                     ->default(now())
                                     ->afterStateUpdated($calculateRentang),
                                 DatePicker::make('tgl_selesai')
                                     ->required()
+                                    ->validationMessages([
+                                        'required' => 'Tanggal Selesai wajib diisi',
+                                    ])
                                     ->label('Tanggal Selesai')
                                     ->minDate(fn(Get $get) => $get('tgl_mulai'))
                                     ->live(onBlur: true)
