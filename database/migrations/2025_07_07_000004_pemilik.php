@@ -14,9 +14,12 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->string('nama');
             $table->string('gender');
-            $table->string('NIK')->unique();
-            $table->string('email')->unique();
+            $table->string('NIK');
+            $table->string('email');
             $table->string('telepon');
+
+            $table->unique(['nik', 'company_id']);
+            $table->unique(['email', 'company_id']);
 
             $table->string('provinsi', 2)->nullable();
             $table->string('kota', 5)->nullable();

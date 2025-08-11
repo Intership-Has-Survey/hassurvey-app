@@ -8,17 +8,19 @@ use Filament\Forms\Form;
 use App\Models\DaftarAlat;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Pages\Actions;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use App\Filament\Resources\DaftarAlatResource\Pages;
@@ -37,9 +39,6 @@ class DaftarAlatResource extends Resource
 
     public static function form(Form $form): Form
     {
-
-        $uuid = request()->segment(2);
-
         return $form
             ->schema([
                 Select::make('jenis_alat_id')
@@ -60,7 +59,10 @@ class DaftarAlatResource extends Resource
                     ]),
                 TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                        $rule->where('company_id', Filament::getTenant()->id);
+                        return $rule;
+                    })
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -110,7 +112,10 @@ class DaftarAlatResource extends Resource
                                 TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
-                                    ->unique()
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                        $rule->where('company_id', Filament::getTenant()->id);
+                                        return $rule;
+                                    })
                                     ->validationMessages([
                                         'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -119,7 +124,10 @@ class DaftarAlatResource extends Resource
                                     ->required(),
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->unique()
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                        $rule->where('company_id', Filament::getTenant()->id);
+                                        return $rule;
+                                    })
                                     ->validationMessages([
                                         'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -150,7 +158,7 @@ class DaftarAlatResource extends Resource
                     ->visibleOn('edit'),
 
                 Hidden::make('company_id')
-                    ->default($uuid),
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 

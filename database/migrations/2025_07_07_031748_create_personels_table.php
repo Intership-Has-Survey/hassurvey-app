@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('personel', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('nik')->unique();;
+            $table->string('nik');
             $table->string('nomor_wa');
             $table->string('tipe_personel');
             $table->string('jabatan');
@@ -24,6 +24,8 @@ return new class extends Migration {
             $table->string('desa', 13)->nullable();
             $table->text('detail_alamat')->nullable();
             $table->timestamps();
+
+            $table->unique(['nik', 'company_id']);
 
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

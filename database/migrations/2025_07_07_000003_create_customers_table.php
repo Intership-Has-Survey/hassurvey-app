@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->string('nama');
             $table->string('gender')->nullable();
-            $table->string('email')->unique()->nullable();
+            $table->string('email')->nullable();
             $table->string('telepon')->tel()->nullable();
             // $table->string('alamat');
 
@@ -29,11 +29,13 @@ return new class extends Migration {
             $table->string('desa', 13)->nullable();
             $table->string('detail_alamat')->nullable();;
 
-            $table->string('nik')->nullable()->unique();
+            $table->string('nik')->nullable();
             $table->text('foto_ktp')->nullable();
             $table->text('foto_kk')->nullable();
 
             $table->timestamps();
+            $table->unique(['nik', 'company_id']);
+            $table->unique(['email', 'company_id']);
 
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
@@ -43,9 +45,9 @@ return new class extends Migration {
         Schema::create('corporate', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('nib')->unique()->nullable();
+            $table->string('nib')->nullable();
             $table->string('level')->nullable();
-            $table->string('email')->unique()->nullable();
+            $table->string('email')->nullable();
             $table->string('telepon')->tel()->nullable();
 
             $table->string('provinsi', 2)->nullable();
@@ -55,6 +57,9 @@ return new class extends Migration {
             $table->string('detail_alamat')->nullable();
 
             $table->timestamps();
+
+            $table->unique(['email', 'company_id']);
+            $table->unique(['nib', 'company_id']);
 
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();

@@ -15,12 +15,14 @@ return new class extends Migration
             $table->Uuid('id')->primary();
             $table->foreignUuid('jenis_alat_id');
             $table->foreignUuid('merk_id');
-            $table->string('nomor_seri')->unique();
+            $table->string('nomor_seri');
+            $table->unique(['nomor_seri', 'company_id']);
             $table->boolean('kondisi')->default(true);
             $table->text('keterangan')->nullable();
             // $table->foreignUuid('customer_id');
             $table->foreignUuid('corporate_id')->nullable()->constrained('corporate');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

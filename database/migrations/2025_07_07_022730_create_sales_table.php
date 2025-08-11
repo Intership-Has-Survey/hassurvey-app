@@ -13,8 +13,8 @@ return new class extends Migration {
         Schema::create('sales', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('nik', 16)->unique();
-            $table->string('email')->unique();
+            $table->string('nik', 16);
+            $table->string('email');
             $table->string('telepon');
             $table->string('provinsi', 2)->nullable();
             $table->string('kota', 5)->nullable();
@@ -22,6 +22,9 @@ return new class extends Migration {
             $table->string('desa', 13)->nullable();
             $table->text('detail_alamat')->nullable();
             $table->timestamps();
+
+            $table->unique(['nik', 'company_id']);
+            $table->unique(['email', 'company_id']);
 
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
