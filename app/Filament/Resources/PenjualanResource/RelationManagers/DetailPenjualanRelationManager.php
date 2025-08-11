@@ -56,7 +56,7 @@ class DetailPenjualanRelationManager extends RelationManager
                     })
                     ->required()
                     ->validationMessages([
-                        'required' => 'Jenis Alat wajib diisi',
+                        'required' => 'Nomor Seri wajib diisi',
                     ]),
                 Forms\Components\TextInput::make('harga')
                     ->required()
