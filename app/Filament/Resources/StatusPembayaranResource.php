@@ -156,8 +156,8 @@ class StatusPembayaranResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -183,7 +183,7 @@ class StatusPembayaranResource extends Resource
         return [
             'index' => Pages\ListStatusPembayarans::route('/'),
             'create' => Pages\CreateStatusPembayaran::route('/create'),
-            // 'view' => Pages\ListStatusPembayaran::route('/{record}'),
+            'view' => Pages\ViewStatusPembayaran::route('/{record}'),
             'edit' => Pages\EditStatusPembayaran::route('/{record}/edit'),
         ];
     }

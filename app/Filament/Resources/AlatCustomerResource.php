@@ -37,6 +37,7 @@ use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\AlatCustomerResource\Pages\EditAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\Pages\ListAlatCustomers;
 use App\Filament\Resources\AlatCustomerResource\Pages\CreateAlatCustomer;
+use App\Filament\Resources\AlatCustomerResource\Pages\ViewAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\RelationManagers\DetailKalibrasiRelationManager;
 
 class AlatCustomerResource extends Resource
@@ -141,8 +142,8 @@ class AlatCustomerResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -170,6 +171,8 @@ class AlatCustomerResource extends Resource
             'index' => ListAlatCustomers::route('/'),
             'create' => CreateAlatCustomer::route('/create'),
             'edit' => EditAlatCustomer::route('/{record}/edit'),
+            'view' => ViewAlatCustomer::route('/{record}'),
+            // 'view' => ViewAlatC::route('/{record}'),
         ];
     }
     protected function getActions(): array

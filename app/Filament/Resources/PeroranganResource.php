@@ -99,8 +99,8 @@ class PeroranganResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -132,6 +132,7 @@ class PeroranganResource extends Resource
         return [
             'edit' => Pages\EditPerorangan::route('/{record}/edit'),
             'index' => Pages\ListPerorangans::route('/'),
+            'view' => Pages\ViewPerorangan::route('/{record}'),
         ];
     }
     protected function getActions(): array

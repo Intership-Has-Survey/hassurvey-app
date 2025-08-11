@@ -229,6 +229,7 @@ class PersonelResource extends Resource
             'index' => Pages\ListPersonels::route('/'),
             'create' => Pages\CreatePersonel::route('/create'),
             'edit' => Pages\EditPersonel::route('/{record}/edit'),
+            'view' => Pages\ViewPersonel::route('/{record}'),
         ];
     }
 

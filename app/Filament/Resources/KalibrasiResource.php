@@ -128,8 +128,8 @@ class KalibrasiResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -161,6 +161,7 @@ class KalibrasiResource extends Resource
             'index' => Pages\ListKalibrasis::route('/'),
             'create' => Pages\CreateKalibrasi::route('/create'),
             'edit' => Pages\EditKalibrasi::route('/{record}/edit'),
+            'view' => Pages\ViewKalibrasi::route('/{record}'),
         ];
     }
 

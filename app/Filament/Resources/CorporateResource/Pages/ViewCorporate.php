@@ -4,16 +4,16 @@ namespace App\Filament\Resources\CorporateResource\Pages;
 
 use App\Filament\Resources\CorporateResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditCorporate extends EditRecord
+class ViewCorporate extends ViewRecord
 {
     protected static string $resource = CorporateResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
+            Actions\EditAction::make(),
             Actions\DeleteAction::make(),
         ];
     }

@@ -93,8 +93,8 @@ class CorporateResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -128,6 +128,7 @@ class CorporateResource extends Resource
             'index' => Pages\ListCorporates::route('/'),
             'create' => Pages\CreateCorporate::route('/create'),
             'edit' => Pages\EditCorporate::route('/{record}/edit'),
+            'view' => Pages\ViewCorporate::route('/{record}'),
         ];
     }
     protected function getActions(): array

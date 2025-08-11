@@ -4,16 +4,16 @@ namespace App\Filament\Resources\PeroranganResource\Pages;
 
 use App\Filament\Resources\PeroranganResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditPerorangan extends EditRecord
+class ViewPerorangan extends ViewRecord
 {
     protected static string $resource = PeroranganResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
+            Actions\EditAction::make(),
             Actions\DeleteAction::make(),
         ];
     }

@@ -262,8 +262,8 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),

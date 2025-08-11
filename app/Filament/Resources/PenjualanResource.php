@@ -136,8 +136,8 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -172,6 +172,7 @@ class PenjualanResource extends Resource
             'index' => Pages\ListPenjualans::route('/'),
             'create' => Pages\CreatePenjualan::route('/create'),
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
+            'view' => Pages\ViewPenjualan::route('/{record}'),
         ];
     }
     protected function getActions(): array

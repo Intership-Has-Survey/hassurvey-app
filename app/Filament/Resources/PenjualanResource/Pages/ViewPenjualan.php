@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\SewaResource\Pages;
+namespace App\Filament\Resources\PenjualanResource\Pages;
 
-use App\Filament\Resources\SewaResource;
+use App\Filament\Resources\PenjualanResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewSewa extends ViewRecord
+class ViewPenjualan extends ViewRecord
 {
-    protected static string $resource = SewaResource::class;
+    protected static string $resource = PenjualanResource::class;
 
     protected function getHeaderActions(): array
     {

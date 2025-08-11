@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PemilikResource\Pages\EditPemilik;
 use App\Filament\Resources\PemilikResource\Pages\ListPemiliks;
 use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
+use App\Filament\Resources\PemilikResource\Pages\ViewPemilik;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\DaftarAlatRelationManager;
@@ -177,8 +178,8 @@ class PemilikResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -219,6 +220,7 @@ class PemilikResource extends Resource
             'index' => ListPemiliks::route('/'),
             'create' => CreatePemilik::route('/create'),
             'edit' => EditPemilik::route('/{record}/edit'),
+            'view' => ViewPemilik::route('/{record}'),
         ];
     }
 
