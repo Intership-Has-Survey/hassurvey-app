@@ -387,22 +387,22 @@ trait GlobalForms
                         ->numeric()
                         ->required(),
 
-                            TextInput::make('harga_satuan')
-                                ->label('Harga Satuan')
-                                ->numeric()
-                                ->prefix('Rp ')
-                                ->mask(RawJs::make('$money($input)'))
-                                ->stripCharacters(',')
-                                ->required(),
-                            Textinput::make('satuan')
-                                ->placeholder('liter/kilogram/bungkus/dll,...')
-                                ->required(),
+                    TextInput::make('harga_satuan')
+                        ->label('Harga Satuan')
+                        ->numeric()
+                        ->prefix('Rp ')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
+                        ->required(),
+                    TextInput::make('satuan')
+                        ->placeholder('liter/kilogram/bungkus/dll,...')
+                        ->required(),
 
-                        ])
-                        ->defaultItems(1)
-                        ->createItemButtonLabel('Tambah Rincian')
-                        ->columns(3),
-                ]),
+                ])
+                ->defaultItems(1)
+                ->createItemButtonLabel('Tambah Rincian')
+                ->columns(3),
+
             Hidden::make('company_id')
                 ->default(fn() => Filament::getTenant()?->getKey()),
 
