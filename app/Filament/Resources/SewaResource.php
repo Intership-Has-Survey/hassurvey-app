@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
+use App\Filament\Resources\SewaResource\Widgets\SewaFilter;
 use App\Models\Sewa;
 use App\Models\Sales;
 use Filament\Forms\Get;
@@ -344,6 +345,7 @@ class SewaResource extends Resource
     {
         return [
             StatsOverviewSewa::class,
+            SewaFilter::class,
         ];
     }
 
