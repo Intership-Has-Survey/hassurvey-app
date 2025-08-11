@@ -25,6 +25,8 @@ use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\LevelResource\Pages\EditLevel;
 use App\Filament\Resources\LevelResource\Pages\ListLevels;
 use App\Filament\Resources\LevelResource\Pages\CreateLevel;
+use App\Filament\Resources\LevelResource\Pages\ViewLevel;
+use App\Filament\Resources\LevelResource\Pages\ViewLevels;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\LevelResource\RelationManagers\LevelStepRelationManager;
 
@@ -84,8 +86,8 @@ class LevelResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -114,6 +116,9 @@ class LevelResource extends Resource
             'index' => ListLevels::route('/'),
             'create' => CreateLevel::route('/create'),
             'edit' => EditLevel::route('/{record}/edit'),
+            // 'view' => ViewLevel::route('/{record}'),
+            'view' => ViewLevel::route('/{record}'),
+            // 'view' => ViewLevels::route('/{record}'),
         ];
     }
     protected function getActions(): array

@@ -121,8 +121,8 @@ class UserResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -159,6 +159,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'view' => Pages\ViewUser::route('/{record}'),
         ];
     }
 }

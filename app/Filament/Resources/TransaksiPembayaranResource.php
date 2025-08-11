@@ -129,8 +129,8 @@ class TransaksiPembayaranResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -156,7 +156,7 @@ class TransaksiPembayaranResource extends Resource
         return [
             'index' => Pages\ListTransaksiPembayarans::route('/'),
             'create' => Pages\CreateTransaksiPembayaran::route('/create'),
-            // 'view' => Pages\ViewTransaksiPembayaran::route('/{record}'),
+            'view' => Pages\ViewTransaksiPembayaran::route('/{record}'),
             'edit' => Pages\EditTransaksiPembayaran::route('/{record}/edit'),
         ];
     }

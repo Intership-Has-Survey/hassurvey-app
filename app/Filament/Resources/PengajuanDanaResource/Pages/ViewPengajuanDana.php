@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\DaftarAlatResource\Pages;
+namespace App\Filament\Resources\PengajuanDanaResource\Pages;
 
-use App\Filament\Resources\DaftarAlatResource;
+use App\Filament\Resources\PengajuanDanaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewDaftarAlat extends ViewRecord
+class ViewPengajuanDana extends ViewRecord
 {
-    protected static string $resource = DaftarAlatResource::class;
+    protected static string $resource = PengajuanDanaResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -187,25 +187,25 @@ class PengajuanDanaResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make()
-                    ->after(function ($livewire, $record) {
-                        // Hitung total harga dulu
-                        $record->updateTotalHarga();
-                        // Refresh record agar data terbaru terbaca
-                        $record->refresh();
-                        $nilai = $record->nilai;
-                        $level = Level::where('max_nilai', '>=', $nilai)
-                            ->orderBy('max_nilai')
-                            ->first();
-                        if ($level) {
-                            $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleId = optional($firstStep?->roles)->id;
-                            $record->update([
-                                'level_id' => $level->id,
-                                'dalam_review' => $roleId,
-                            ]);
-                        }
-                    }),
+                // EditAction::make()
+                //     ->after(function ($livewire, $record) {
+                //         // Hitung total harga dulu
+                //         $record->updateTotalHarga();
+                //         // Refresh record agar data terbaru terbaca
+                //         $record->refresh();
+                //         $nilai = $record->nilai;
+                //         $level = Level::where('max_nilai', '>=', $nilai)
+                //             ->orderBy('max_nilai')
+                //             ->first();
+                //         if ($level) {
+                //             $firstStep = $level->levelSteps()->orderBy('step')->first();
+                //             $roleId = optional($firstStep?->roles)->id;
+                //             $record->update([
+                //                 'level_id' => $level->id,
+                //                 'dalam_review' => $roleId,
+                //             ]);
+                //         }
+                //     }),
                 Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-o-check-circle')
@@ -240,7 +240,7 @@ class PengajuanDanaResource extends Resource
                     }),
 
                 ActivityLogTimelineTableAction::make('Log'),
-                DeleteAction::make(),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ])
@@ -268,6 +268,7 @@ class PengajuanDanaResource extends Resource
             'index' => Pages\ListPengajuanDanas::route('/'),
             'create' => Pages\CreatePengajuanDana::route('/create'),
             'edit' => Pages\EditPengajuanDana::route('/{record}/edit'),
+            'view' => Pages\ViewPengajuanDana::route('/{record}'),
         ];
     }
 

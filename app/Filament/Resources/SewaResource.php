@@ -313,9 +313,9 @@ class SewaResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make()
-                    ->visible(fn(Sewa $record): bool => !$record->is_locked),
-                DeleteAction::make(),
+                // EditAction::make()
+                // ->visible(fn(Sewa $record): bool => !$record->is_locked),
+                // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
 
@@ -377,6 +377,7 @@ class SewaResource extends Resource
             'index' => Pages\ListSewa::route('/'),
             'create' => Pages\CreateSewa::route('/create'),
             'edit' => Pages\EditSewa::route('/{record}/edit'),
+            'view' => Pages\ViewSewa::route('/{record}'),
         ];
     }
     public static function getEloquentQuery(): Builder

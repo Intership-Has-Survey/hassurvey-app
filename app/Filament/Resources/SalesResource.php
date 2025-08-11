@@ -123,18 +123,8 @@ class SalesResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('export_pdf')
-                    ->label('Export PDF')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->action(function ($record) {
-                        $pdf = Pdf::loadView('exports.sales', ['record' => $record]);
-
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->stream();
-                        }, 'sales-' . $record->id . '.pdf');
-                    }),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
@@ -165,6 +155,7 @@ class SalesResource extends Resource
             'index' => Pages\ListSales::route('/'),
             'create' => Pages\CreateSales::route('/create'),
             'edit' => Pages\EditSales::route('/{record}/edit'),
+            'view' => Pages\ViewSales::route('/{record}'),
         ];
     }
 
