@@ -23,6 +23,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
@@ -135,6 +136,7 @@ class AlatCustomerResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ])
