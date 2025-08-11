@@ -54,7 +54,6 @@ trait GlobalForms
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                         ])
-                        ->required()
                         ->email(),
                     TextInput::make('telepon')
                         ->label('Telepon')
@@ -490,6 +489,9 @@ trait GlobalForms
                 ->minItems(1)
                 ->distinct()
                 ->required()
+                ->validationMessages([
+                    'required' => 'PIC tidak boleh kosong',
+                ])
                 ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                 ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                 ->addActionLabel('Tambah PIC')

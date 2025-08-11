@@ -9,11 +9,14 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\Corporate;
+use App\Models\JenisAlat;
 use App\Models\Penjualan;
+use App\Models\DaftarAlat;
 use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Support\RawJs;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
@@ -81,7 +84,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama')->searchable()
+                TextColumn::make('nama_penjualan')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),
                 TextColumn::make('tanggal_penjualan')->date(),
