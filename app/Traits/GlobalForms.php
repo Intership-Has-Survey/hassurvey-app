@@ -481,6 +481,7 @@ trait GlobalForms
                         ->createOptionForm(self::getPeroranganForm())
                         ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
                         ->required()
+                        ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
                         ->validationMessages([
                             'required' => 'Kolom Customer wajib diisi',
                         ])
@@ -492,17 +493,15 @@ trait GlobalForms
                 ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
                 ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
                 ->addActionLabel('Tambah PIC')
-                ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
+                // ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
                 ->saveRelationshipsUsing(function (Model $record, array $state): void {
                     // Filter out empty or null perorangan_id values
                     $selectedIds = array_filter(array_map(fn($item) => $item['perorangan_id'] ?? null, $state));
-
                     if (empty($selectedIds)) {
                         return; // Don't sync if no valid IDs
                     }
-
                     $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-
                     // Sync dengan project dan simpan peran
                     $syncData = [];
                     foreach ($selectedIds as $id) {
