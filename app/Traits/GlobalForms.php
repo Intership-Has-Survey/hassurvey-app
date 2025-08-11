@@ -5,19 +5,17 @@ namespace App\Traits;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\TrefRegion;
-use App\Models\BankAccount;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Placeholder;
-
+use Filament\Facades\Filament;
+use Illuminate\Validation\Rules\Unique;
 trait GlobalForms
 {
     private static function getCorporateForm(): array
@@ -32,7 +30,10 @@ trait GlobalForms
                     TextInput::make('nib')
                         ->label('NIB')
                         ->maxLength(20)
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIB ini sudah terdaftar, silakan gunakan yang lain.',
                         ]),
@@ -45,7 +46,10 @@ trait GlobalForms
                         ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                         ])
@@ -83,14 +87,20 @@ trait GlobalForms
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
                         ->rule('regex:/^\d+$/')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIK sudah pernah terdaftar',
                             'regex' => 'NIK hanya boleh berisi angka',
                         ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                         ])
@@ -221,7 +231,10 @@ trait GlobalForms
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
                         ->rule('regex:/^\d+$/')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIK sudah pernah terdaftar',
                             'regex' => 'NIK hanya boleh berisi angka',
@@ -229,7 +242,10 @@ trait GlobalForms
                     TextInput::make('email')
                         ->label('Email')
                         ->email()
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->maxLength(100)
                         ->validationMessages([
                             'unique' => 'Email sudah digunakan'
