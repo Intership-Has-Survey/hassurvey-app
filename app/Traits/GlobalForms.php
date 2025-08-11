@@ -372,21 +372,19 @@ trait GlobalForms
                         ->validationMessages([
                             'required' => 'Nomor Rekening wajib diisi',
                         ]),
-                ]),
 
-            Repeater::make('detailPengajuans')
-                ->relationship()
-                ->columnSpanFull()
-                ->label('Rincian Pengajuan Dana')
-                ->schema([
-                    TextInput::make('deskripsi')
-                        ->label('Nama Item')
-                        ->required(),
-                    TextInput::make('qty')
-                        ->label('Jumlah')
-                        ->numeric()
-                        ->required(),
-
+                    Repeater::make('detailPengajuans')
+                        ->relationship()
+                        ->columnSpanFull()
+                        ->label('Rincian Pengajuan Dana')
+                        ->schema([
+                            TextInput::make('deskripsi')
+                                ->label('Nama Item')
+                                ->required(),
+                            TextInput::make('qty')
+                                ->label('Jumlah')
+                                ->numeric()
+                                ->required(),
                             TextInput::make('harga_satuan')
                                 ->label('Harga Satuan')
                                 ->numeric()
@@ -403,6 +401,33 @@ trait GlobalForms
                         ->createItemButtonLabel('Tambah Rincian')
                         ->columns(3),
                 ]),
+
+            Repeater::make('detailPengajuans')
+                ->relationship()
+                ->columnSpanFull()
+                ->label('Rincian Pengajuan Dana')
+                ->schema([
+                    TextInput::make('deskripsi')
+                        ->label('Nama Item')
+                        ->required(),
+                    TextInput::make('qty')
+                        ->label('Jumlah')
+                        ->numeric()
+                        ->required(),
+
+                    Textinput::make('satuan')->required()->placeholder('Kg/Liter/Lembar...'),
+
+                    TextInput::make('harga_satuan')
+                        ->label('Harga Satuan')
+                        ->numeric()
+                        ->prefix('Rp ')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
+                        ->required(),
+                ])
+                ->defaultItems(1)
+                ->createItemButtonLabel('Tambah Rincian')
+                ->columns(4),
             Hidden::make('company_id')
                 ->default(fn() => Filament::getTenant()?->getKey()),
 

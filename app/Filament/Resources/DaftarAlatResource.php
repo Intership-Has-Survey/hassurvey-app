@@ -87,6 +87,7 @@ class DaftarAlatResource extends Resource
                     ->preload()
                     ->options(function () {
                         return Pemilik::query()
+                            ->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey())
                             ->select('id', 'nama', 'nik')
                             ->get()
                             ->mapWithKeys(fn($pemilik) => [$pemilik->id => "{$pemilik->nama} - {$pemilik->nik}"]);

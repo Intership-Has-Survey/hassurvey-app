@@ -61,7 +61,7 @@ class SewaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Layanan';
-    protected static ?string $navigationLabel = 'Layanan Sewa';
+    protected static ?string $navigationLabel = 'Sewa';
     protected static ?string $title = 'Penyewaan';
     protected static ?string $modelLabel = 'Penyewaan';
     protected static ?string $pluralModelLabel = 'Penyewaan';
