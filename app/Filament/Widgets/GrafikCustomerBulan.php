@@ -106,7 +106,7 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
             ->pluck('total', 'month')
             ->toArray();
 
-        $corporateData = $peroranganQuery->clone()
+        $corporateData = $corporateQuery->clone()
             ->select(DB::raw('DATE_FORMAT(created_at, "%c/%y") as month'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
@@ -114,9 +114,8 @@ class GrafikCustomerBulan extends ChartWidget implements HasForms
             ->toArray();
 
         foreach ($labels as $label) {
-            $key = Carbon::parse($label)->format('Y-m-01');
-            $peroranganCustomers[$label] = $peroranganData[$key] ?? 0;
-            $corporateCustomers[$label] = $corporateData[$key] ?? 0;
+            $peroranganCustomers[$label] = $peroranganData[$label] ?? 0;
+            $corporateCustomers[$label] = $corporateData[$label] ?? 0;
             $allCustomers[$label] = $peroranganCustomers[$label] + $corporateCustomers[$label];
         }
 
