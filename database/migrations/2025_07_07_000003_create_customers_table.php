@@ -32,6 +32,7 @@ return new class extends Migration {
             $table->string('nik')->nullable();
             $table->text('foto_ktp')->nullable();
             $table->text('foto_kk')->nullable();
+            $table->uuid('company_id')->nullable();
 
             $table->timestamps();
             $table->unique(['nik', 'company_id']);
@@ -55,9 +56,9 @@ return new class extends Migration {
             $table->string('kecamatan', 8)->nullable();
             $table->string('desa', 13)->nullable();
             $table->string('detail_alamat')->nullable();
+            $table->uuid('company_id')->nullable();
 
             $table->timestamps();
-
             $table->unique(['email', 'company_id']);
             $table->unique(['nib', 'company_id']);
 

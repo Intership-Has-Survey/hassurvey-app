@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('NIK');
             $table->string('email');
             $table->string('telepon');
+            $table->uuid('company_id')->nullable();
 
             $table->unique(['nik', 'company_id']);
             $table->unique(['email', 'company_id']);
