@@ -51,7 +51,10 @@ class StatusPembyaranRelationManager extends RelationManager
                         'Lainnya' => 'Lainnya',
                     ])
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->validationMessages([
+                        'required' => 'Pilih salah satu metode pembayaran',
+                    ]),
 
                 Select::make('jenis_pembayaran')
                     ->options([
@@ -61,20 +64,31 @@ class StatusPembyaranRelationManager extends RelationManager
                         'Termin 2' => 'Termin 2',
                     ])
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->validationMessages([
+                        'required' => 'Pilih salah satu jenis pembayaran',
+                    ]),
 
                 TextInput::make('nilai')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
                     ->prefix('Rp')
-                    ->maxlength(20),
+                    ->maxlength(20)
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Masukkan nilai pembayaran',
+                    ]),
 
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->image()
                     ->maxSize(1024)
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Masukkan bukti pembayaran',
+                        'max_size' => 'Ukuran file maksimal 1 MB',
+                    ])
                     ->disk('public')
                     ->directory('bukti-pembayaran')
                     ->columnSpanFull(),

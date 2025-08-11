@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Get;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Livewire\Volt\Actions\ReturnValidationMessages;
 
 abstract class BaseAlatSewaRelationManager extends RelationManager
 {
@@ -42,11 +43,17 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                     ->numeric()
                     ->prefix('Rp')
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Harga per hari tidak boleh kosong',
+                    ])
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(','),
 
                 Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->placeholder('Masukkan diskon berapa hari jika ada')->postfix(' Hari')->minValue(0),
-                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated(),
+                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated()
+                    ->validationMessages([
+                        'required' => 'Kondisi saat kembali tidak boleh kosong',
+                    ]),
                 Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
                 Forms\Components\Textarea::make('catatan')->label('catatan')->columnSpanFull(),
                 FileUpload::make('foto_bukti_path')
@@ -56,6 +63,10 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                     ->required()
                     ->disk('public')
                     ->directory('bukti-pengembalian')
+                    ->validationMessages([
+                        'required' => 'Bukti pengembalian harus diisi',
+                        'max_size' => 'File tidak boleh lebih dari 1 MB'
+                    ])
                     ->columnSpanFull(),
                 Hidden::make('company_id')->default(request()->segment(2)),
             ])
@@ -176,8 +187,8 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 }
                                 return $query->pluck('nomor_seri', 'id')->all();
                             })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))->validationMessages([
-                                'required' => 'Nomor seri harus dipilih',
-                            ]),
+                                        'required' => 'Nomor seri harus dipilih',
+                                    ]),
 
                             Forms\Components\DatePicker::make('tgl_keluar')
                                 ->label('Tanggal Keluar')
@@ -185,9 +196,11 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 ->required()
                                 ->minDate(now()->subDays(3))
                                 //->maxDate(now())
-                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))
+                                ->validationMessages([
+                                    'required' => 'Tanggal keluar harus diisi!',
+                                ]),
 
-                            // --- PERBAIKAN DI SINI JUGA ---
                             Forms\Components\TextInput::make('harga_perhari')
                                 ->label('Harga Sewa Per Hari')
                                 ->numeric()
@@ -195,7 +208,11 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 ->required()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')
-                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter'))),
+                                ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))
+                                ->validationMessages([
+                                    'required' => 'Harga sewa per-hari harus diisi!',
+                                ]),
+
                             Hidden::make('company_id')
                                 ->default(fn() => $this->ownerRecord->company_id),
                         ];
