@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Facades\Filament;
 use Illuminate\Validation\Rules\Unique;
+
 trait GlobalForms
 {
     private static function getCorporateForm(): array
@@ -230,6 +231,7 @@ trait GlobalForms
                     TextInput::make('nik')
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
+                        ->required()
                         ->rule('regex:/^\d+$/')
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             $rule->where('company_id', Filament::getTenant()->id);
@@ -238,6 +240,7 @@ trait GlobalForms
                         ->validationMessages([
                             'unique' => 'NIK sudah pernah terdaftar',
                             'regex' => 'NIK hanya boleh berisi angka',
+                            'required' => 'NIK wajib diisi',
                         ]),
                     TextInput::make('email')
                         ->label('Email')
@@ -246,9 +249,11 @@ trait GlobalForms
                             $rule->where('company_id', Filament::getTenant()->id);
                             return $rule;
                         })
+                        ->required()
                         ->maxLength(100)
                         ->validationMessages([
-                            'unique' => 'Email sudah digunakan'
+                            'unique' => 'Email sudah digunakan',
+                            'required' => 'Email wajib diisi',
                         ]),
                     TextInput::make('telepon')
                         ->required()
