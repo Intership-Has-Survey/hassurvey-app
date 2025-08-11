@@ -66,14 +66,15 @@ return new class extends Migration {
         });
 
 
-        $tableNames = config('permission.table_names', [
-            'roles' => 'roles',
-        ]);
+        // $tableNames = config('permission.table_names', [
+        //     'roles' => 'roles',
+        // ]);
 
-        Schema::table($tableNames['roles'], function (Blueprint $table) {
-            $table->uuid('company_id')->nullable()->after('id');
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-        });
+        // Schema::table($tableNames['roles'], function (Blueprint $table) {
+        //     $table->uuid('company_id')->nullable()->after('id');
+        //     $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+        //     $table->unique(['name', 'company_id']);
+        // });
     }
     /**
      * Reverse the migrations.

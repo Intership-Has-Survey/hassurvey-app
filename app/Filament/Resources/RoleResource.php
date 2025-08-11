@@ -90,11 +90,7 @@ class RoleResource extends Resource
                                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.name'))
                                     ->required()
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                                        // If using teams and Tenancy, ensure uniqueness against current tenant
-                                        if (config('permission.teams', false) && Filament::hasTenancy()) {
-                                            // Check uniqueness against current user/team
-                                            $rule->where(config('permission.column_names.team_foreign_key', 'team_id'), Filament::getTenant()->id);
-                                        }
+                                        $rule->where('company_id', Filament::getTenant()->id);
                                         return $rule;
                                     }),
 
