@@ -50,64 +50,67 @@ class AlatCustomerResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('jenis_alat_id')
-                    ->label('Jenis Alat')
-                    ->relationship('jenisAlat', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Jenis Alat wajib dipilih.',
-                    ])
-                    ->createOptionForm([
-                        TextInput::make('nama')
-                            ->label('Nama Jenis Alat')
-                            ->unique(ignoreRecord: true)
+                Section::make('Informasi Alat')
+                    ->schema([
+                        Select::make('jenis_alat_id')
+                            ->label('Jenis Alat')
+                            ->relationship('jenisAlat', 'nama')
+                            ->searchable()
+                            ->preload()
                             ->required()
                             ->validationMessages([
-                                'unique' => 'Nama alat ini sudah terdaftar, silakan gunakan yang lain.',
+                                'required' => 'Jenis Alat wajib dipilih.',
+                            ])
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Jenis Alat')
+                                    ->unique(ignoreRecord: true)
+                                    ->required()
+                                    ->validationMessages([
+                                        'unique' => 'Nama alat ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ]),
+                                TextInput::make('keterangan')
+                                    ->label('Keterangan')
+                                    ->nullable(),
                             ]),
-                        TextInput::make('keterangan')
-                            ->label('Keterangan')
-                            ->nullable(),
-                    ]),
-                TextInput::make('nomor_seri')
-                    ->required()
-                    ->label('Nomor Seri')
-                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                        $rule->where('company_id', Filament::getTenant()->id);
-                        return $rule;
-                    })
-                    ->maxLength(255)
-                    ->validationMessages([
-                        'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
-                    ])
-                    ->required(),
-                Select::make('merk_id')
-                    ->relationship('merk', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('nama')
-                            ->label('Nama Merk')
+                        TextInput::make('nomor_seri')
+                            ->required()
+                            ->label('Nomor Seri')
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
+                            ->maxLength(255)
+                            ->validationMessages([
+                                'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
                             ->required(),
-                    ])
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Merk wajib dipilih.',
-                    ]),
+                        Select::make('merk_id')
+                            ->relationship('merk', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Merk')
+                                    ->required(),
+                            ])
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Merk wajib dipilih.',
+                            ]),
 
-                Select::make('kondisi')
-                    ->label('Kondisi Alat')
-                    ->required()
-                    ->options([
-                        true => 'Baik',
-                        false => 'Dipakai',
-                    ])
-                    ->visibleOn('edit'),
-                Textarea::make('keterangan')
-                    ->nullable()
-                    ->columnSpanFull(),
+                        Select::make('kondisi')
+                            ->label('Kondisi Alat')
+                            ->required()
+                            ->options([
+                                true => 'Baik',
+                                false => 'Dipakai',
+                            ])
+                            ->visibleOn('edit'),
+                        Textarea::make('keterangan')
+                            ->nullable()
+                            ->columnSpanFull(),
+                    ]),
                 Section::make('Informasi Customer')
                     ->schema(self::getCustomerForm()),
 
