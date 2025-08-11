@@ -18,11 +18,12 @@ class DatabaseSeeder extends Seeder
             TrefRegionSeeder::class,
             PermissionSeeder::class,
             UserSeeder::class,
-           // KategoriSeeder::class,
+            // KategoriSeeder::class,
             //PemilikSeeder::class,
-           // CorporateSeeder::class,
-           // PeroranganSeeder::class,
-           // PersonelSeeder::class,
+            CompanySeeder::class,
+            PeroranganSeeder::class,
+            CorporateSeeder::class,
+            // PersonelSeeder::class,
             //SalesSeeder::class,
             //MerkSeeder::class,
             //JenisAlatSeeder::class,
@@ -30,7 +31,7 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             //ProjectSeeder::class,
             // SewaSeeder::class,
-            CompanySeeder::class,
+
             UserCompanySeeder::class
         ]);
     }
