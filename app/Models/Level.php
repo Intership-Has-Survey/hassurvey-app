@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Level extends Model
 {
     //
-    use HasRoles, HasUuids;
+    use HasRoles, HasUuids, SoftDeletes;
 
 
     protected $guarded = ['id'];

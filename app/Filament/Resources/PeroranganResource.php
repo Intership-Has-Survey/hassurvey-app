@@ -94,7 +94,7 @@ class PeroranganResource extends Resource
                 TextColumn::make('user.name')->label('Editor')->sortable()->searchable(),
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filter([
+            ->filters([
                 TrashedFilter::make(),
             ])
             ->actions([
