@@ -73,7 +73,6 @@ class ProjectResource extends Resource
                             'Failed' => 'Failed',
                         ])
                         ->required()
-                        ->default('Prospect')
                         ->native(false)
                         ->validationMessages([
                             'required' => 'Status proyek tidak boleh kosong',

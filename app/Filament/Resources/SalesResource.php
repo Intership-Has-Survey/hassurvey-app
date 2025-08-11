@@ -12,6 +12,7 @@ use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Filament\Pages\Actions;
+use Filament\Facades\Filament;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TrashedFilter;
@@ -58,7 +60,10 @@ class SalesResource extends Resource
                             ->required()
                             ->length(16)
                             ->rule('regex:/^\d+$/')
-                            ->unique(ignoreRecord: true)
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
                             ->validationMessages([
                                 'required' => 'NIK tidak boleh kosong',
                                 'unique' => 'NIK sudah pernah terdaftar',
@@ -68,6 +73,10 @@ class SalesResource extends Resource
                             ->label('Email')
                             ->required()
                             ->email()
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
                             ->maxLength(50)
                             ->validationMessages([
                                 'required' => 'Email tidak boleh kosong',

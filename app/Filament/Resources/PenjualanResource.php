@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -46,35 +47,32 @@ class PenjualanResource extends Resource
         $uuid = request()->segment(2);
         return $form
             ->schema([
-                TextInput::make('nama_penjualan')
-                    ->label('Nama Penjualan')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-                DatePicker::make('tanggal_penjualan')
-                    ->required()
-                    ->default(now())
-                    ->label('Tanggal Penjualan')
-                    ->displayFormat('d/m/Y')
-                    ->native(false),
+                Section::make('Informasi Penjualan')
+                    ->schema([
+                        TextInput::make('nama_penjualan')
+                            ->label('Nama Penjualan')
+                            ->required(),
+                        DatePicker::make('tanggal_penjualan')
+                            ->required()
+                            ->default(now())
+                            ->label('Tanggal Penjualan')
+                            ->displayFormat('d/m/Y')
+                            ->native(false),
+                        Select::make('sales_id')
+                            ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                            ->label('Sales')
+                            ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
+                            ->placeholder('Pilih sales')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm(self::getSalesForm()),
 
+                        Textarea::make('catatan'),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
+                    ])->columns(2),
                 Section::make('Informasi Customer')
                     ->schema(self::getCustomerForm()),
-                Select::make('sales_id')
-                    ->label('Sales')
-                    ->options(function () {
-                        return Sales::query()
-                            ->select('id', 'nama', 'nik')
-                            ->get()
-                            ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                    })->searchable()
-                    ->required()
-                    ->preload()
-                    ->columnSpanFull()
-                    ->createOptionForm(self::getSalesForm()),
-
-                Textarea::make('catatan'),
-                Hidden::make('user_id')
-                    ->default(auth()->id()),
                 Hidden::make('company_id')
                     ->default($uuid),
             ]);

@@ -2,36 +2,46 @@
 
 namespace App\Filament\Resources\ProjectResource\Widgets;
 
-use App\Models\Project;
-use Carbon\Carbon;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
-use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Forms\Components\Select;
+use Filament\Widgets\Widget;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
+use Filament\Forms\Components\Section;
 use CodeWithKyrian\FilamentDateRange\Forms\Components\DateRangePicker;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Filament\Forms\Contracts\HasForms;
 
-class ProjectsFilter extends BaseDashboard
+class ProjectsFilter extends Widget implements HasForms
 {
-    use BaseDashboard\Concerns\HasFiltersForm;
+    use InteractsWithForms;
+    use InteractsWithPageFilters;
 
-    protected static bool $isLazy = false;
+    protected static string $view = 'filament.resources.project-resource.widgets.projects-filter';
 
-    public function filtersForm(Form $form): Form
+    public ?array $filters = null;
+
+    public function mount(): void
     {
-        // $earliestProjectDate = Project::min('tanggal_informasi_masuk');
-        // $earliestSewaDate = Sewa::min('tgl_mulai');
-        // $minDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
+        $this->form->fill($this->filters);
+    }
 
+    public function updateFilters(array $data): void
+    {
+        // Merge filter baru dengan filter lama
+        $this->filters = array_merge($this->filters ?? [], $data);
+
+        // Simpan perubahan ke page filter supaya widget lain (misalnya statistik) ikut ke-refresh
+        $this->dispatch('updatePageFilters', filters: $this->filters);
+    }
+
+    public function form(Form $form): Form
+    {
         return $form
             ->schema([
-                Section::make()
-                    ->schema([
-                        DateRangePicker::make('created_at')
-                            ->label('Filter Berdasarkan Rentang Tanggal'),
-                    ])
-                    ->columns(3),
-            ]);
+                DateRangePicker::make('created_at')
+                    ->label('Filter Berdasarkan Rentang Tanggal')
+                    ->reactive()
+                    ->afterStateUpdated(fn($state) => $this->updateFilters(['created_at' => $state])),
+            ])->columns(1)
+            ->statePath('filters'); // ini penting, supaya nyambung ke $filters page
     }
 }

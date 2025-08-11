@@ -31,10 +31,9 @@ class PengajuanDanasRelationManager extends RelationManager
             ->recordTitleAttribute('judul_pengajuan')
             ->columns([
                 Tables\Columns\TextColumn::make('judul_pengajuan'),
-                Tables\Columns\TextColumn::make('deskripsi_pengajuan'),
                 Tables\Columns\TextColumn::make('bank.nama_bank'),
                 Tables\Columns\TextColumn::make('bank.accounts.no_rek')->label('Nomor Rekening'),
-                Tables\Columns\TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Pemilik'),
+                Tables\Columns\TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Penerima'),
                 Tables\Columns\TextColumn::make('user.name'),
             ])
             ->filters([
@@ -56,9 +55,9 @@ class PengajuanDanasRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
                             $roleName = $firstStep->role_id;
                             // dd($firstStep->role_id);
-
+            
                             $record->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $firstStep->role_id,
                             ]);
                         }
@@ -78,7 +77,7 @@ class PengajuanDanasRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
                             $roleName = $firstStep->role_id;
                             $record->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName,
                             ]);
                         }
@@ -105,7 +104,7 @@ class PengajuanDanasRelationManager extends RelationManager
             $roleName = $firstStep->role_id;
 
             $pengajuan->update([
-                'level_id'     => $level->id,
+                'level_id' => $level->id,
                 'dalam_review' => $roleName,
             ]);
         }

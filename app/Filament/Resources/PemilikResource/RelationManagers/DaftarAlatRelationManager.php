@@ -6,8 +6,10 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Hidden;
 use Filament\Tables\Actions\EditAction;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +29,10 @@ class DaftarAlatRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                        $rule->where('company_id', Filament::getTenant()->id);
+                        return $rule;
+                    })
                     ->maxLength(255),
                 Forms\Components\Select::make('jenis_alat_id')
                     ->relationship('jenisAlat', 'nama')

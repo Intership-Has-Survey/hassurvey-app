@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProjectResource\Widgets;
 
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
 use App\Models\PengajuanDana;
 use App\Models\Project;
 use App\Models\StatusPembayaran;
@@ -12,11 +13,16 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
 use filament\Facades\Filament;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
 
 class ProjectStatsOverview extends BaseWidget
 {
-    // Properti untuk menyimpan state filter tanggal range
-    public ?string $dateRange = null;
+    use InteractsWithPageTable;
+
+    public ?array $filters = [];
     public ?string $companyId; // Pastikan properti ini ada
 
     public function mount(): void
@@ -29,49 +35,55 @@ class ProjectStatsOverview extends BaseWidget
         }
     }
 
-    protected function getHeaderActions(): array
+    protected function getTablePage(): string
     {
-        // Tombol filter dengan DateRangePicker dari package CodeWithKyrian
-        return [
-            // Action::make('filter')
-            //     ->label('Filter Tanggal')
-            //     ->icon('heroicon-o-funnel')
-            //     ->form([
-            //         DateRangePicker::make('dateRange')
-            //             ->label('Rentang Tanggal')
-            //             ->default($this->dateRange),
-            //     ])
-            //     ->action(function (array $data) {
-            //         $this->dateRange = $data['dateRange'];
-            //     }),
-        ];
+        return ListProjects::class;
     }
-    protected function getPageTableQuery(): Builder
-    {
-        // Return base query for projects
-        return Project::query()->where('company_id', $this->companyId);
-    }
-
 
     protected function getStats(): array
     {
-        // Query untuk pendapatan dari status pembayaran yang masuk ke project
-        $pendapatanQuery = StatusPembayaran::query()
-            ->where('company_id', $this->companyId)
-            ->whereHasMorph('payable', [Project::class]);
-
-        // Query untuk pengeluaran dari transaksi pembayaran dari pengajuan dana di project
-        $pengeluaranQuery = TransaksiPembayaran::query()
-            ->where('company_id', $this->companyId)
-            ->whereHasMorph('payable', [PengajuanDana::class], function ($query) {
-                $query->whereHas('project');
-            });
-
-        // Kalkulasi data yang lebih akurat
-        $pendapatan = $pendapatanQuery->sum('nilai');
-        $pengeluaran = $pengeluaranQuery->sum('nilai');
-
         $query = $this->getPageTableQuery();
+
+        // Apply filters from the page
+        foreach ($this->filters ?? [] as $filterName => $filterValue) {
+            if ($filterValue === null) {
+                continue;
+            }
+
+            switch ($filterName) {
+                case 'status':
+                case 'status_pembayaran':
+                case 'status_pekerjaan':
+                    $query->where($filterName, $filterValue);
+                    break;
+                case 'kategori':
+                    $query->whereHas('kategori', fn($q) => $q->where('id', $filterValue));
+                    break;
+                case 'created_at':
+                    if (isset($filterValue['start'], $filterValue['end'])) {
+                        $query->whereBetween('created_at', [
+                            $filterValue['start'],
+                            $filterValue['end'],
+                        ]);
+                    }
+                    break;
+            }
+        }
+
+        $projectIds = $query->clone()->pluck('id');
+
+        $pendapatan = StatusPembayaran::query()
+            ->whereIn('payable_id', $projectIds)
+            ->where('payable_type', Project::class)
+            ->sum('nilai');
+
+        $pengeluaran = TransaksiPembayaran::query()
+            ->whereHasMorph('payable', [PengajuanDana::class], function (Builder $q) use ($projectIds) {
+                $q->whereHas('project', function (Builder $q2) use ($projectIds) {
+                    $q2->whereIn('id', $projectIds);
+                });
+            })
+            ->sum('nilai');
 
         return [
             Stat::make('Jumlah Proyek (Sesuai Filter)', $query->clone()->count())

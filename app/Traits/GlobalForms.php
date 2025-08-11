@@ -5,18 +5,17 @@ namespace App\Traits;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\TrefRegion;
-use App\Models\BankAccount;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Placeholder;
+use Filament\Facades\Filament;
+use Illuminate\Validation\Rules\Unique;
 
 trait GlobalForms
 {
@@ -32,7 +31,10 @@ trait GlobalForms
                     TextInput::make('nib')
                         ->label('NIB')
                         ->maxLength(20)
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIB ini sudah terdaftar, silakan gunakan yang lain.',
                         ]),
@@ -45,7 +47,10 @@ trait GlobalForms
                         ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                         ])
@@ -83,14 +88,20 @@ trait GlobalForms
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
                         ->rule('regex:/^\d+$/')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIK sudah pernah terdaftar',
                             'regex' => 'NIK hanya boleh berisi angka',
                         ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                         ])
@@ -220,19 +231,29 @@ trait GlobalForms
                     TextInput::make('nik')
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
+                        ->required()
                         ->rule('regex:/^\d+$/')
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
                         ->validationMessages([
                             'unique' => 'NIK sudah pernah terdaftar',
                             'regex' => 'NIK hanya boleh berisi angka',
+                            'required' => 'NIK wajib diisi',
                         ]),
                     TextInput::make('email')
                         ->label('Email')
                         ->email()
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->required()
                         ->maxLength(100)
                         ->validationMessages([
-                            'unique' => 'Email sudah digunakan'
+                            'unique' => 'Email sudah digunakan',
+                            'required' => 'Email wajib diisi',
                         ]),
                     TextInput::make('telepon')
                         ->required()
@@ -291,6 +312,9 @@ trait GlobalForms
                         ->default('0'),
                     Hidden::make('user_id')
                         ->default(auth()->id()),
+                ]),
+            Section::make('Informasi Rekening Penerima')
+                ->schema([
                     Select::make('bank_id')
                         ->relationship('bank', 'nama_bank')
                         ->placeholder('Pilih Bank')
@@ -348,19 +372,20 @@ trait GlobalForms
                         ->validationMessages([
                             'required' => 'Nomor Rekening wajib diisi',
                         ]),
+                ]),
 
-                    Repeater::make('detailPengajuans')
-                        ->relationship()
-                        ->columnSpanFull()
-                        ->label('Rincian Pengajuan Dana')
-                        ->schema([
-                            TextInput::make('deskripsi')
-                                ->label('Nama Item')
-                                ->required(),
-                            TextInput::make('qty')
-                                ->label('Jumlah')
-                                ->numeric()
-                                ->required(),
+            Repeater::make('detailPengajuans')
+                ->relationship()
+                ->columnSpanFull()
+                ->label('Rincian Pengajuan Dana')
+                ->schema([
+                    TextInput::make('deskripsi')
+                        ->label('Nama Item')
+                        ->required(),
+                    TextInput::make('qty')
+                        ->label('Jumlah')
+                        ->numeric()
+                        ->required(),
 
                             TextInput::make('harga_satuan')
                                 ->label('Harga Satuan')
@@ -379,7 +404,7 @@ trait GlobalForms
                         ->columns(3),
                 ]),
             Hidden::make('company_id')
-                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+                ->default(fn() => Filament::getTenant()?->getKey()),
 
         ];
     }

@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables;
 use App\Models\Pemilik;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
-use Filament\Tables;
 use Filament\Pages\Actions;
+use Filament\Facades\Filament;
 use Illuminate\Support\Number;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +19,7 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
@@ -27,11 +29,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PemilikResource\Pages\EditPemilik;
 use App\Filament\Resources\PemilikResource\Pages\ListPemiliks;
 use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\DaftarAlatRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\RiwayatSewaPemilikRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\TransaksiPembayaransRelationManager;
-use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
-use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class PemilikResource extends Resource
 {
@@ -85,7 +87,10 @@ class PemilikResource extends Resource
                             ->required()
                             ->length(16)
                             ->rule('regex:/^\d+$/')
-                            ->unique(ignoreRecord: true)
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
                             ->validationMessages([
                                 'required' => 'NIK tidak boleh kosong',
                                 'unique' => 'NIK sudah pernah terdaftar',
@@ -101,7 +106,10 @@ class PemilikResource extends Resource
                             ->required(),
                         TextInput::make('email')
                             ->label('Email')
-                            ->unique(ignoreRecord: true)
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
                             ->validationMessages([
                                 'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                             ])
