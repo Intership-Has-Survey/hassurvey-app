@@ -297,7 +297,6 @@ class ProjectResource extends Resource
         return [
             ProjectStatsOverview::class,
             ProjectsFilter::class,
-            // ProjectStatusChart::class,
         ];
     }
     protected function getActions(): array
