@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->foreignUuid('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->primary(['project_id', 'perorangan_id']);
-            $table->string('peran');
+            $table->string('peran')->default('Pribadi');
             $table->timestamps();
         });
 
@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->foreignUuid('sewa_id')->constrained('sewa')->cascadeOnDelete();
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->primary(['sewa_id', 'perorangan_id']);
-            $table->string('peran');
+            $table->string('peran')->default('Pribadi');
             $table->timestamps();
         });
 
@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->foreignUuid('kalibrasi_id')->constrained('kalibrasis')->cascadeOnDelete();
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->primary(['kalibrasi_id', 'perorangan_id']);
-            $table->string('peran');
+            $table->string('peran')->default('Pribadi');
             $table->timestamps();
         });
 
@@ -35,7 +35,7 @@ return new class extends Migration {
             $table->foreignUuid('penjualan_id')->constrained('penjualans')->cascadeOnDelete();
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->primary(['penjualan_id', 'perorangan_id']);
-            $table->string('peran');
+            $table->string('peran')->default('Pribadi');
             $table->timestamps();
         });
 
@@ -43,7 +43,7 @@ return new class extends Migration {
             $table->foreignUuid('perorangan_id')->constrained('perorangan')->cascadeOnDelete();
             $table->foreignUuid('alat_customers_id')->constrained('alat_customers')->cascadeOnDelete();
             $table->primary(['alat_customers_id', 'perorangan_id']);
-            $table->string('peran');
+            $table->string('peran')->default('Pribadi');
             $table->timestamps();
         });
     }

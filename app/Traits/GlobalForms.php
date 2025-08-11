@@ -469,12 +469,18 @@ trait GlobalForms
 
             Select::make('perorangan_id')
                 ->label('Pilih Customer')
+                ->relationship('perorangan', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                 ->options(fn() => self::getPeroranganOptions())
                 ->searchable()
                 ->createOptionForm(self::getPeroranganForm())
                 ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                ->afterStateHydrated(function (callable $set, $state) {
+                    if (!$state) {
+                        $set('peran', 'Pribadi');
+                    }
+                }),
 
             Repeater::make('perorangan')
                 ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
@@ -517,7 +523,13 @@ trait GlobalForms
                     if (empty($selectedIds)) {
                         return; // Don't sync if no valid IDs
                     }
-                    $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+
+                    // Determine peran based on customer type
+                    $peran = 'Pribadi'; // Default for individual customers
+                    if ($record->corporate_id) {
+                        $peran = $record->corporate->nama ?? 'Corporate';
+                    }
+
                     // Sync dengan project dan simpan peran
                     $syncData = [];
                     foreach ($selectedIds as $id) {
@@ -539,7 +551,7 @@ trait GlobalForms
                         // Tambahkan PIC baru yang belum terhubung
                         foreach ($selectedIds as $peroranganId) {
                             if (!in_array($peroranganId, $existingIds)) {
-                                $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                                $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id(), 'peran' => $peran]);
                             }
                         }
 
