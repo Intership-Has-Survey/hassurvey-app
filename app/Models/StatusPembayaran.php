@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StatusPembayaran extends Model
 {
-    use  HasUuids;
+    use  HasUuids, SoftDeletes;
     protected $guarded = ['id'];
 
     protected static function boot()

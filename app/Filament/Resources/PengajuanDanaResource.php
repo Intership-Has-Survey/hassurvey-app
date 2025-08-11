@@ -240,6 +240,7 @@ class PengajuanDanaResource extends Resource
                     }),
 
                 ActivityLogTimelineTableAction::make('Log'),
+                DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ])

@@ -28,6 +28,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\SalesResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SalesResource\RelationManagers;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 
 class SalesResource extends Resource
 {
@@ -121,6 +122,7 @@ class SalesResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('export_pdf')
                     ->label('Export PDF')
@@ -135,6 +137,7 @@ class SalesResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
-use App\Filament\Resources\SewaResource\Widgets\SewaFilter;
 use App\Models\Sewa;
 use App\Models\Sales;
 use Filament\Forms\Get;
@@ -14,9 +12,10 @@ use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
 use Filament\Support\RawJs;
 use Ramsey\Uuid\Type\Integer;
-use Filament\Pages\Actions;
+use Filament\Facades\Filament;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +30,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use function Livewire\Volt\placeholder;
 use Illuminate\Database\Eloquent\Model;
@@ -38,21 +38,31 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\SewaResource\Pages;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\SewaResource\Pages\EditSewa;
+use App\Filament\Resources\SewaResource\Pages\ListSewa;
+use App\Filament\Resources\SewaResource\Pages\CreateSewa;
+use App\Filament\Resources\SewaResource\Widgets\SewaFilter;
 use Filament\Tables\Actions\BulkAction; // Tambahkan ini di atas
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Filament\Notifications\Notification; // Tambahkan ini di atas
+use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
 use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\StatusPembyaranRelationManager;
-use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
-use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 
 class SewaResource extends Resource
@@ -302,8 +312,12 @@ class SewaResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make()
                     ->visible(fn(Sewa $record): bool => !$record->is_locked),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
 
                 ActivityLogTimelineTableAction::make('Log'),
             ])
@@ -322,6 +336,8 @@ class SewaResource extends Resource
                                 }
                             }
                         }),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Kontrak Sewa yang Pernah Dibuat')

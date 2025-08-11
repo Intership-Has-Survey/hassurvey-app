@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

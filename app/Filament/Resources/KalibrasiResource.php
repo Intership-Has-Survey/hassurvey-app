@@ -19,8 +19,8 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KalibrasiResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
@@ -36,7 +36,7 @@ class KalibrasiResource extends Resource
     protected static ?string $navigationLabel = 'Kalibrasi';
     protected static ?string $navigationGroup = 'Layanan';
     protected static ?string $pluralModelLabel = 'Jasa Kalibrasi';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -138,6 +138,8 @@ class KalibrasiResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+
                 ]),
             ])
             ->defaultSort('created_at', 'desc');;

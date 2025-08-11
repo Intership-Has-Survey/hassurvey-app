@@ -10,8 +10,11 @@ use Filament\Pages\Actions;
 use App\Models\StatusPekerjaan;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use App\Filament\Resources\StatusPekerjaanResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 
 class StatusPekerjaanResource extends Resource
 {
@@ -61,10 +64,12 @@ class StatusPekerjaanResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -90,5 +95,10 @@ class StatusPekerjaanResource extends Resource
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

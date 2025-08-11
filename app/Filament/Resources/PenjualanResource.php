@@ -17,22 +17,39 @@ use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
 use Filament\Support\RawJs;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Pages\Actions;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PenjualanResource\Pages;
 use App\Filament\Resources\PenjualanResource\RelationManagers;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\PenjualanResource\Pages\EditPenjualan;
+use App\Filament\Resources\PenjualanResource\Pages\ListPenjualans;
+use App\Filament\Resources\PenjualanResource\Pages\CreatePenjualan;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use App\Filament\Resources\PenjualanResource\RelationManagers\DetailPenjualanRelationManager;
+use App\Filament\Resources\PenjualanResource\RelationManagers\StatusPembayaranRelationManager;
 
 class PenjualanResource extends Resource
 {
@@ -115,17 +132,21 @@ class PenjualanResource extends Resource
                     ->label('Total Item'),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
-                // ActivitylogRelationManager::class,22
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -139,12 +160,26 @@ class PenjualanResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListPenjualans::route('/'),
             'create' => Pages\CreatePenjualan::route('/create'),
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
+        ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }
