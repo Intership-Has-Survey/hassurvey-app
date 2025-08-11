@@ -31,27 +31,27 @@ return new class extends Migration {
         Schema::table('penjualans', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
-        Schema::table('daftar_alat', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('personel', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('pemilik', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('sales', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('alat_customers', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('corporate', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
-        Schema::table('perorangan', function (Blueprint $table) {
-            $table->ForeignUuid('company_id');
-        });
+        // Schema::table('daftar_alat', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('personel', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('pemilik', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('sales', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('alat_customers', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('corporate', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // });
+        // Schema::table('perorangan', function (Blueprint $table) {
+        //     $table->ForeignUuid('company_id');
+        // }); dimasukin ke migration masing2
         Schema::table('status_pembayarans', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });

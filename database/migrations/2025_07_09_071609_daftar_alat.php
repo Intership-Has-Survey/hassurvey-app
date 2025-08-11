@@ -33,6 +33,7 @@ return new class extends Migration {
         Schema::create('daftar_alat', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nomor_seri');
+            $table->uuid('company_id')->nullable();
             $table->unique(['nomor_seri', 'company_id']);
 
             $table->foreignUuid('jenis_alat_id')->constrained('jenis_alat');

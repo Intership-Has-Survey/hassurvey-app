@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('jenis_alat_id');
             $table->foreignUuid('merk_id');
             $table->string('nomor_seri');
+            $table->uuid('company_id')->nullable();
             $table->unique(['nomor_seri', 'company_id']);
             $table->boolean('kondisi')->default(true);
             $table->text('keterangan')->nullable();
