@@ -11,11 +11,23 @@ use Filament\Actions\Action;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
+use filament\Facades\Filament;
 
 class ProjectStatsOverview extends BaseWidget
 {
     // Properti untuk menyimpan state filter tanggal range
     public ?string $dateRange = null;
+    public ?string $companyId; // Pastikan properti ini ada
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -37,7 +49,7 @@ class ProjectStatsOverview extends BaseWidget
     protected function getPageTableQuery(): Builder
     {
         // Return base query for projects
-        return Project::query();
+        return Project::query()->where('company_id', $this->companyId);
     }
 
 
@@ -45,10 +57,12 @@ class ProjectStatsOverview extends BaseWidget
     {
         // Query untuk pendapatan dari status pembayaran yang masuk ke project
         $pendapatanQuery = StatusPembayaran::query()
+            ->where('company_id', $this->companyId)
             ->whereHasMorph('payable', [Project::class]);
 
         // Query untuk pengeluaran dari transaksi pembayaran dari pengajuan dana di project
         $pengeluaranQuery = TransaksiPembayaran::query()
+            ->where('company_id', $this->companyId)
             ->whereHasMorph('payable', [PengajuanDana::class], function ($query) {
                 $query->whereHas('project');
             });

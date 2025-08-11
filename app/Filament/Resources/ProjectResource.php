@@ -34,11 +34,13 @@ use App\Filament\Resources\ProjectResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
+
 
 class ProjectResource extends Resource
 {
@@ -294,6 +296,7 @@ class ProjectResource extends Resource
     {
         return [
             ProjectStatsOverview::class,
+            ProjectsFilter::class,
             // ProjectStatusChart::class,
         ];
     }

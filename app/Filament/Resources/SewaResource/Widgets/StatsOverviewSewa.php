@@ -15,11 +15,24 @@ use App\Models\statusPembayaran;
 use App\Models\pengajuanDanas;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 class StatsOverviewSewa extends BaseWidget
 {
     // Properti untuk menyimpan state filter tanggal range
     public ?string $dateRange = null;
+
+    public ?string $companyId; // Pastikan properti ini ada
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -41,43 +54,50 @@ class StatsOverviewSewa extends BaseWidget
 
     protected function getStats(): array
     {
+        // Query untuk Pemasukan
         $pendapatanQuery = StatusPembayaran::query()
+            ->where('company_id', $this->companyId)
             ->whereHasMorph('payable', [Sewa::class]);
 
+        // Query untuk Pengeluaran
         $pengeluaranQuery = TransaksiPembayaran::query()
+            ->where('company_id', $this->companyId)
             ->whereHasMorph('payable', [PengajuanDana::class], function ($query) {
                 $query->whereHas('sewa');
             });
 
-        // Parse date range jika ada
+        // ADDED: Query untuk menghitung total sewa
+        // Pastikan model Sewa juga memiliki relasi dengan company
+        $sewaQuery = Sewa::query()->where('company_id', $this->companyId);
+
+        // Terapkan filter rentang tanggal jika ada
         if ($this->dateRange) {
+            // Pecah string tanggal menjadi tanggal awal dan akhir
             [$startDate, $endDate] = explode(' - ', $this->dateRange);
 
+            // Terapkan filter `whereBetween` pada semua query
             $pendapatanQuery->whereBetween('tanggal_pembayaran', [$startDate, $endDate]);
             $pengeluaranQuery->whereBetween('tanggal_transaksi', [$startDate, $endDate]);
-        }
-
-        // Kalkulasi data yang lebih akurat
-        $pendapatan = $pendapatanQuery->sum('nilai');
-        $pengeluaran = $pengeluaranQuery->sum('nilai');
-
-        // Query untuk sewa stats
-        $sewaQuery = Sewa::query();
-        if ($this->dateRange) {
-            [$startDate, $endDate] = explode(' - ', $this->dateRange);
+            // Filter sewa berdasarkan tanggal informasi masuk
             $sewaQuery->whereBetween('tanggal_informasi_masuk', [$startDate, $endDate]);
         }
 
+        // Kalkulasi total
+        $pendapatan = $pendapatanQuery->sum('nilai');
+        $pengeluaran = $pengeluaranQuery->sum('nilai');
+        $totalSewa = $sewaQuery->count(); // Hitung jumlah sewa
+
         return [
             Stat::make('Pemasukan Sewa', 'Rp ' . number_format($pendapatan))
-                ->description('Total pembayaran yang masuk dari status pembayaran')
-                ->color('success')
-                ->extraAttributes(['class' => 'col-span-1']),
+                ->description('Total pembayaran sewa yang diterima')
+                ->color('success'),
             Stat::make('Pengeluaran Sewa', 'Rp ' . number_format($pengeluaran))
-                ->description('Total transaksi pembayaran dari pengajuan dana')
-                ->color('danger')
-                ->extraAttributes(['class' => 'col-span-1']),
+                ->description('Total pengeluaran terkait sewa')
+                ->color('danger'),
+            // ADDED: Stat baru untuk menampilkan total sewa
+            Stat::make('Total Proses Sewa', $totalSewa)
+                ->description('Jumlah proses sewa dalam periode waktu yang dipilih')
+                ->color('info'),
         ];
     }
 }
-
