@@ -20,6 +20,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
@@ -32,6 +33,7 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\AlatCustomerResource\Pages\EditAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\Pages\ListAlatCustomers;
 use App\Filament\Resources\AlatCustomerResource\Pages\CreateAlatCustomer;
@@ -41,7 +43,7 @@ class AlatCustomerResource extends Resource
 {
     use GlobalForms;
     protected static ?string $model = AlatCustomer::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationLabel = 'Alat Customer';
     protected static ?string $navigationGroup = 'Customer';
     protected static ?int $navigationSort = 3;
@@ -138,10 +140,12 @@ class AlatCustomerResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

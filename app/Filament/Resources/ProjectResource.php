@@ -2,17 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables;
 use App\Models\Sales;
 use App\Models\Project;
-use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Pages\Actions;
 use Filament\Forms\Form;
 use App\Models\Perorangan;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
 use Filament\Support\RawJs;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -20,21 +21,31 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\ProjectResource\Pages\ViewProject;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
+use App\Filament\Resources\ProjectResource\Pages\CreateProject;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
-use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
@@ -250,6 +261,7 @@ class ProjectResource extends Resource
 
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
@@ -259,6 +271,8 @@ class ProjectResource extends Resource
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal_informasi_masuk', 'desc')
@@ -306,5 +320,10 @@ class ProjectResource extends Resource
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

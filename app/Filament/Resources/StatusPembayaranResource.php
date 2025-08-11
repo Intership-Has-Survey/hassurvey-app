@@ -8,18 +8,31 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\StatusPembayaran;
 use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TrashedFilter;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\StatusPembayaranResource\Pages;
-use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Tables\Filters\Filter;
+use Filament\Pages\Actions;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use App\Filament\Resources\StatusPembayaranResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
+use App\Filament\Resources\StatusPembayaranResource\Pages\ListStatusPembayarans;
+use App\Filament\Resources\StatusPembayaranResource\Pages\CreateStatusPembayaran;
 
 
 class StatusPembayaranResource extends Resource
@@ -27,7 +40,7 @@ class StatusPembayaranResource extends Resource
     protected static ?string $model = StatusPembayaran::class;
     // protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pemasukan';
     protected static ?string $title = 'Pemasukan';
     protected static ?int $navigationSort = 4;
@@ -138,14 +151,22 @@ class StatusPembayaranResource extends Resource
                             ->when($data['end_date'], fn($query) => $query->whereDate('created_at', '<=', $data['end_date']));
                     }),
 
+                TrashedFilter::make(),
+
             ])
             ->actions([
-                // Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -192,4 +213,17 @@ class StatusPembayaranResource extends Resource
     //         \App\Filament\Resources\StatusPembayaranResource\Widgets\TotalPembayaran::class,
     //     ];
     // }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
+    }
 }

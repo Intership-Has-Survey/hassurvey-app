@@ -400,7 +400,7 @@ trait GlobalForms
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
-                ->columns(3),
+                ->columns(4),
 
             Hidden::make('company_id')
                 ->default(fn() => Filament::getTenant()?->getKey()),

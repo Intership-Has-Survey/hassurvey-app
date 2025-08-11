@@ -5,15 +5,27 @@ namespace App\Filament\Resources;
 use App\Models\Kategori;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Pages\Actions;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use App\Filament\Resources\KategoriResource\Pages;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\KategoriResource\Pages\EditKategori;
+use App\Filament\Resources\KategoriResource\Pages\ListKategoris;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\KategoriResource\Pages\CreateKategori;
 
 class KategoriResource extends Resource
 {
@@ -53,15 +65,21 @@ class KategoriResource extends Resource
                     ->searchable(),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -87,5 +105,18 @@ class KategoriResource extends Resource
             'create' => Pages\CreateKategori::route('/create'),
             'edit' => Pages\EditKategori::route('/{record}/edit'),
         ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }
