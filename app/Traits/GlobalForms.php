@@ -448,10 +448,13 @@ trait GlobalForms
                 ->label('Tipe Customer')
                 ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
                 ->live()
-                ->dehydrated(false)
                 ->native(false)
                 ->required()
-                ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
+                ->afterStateUpdated(function (Set $set, $state) {
+                    if ($state === 'perorangan') {
+                        $set('corporate_id', null);
+                    }
+                })
                 ->validationMessages([
                     'required' => 'Customer tidak boleh kosong',
                 ]),
@@ -488,24 +491,16 @@ trait GlobalForms
                 ])
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
 
-            //buat commit
-            // Select::make('perorangan')
-            //     ->label('Pilih Customer')
-            //     ->relationship()
-            //     ->searchable()
-            //     ->validationMessages([
-            //         'required' => 'Kolom Customer wajib diisi',
-            //     ])
-            //     ->createOptionForm(self::getPeroranganForm())
-            //     // ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
-            //     ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
-            //     ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-            //     ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
-
             Select::make('perorangan_single')
                 ->label('Pilih Customer')
-                ->options(fn() => self::getPeroranganOptions())
+                ->relationship('perorangan', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                ->getOptionLabelFromRecordUsing(fn(\App\Models\Perorangan $record) => "{$record->nama} - {$record->nik}")
                 ->searchable()
+                ->preload()
+                ->createOptionForm(self::getPeroranganForm())
+                ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                 ->saveRelationshipsUsing(function ($state, $record) {
                     if ($state) {
                         $record->perorangan()->sync([
@@ -513,11 +508,6 @@ trait GlobalForms
                         ]);
                     }
                 })
-                ->createOptionForm(self::getPeroranganForm())
-                ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
-                ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                ->dehydrated(false)
                 ->afterStateUpdated(function (callable $set, $state) {
                     if ($state) {
                         $set('perorangan', [['perorangan_id' => $state]]);

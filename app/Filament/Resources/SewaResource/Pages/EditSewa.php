@@ -13,18 +13,10 @@ class EditSewa extends EditRecord
 {
     protected static string $resource = SewaResource::class;
 
-    // TAMBAHKAN SELURUH METODE DI BAWAH INI
+    public ?string $customerFlowType = null;
+
     protected function getHeaderActions(): array
     {
-        // $actions = parent::getHeaderActions();
-        // foreach ($actions as $action) {
-        //     if ($action->getName() === 'delete') {
-        //         $action->visible(
-        //             !$this->getRecord()->daftarAlat()->exists()
-        //         );
-        //     }
-        // }
-        // return $actions;
         return [
             Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
@@ -42,42 +34,28 @@ class EditSewa extends EditRecord
         return $data;
     }
 
-    protected function handleRecordUpdate(Model $record, array $data): Model
+    protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Cek apakah toggle 'tutup_sewa' diaktifkan
-        if (isset($data['tutup_sewa']) && $data['tutup_sewa']) {
+        $this->customerFlowType = $data['customer_flow_type'] ?? null;
 
-            // -- LOGIKA VALIDASI DITAMBAHKAN DI SINI --
-            $alatBelumKembali = $record->daftarAlat()->whereNull('tgl_masuk')->count();
-
-            if ($alatBelumKembali > 0) {
-                // Jika masih ada alat yang belum kembali, kirim notifikasi error
-                Notification::make()
-                    ->title('Gagal Mengunci Sewa')
-                    ->body("Masih ada {$alatBelumKembali} alat yang belum dikembalikan. Mohon kembalikan semua alat terlebih dahulu.")
-                    ->danger()
-                    ->send();
-
-                // Hentikan proses penyimpanan form
-                throw new Halt;
-            }
-            // -- AKHIR LOGIKA VALIDASI --
-
-            // Jika validasi lolos, lanjutkan proses penguncian
-            $data['is_locked'] = true;
-
-            Notification::make()
-                ->title('Sewa berhasil ditutup dan dikunci')
-                ->success()
-                ->send();
+        if ($this->customerFlowType === 'perorangan') {
+            $data['corporate_id'] = null;
         }
 
-        // Hapus field sementara agar tidak coba disimpan ke database
-        unset($data['tutup_sewa']);
+        unset($data['customer_flow_type']);
 
-        // Lanjutkan proses update standar
-        $record->update($data);
+        return $data;
+    }
 
-        return $record;
+    protected function afterSave(): void
+    {
+        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
+            $corporate = $this->record->corporate;
+            if ($corporate) {
+                $corporate->perorangan()->syncWithoutDetaching([
+                    $this->record->perorangan_id => ['user_id' => auth()->id()]
+                ]);
+            }
+        }
     }
 }

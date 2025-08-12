@@ -22,8 +22,11 @@ class EditPenjualan extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Logika Tipe Customer
-        $data['customer_flow_type'] = filled($data['corporate_id']) ? 'corporate' : 'perorangan';
+        if (filled($data['corporate_id'])) {
+            $data['customer_flow_type'] = 'corporate';
+        } else {
+            $data['customer_flow_type'] = 'perorangan';
+        }
 
         return $data;
     }
@@ -31,11 +34,25 @@ class EditPenjualan extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $this->customerFlowType = $data['customer_flow_type'] ?? null;
+
         if ($this->customerFlowType === 'perorangan') {
             $data['corporate_id'] = null;
         }
+
         unset($data['customer_flow_type']);
 
         return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        if ($this->customerFlowType === 'corporate' && !empty($this->record->corporate_id) && !empty($this->record->perorangan_id)) {
+            $corporate = $this->record->corporate;
+            if ($corporate) {
+                $corporate->perorangan()->syncWithoutDetaching([
+                    $this->record->perorangan_id => ['user_id' => auth()->id()]
+                ]);
+            }
+        }
     }
 }

@@ -12,6 +12,11 @@ class CreatePenjualan extends CreateRecord
 
     public ?string $customerFlowType = null;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $this->customerFlowType = $data['customer_flow_type'] ?? null;
