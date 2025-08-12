@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Get;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Section;
 use Livewire\Volt\Actions\ReturnValidationMessages;
 
 abstract class BaseAlatSewaRelationManager extends RelationManager
@@ -143,9 +144,11 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         return 0;
                     }),
                 TextColumn::make('biaya_sewa_alat')->label('Biaya Realisasi')->money('IDR')->placeholder('Belum Kembali')->sortable(),
-                TextColumn::make('biaya_sewa_alat_final')->label('Harga Final Alat')->money('IDR')
-                    ->visible(fn(): bool => true)
-                    ->state(fn(Model $record): ?float => $record->pivot->biaya_sewa_alat_final ?? null),
+                TextColumn::make('biaya_sewa_alat_final')
+                    ->label('Harga Final Alat')
+                    ->money('IDR')
+                    ->visible(fn(): bool => $this->getSewaRecord()->is_locked === true) // Hanya tampil jika is_locked true
+                    ->state(fn(Model $record): float => $record->biaya_sewa_alat_final ?? 0),
             ])
             ->filters([])
             ->headerActions([
@@ -223,46 +226,54 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                     ->label('Lihat Detail')
                     ->visible(fn(Model $record): bool => !is_null($record->pivot->tgl_masuk))
                     ->form([
-                        Forms\Components\TextInput::make('nomor_seri')->label('Nomor Seri Alat')->disabled(),
-                        Forms\Components\TextInput::make('tgl_keluar')->label('Tanggal Keluar')->disabled(),
-                        Forms\Components\TextInput::make('tgl_masuk')->label('Tanggal Kembali')->disabled(),
-                        Forms\Components\TextInput::make('kondisi_kembali')->label('Kondisi Saat Kembali')->disabled(),
-                        Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->disabled()->postfix(' Hari'),
-                        Forms\Components\TextInput::make('biaya_sewa_alat')->label('Pendapatan Kotor')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        Forms\Components\TextInput::make('pendapataninv')->label('Pendapatan Investor')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        Forms\Components\TextInput::make('pendapatanhas')->label('Pendapatan Has Survey')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-
-                        Forms\Components\Placeholder::make('')->content('Informasi Harga Final')->dehydrated(false),
-                        Forms\Components\TextInput::make('biaya_sewa_alat_final')->label('Pendapatan Kotor')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        Forms\Components\TextInput::make('pendapataninv_final')->label('Pendapatan Investor')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        Forms\Components\TextInput::make('pendapatanhas_final')->label('Pendapatan Has Survey')->prefix('Rp')
-                            ->disabled()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        FileUpload::make('foto_bukti_path')
-                            ->label('Bukti Pengembalian')
-                            ->image()
-                            ->maxSize(1024)
-                            ->required()
-                            ->disk('public')
-                            ->directory('bukti-pengembalian')
-                            ->columnSpanFull(),
-                        Hidden::make('company_id')->default(request()->segment(2)),
+                        Section::make('Informasi Pengembalian Alat')
+                            ->schema([
+                                Forms\Components\TextInput::make('nomor_seri')->label('Nomor Seri Alat')->disabled(),
+                                Forms\Components\TextInput::make('tgl_keluar')->label('Tanggal Keluar')->disabled(),
+                                Forms\Components\TextInput::make('tgl_masuk')->label('Tanggal Kembali')->disabled(),
+                                Forms\Components\TextInput::make('kondisi_kembali')->label('Kondisi Saat Kembali')->disabled(),
+                                Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->disabled()->postfix(' Hari'),
+                            ]),
+                        Section::make('Informasi Harga Awal')
+                            ->schema([
+                                Forms\Components\TextInput::make('biaya_sewa_alat')->label('Pendapatan Kotor')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                                Forms\Components\TextInput::make('pendapataninv')->label('Pendapatan Investor')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                                Forms\Components\TextInput::make('pendapatanhas')->label('Pendapatan Has Survey')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                            ]),
+                        Section::make('Informasi Harga Final')
+                            ->schema([
+                                Forms\Components\TextInput::make('biaya_sewa_alat_final')->label('Pendapatan Kotor')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                                Forms\Components\TextInput::make('pendapataninv_final')->label('Pendapatan Investor')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                                Forms\Components\TextInput::make('pendapatanhas_final')->label('Pendapatan Has Survey')->prefix('Rp')
+                                    ->disabled()
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(','),
+                            ]),
+                                FileUpload::make('foto_bukti_path')
+                                    ->label('Bukti Pengembalian')
+                                    ->image()
+                                    ->maxSize(1024)
+                                    ->required()
+                                    ->disk('public')
+                                    ->directory('bukti-pengembalian')
+                                    ->columnSpanFull(),
+                                Hidden::make('company_id')->default(request()->segment(2)),
+                            
                     ]),
                 Tables\Actions\EditAction::make()
                     ->label('Kembalikan')
