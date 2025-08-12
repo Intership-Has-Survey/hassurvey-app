@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\Pages\CreatePermission;
+use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\Pages\EditPermission;
+use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\Pages\ListPermissions;
+use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\Pages\ViewPermission;
+use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\RelationManager\RoleRelationManager;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -21,8 +26,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\Pages\ListPermissions;
-use Althinect\FilamentSpatieRolesPermissions\Resources\PermissionResource\RelationManager\RoleRelationManager;
 
 class PermissionResource extends Resource
 {
@@ -161,10 +164,38 @@ class PermissionResource extends Resource
                 ]),
                 BulkAction::make('Attach to roles')
                     ->label('Tambahkan ke')
+                    // ->action(function (Collection $records, array $data): void {
+                    //     Role::whereIn('id', $data['roles'])->each(function (Role $role) use ($records): void {
+                    //         $records->each(fn(Permission $permission) => $role->givePermissionTo($permission));
+                    //     });
+                    // })
                     ->action(function (Collection $records, array $data): void {
-                        Role::whereIn('id', $data['roles'])->each(function (Role $role) use ($records): void {
+                        $permissionGuard = $records->first()->guard_name;
+                        $selectedRoles = Role::whereIn('id', $data['roles'])->get();
+
+                        // Check for guard mismatch
+                        $mismatchedRoles = $selectedRoles->filter(fn(Role $role) => $role->guard_name !== $permissionGuard);
+
+                        if ($mismatchedRoles->isNotEmpty()) {
+                            // Show alert instead of proceeding
+                            \Filament\Notifications\Notification::make()
+                                ->title('Guard Mismatch')
+                                ->body('Cannot attach permissions with guard "' . $permissionGuard . '" to roles with different guards. Please select roles with the same guard type.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        // Proceed if no guard mismatch
+                        $selectedRoles->each(function (Role $role) use ($records): void {
                             $records->each(fn(Permission $permission) => $role->givePermissionTo($permission));
                         });
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Success')
+                            ->body('Permissions have been successfully attached to selected roles.')
+                            ->success()
+                            ->send();
                     })
                     ->form([
                         Select::make('roles')
