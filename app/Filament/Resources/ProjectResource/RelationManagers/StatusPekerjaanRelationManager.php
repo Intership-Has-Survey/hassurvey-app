@@ -44,6 +44,9 @@ class StatusPekerjaanRelationManager extends RelationManager
                         'laporan' => 'Laporan',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis pekerjaan harus dipilih'
+                    ])
                     ->native(false),
                 Select::make('status')
                     ->label('Status')
@@ -53,6 +56,9 @@ class StatusPekerjaanRelationManager extends RelationManager
                         'Tidak Perlu' => 'Tidak Perlu',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Status pekerjaan wajib diisi'
+                    ])
                     ->native(false),
                 FileUpload::make('bukti_pekerjaan_path')
                     ->label('Bukti Pekerjaan')

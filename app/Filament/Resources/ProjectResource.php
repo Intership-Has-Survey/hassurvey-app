@@ -129,6 +129,10 @@ class ProjectResource extends Resource
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->live()
+                    ->maxValue(9999999999999) // Batas maksimal 1 triliun
+                    ->validationMessages([
+                        'max' => 'Nilai melebihi kapasitas maksimal(9,999,999,999,999)',
+                    ])
                     ->placeholder('Masukkan anggaran proyek')
                     ->disabled(fn(?Model $record, callable $get) => $record && $record->exists && $get('status') === 'Closing'),
 

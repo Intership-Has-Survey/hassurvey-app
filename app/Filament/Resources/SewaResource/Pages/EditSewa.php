@@ -16,20 +16,19 @@ class EditSewa extends EditRecord
     // TAMBAHKAN SELURUH METODE DI BAWAH INI
     protected function getHeaderActions(): array
     {
-        // Dapatkan semua aksi default dari parent class (termasuk Save dan Delete)
-        $actions = parent::getHeaderActions();
-
-        // Cari aksi 'delete' di dalam array
-        foreach ($actions as $action) {
-            if ($action->getName() === 'delete') {
-                // Terapkan kondisi: hanya tampil jika relasi 'daftarAlat' tidak ada isinya
-                $action->visible(
-                    !$this->getRecord()->daftarAlat()->exists()
-                );
-            }
-        }
-
-        return $actions;
+        // $actions = parent::getHeaderActions();
+        // foreach ($actions as $action) {
+        //     if ($action->getName() === 'delete') {
+        //         $action->visible(
+        //             !$this->getRecord()->daftarAlat()->exists()
+        //         );
+        //     }
+        // }
+        // return $actions;
+        return [
+            Actions\ViewAction::make(),
+            Actions\DeleteAction::make(),
+        ];
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

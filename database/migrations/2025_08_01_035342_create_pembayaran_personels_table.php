@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignUuid('personel_id')->nullable();
             $table->foreignUuid('payable_id')->nullable();
             $table->string('payable_type')->nullable();
+            $table->string('keterangan')->nullable();
             $table->date('tanggal_transaksi');
             $table->string('metode_pembayaran');
             $table->integer('nilai');

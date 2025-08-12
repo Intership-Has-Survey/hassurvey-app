@@ -78,7 +78,6 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->numeric()
                     ->required()
                     ->prefix('Rp')
-                    ->maxlength(20)
                     ->validationMessages([
                         'required' => 'Nilai wajib diisi',
                     ]),
