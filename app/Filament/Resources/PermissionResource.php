@@ -104,10 +104,10 @@ class PermissionResource extends Resource
     {
         return $table
             ->columns([
-                TetColumn::make('id')
+                TextColumn::make('id')
                     ->label('ID')
                     ->searchable(),
-                TextColumxn::make('name')
+                TextColumn::make('name')
                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.name'))
                     ->searchable(),
                 TextColumn::make('guard_name')

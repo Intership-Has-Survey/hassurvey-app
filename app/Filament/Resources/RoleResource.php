@@ -101,18 +101,18 @@ class RoleResource extends Resource
                                     ->visible(fn() => config('filament-spatie-roles-permissions.should_show_guard', true))
                                     ->required(),
 
-                                Select::make('permissions')
-                                    ->columnSpanFull()
-                                    ->multiple()
-                                    ->label(__('filament-spatie-roles-permissions::filament-spatie.field.permissions'))
-                                    ->relationship(
-                                        name: 'permissions',
-                                        modifyQueryUsing: fn(Builder $query) => $query->orderBy('name'),
-                                    )
-                                    ->visible(config('filament-spatie-roles-permissions.should_show_permissions_for_roles'))
-                                    ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} ({$record->guard_name})")
-                                    ->searchable(['name', 'guard_name']) // searchable on both name and guard_name
-                                    ->preload(config('filament-spatie-roles-permissions.preload_permissions')),
+                                // Select::make('permissions')
+                                //     ->columnSpanFull()
+                                //     ->multiple()
+                                //     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.permissions'))
+                                //     ->relationship(
+                                //         name: 'permissions',
+                                //         modifyQueryUsing: fn(Builder $query) => $query->orderBy('name'),
+                                //     )
+                                //     ->visible(config('filament-spatie-roles-permissions.should_show_permissions_for_roles'))
+                                //     ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} ({$record->guard_name})")
+                                //     ->searchable(['name', 'guard_name']) // searchable on both name and guard_name
+                                //     ->preload(config('filament-spatie-roles-permissions.preload_permissions')),
 
                                 Select::make(config('permission.column_names.team_foreign_key', 'team_id'))
                                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.team'))
