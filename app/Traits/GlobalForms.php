@@ -502,12 +502,10 @@ trait GlobalForms
             //     ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
             //     ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
 
-            Select::make('perorangan_id')
+            Select::make('perorangan_single')
                 ->label('Pilih Customer')
-                ->relationship('perorangan', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                 ->options(fn() => self::getPeroranganOptions())
                 ->searchable()
-                // ->dehydrated(false)
                 ->saveRelationshipsUsing(function ($state, $record) {
                     if ($state) {
                         $record->perorangan()->sync([
@@ -519,11 +517,14 @@ trait GlobalForms
                 ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                 ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                // ->afterStateHydrated(function (callable $set, $state) {
-                //     if (!$state) {
-                //         $set('peran', 'Pribadi');
-                //     }
-                // })
+                ->dehydrated(false)
+                ->afterStateUpdated(function (callable $set, $state) {
+                    if ($state) {
+                        $set('perorangan', [['perorangan_id' => $state]]);
+                    } else {
+                        $set('perorangan', []);
+                    }
+                })
                 ->validationMessages([
                     'required' => 'Kolom Customer wajib diisi',
                 ]),
