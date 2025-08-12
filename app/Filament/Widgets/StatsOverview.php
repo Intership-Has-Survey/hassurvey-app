@@ -7,6 +7,8 @@ use App\Models\Penjualan;
 use Carbon\Carbon;
 use App\Models\Sewa;
 use App\Models\Project;
+use App\Models\StatusPembayaran;
+use App\Models\PengajuanDana;
 use Faker\Core\Uuid;
 use Illuminate\Support\Number;
 use Illuminate\Support\Facades\DB;
@@ -24,33 +26,16 @@ class StatsOverview extends BaseWidget
 
     protected static bool $isLazy = false;
 
-    public ?string $companyId; // Pastikan properti ini ada
-
-    public function mount(): void
-    {
-        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
-        if ($tenant = Filament::getTenant()) {
-            $this->companyId = $tenant->id;
-        } else {
-            $this->companyId = null;
-        }
-    }
-
-
     protected function getStats(): array
     {
-        // Handle case when no active company is set
+        $tenant = Filament::getTenant();
+        $this->companyId = $tenant?->id;
+
         if (!$this->companyId) {
             return [
-                Stat::make('Pendapatan Bersih', 'Rp0')
-                    ->description('No active company selected')
-                    ->color('secondary'),
-                Stat::make('Total Customer', '0')
-                    ->description('No data available')
-                    ->color('primary'),
-                Stat::make('Total Pesanan', '0')
-                    ->description('No data available')
-                    ->color('success'),
+                Stat::make('Pendapatan Bersih', 'Rp0')->description('Tenant tidak ditemukan')->color('secondary'),
+                Stat::make('Total Customer', '0')->color('primary')->description('Tenant tidak ditemukan'),
+                Stat::make('Total Pesanan', '0')->color('success')->description('Tenant tidak ditemukan'),
             ];
         }
 
@@ -69,6 +54,19 @@ class StatsOverview extends BaseWidget
             return Number::format($number / 1000000, 2) . 'm';
         };
 
+        $pendapatanMasuk = StatusPembayaran::where('company_id', $this->companyId)
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
+            ->sum('nilai');
+
+        $pengeluaran = PengajuanDana::where('company_id', $this->companyId)
+            ->where('dalam_review', 'approved')
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
+            ->sum('nilai');
+
+        $pendapatanBersih = $pendapatanMasuk - $pengeluaran;
+
         $projectsQuery = Project::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '>=', $startDate))
             ->when($endDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '<=', $endDate));
@@ -86,7 +84,6 @@ class StatsOverview extends BaseWidget
             ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
         $pesananBaru = 0;
         $customerBaru = 0;
-        $pendapatanBersih = 0;
 
         if ($serviceType === 'Layanan Servis dan Kalibrasi' || $serviceType === 'Semua') {
             $pesananBaru += $kalibrasisQuery->clone()->count();
@@ -151,13 +148,13 @@ class StatsOverview extends BaseWidget
 
         return [
             Stat::make('Pendapatan Bersih', 'Rp' . $formatNumber($pendapatanBersih))
-                ->description('Coming Soon')
+                ->description('Pendapatan bersih dalam rentang filter')
                 ->color('secondary'),
             Stat::make('Total Customer', $formatNumber($customerBaru))
-                ->description('Customer baru dalam rentang waktu')
+                ->description('Customer baru dalam rentang filter')
                 ->color('primary'),
             Stat::make('Total Pesanan', $formatNumber($pesananBaru))
-                ->description('Total pesanan dalam rentang waktu')
+                ->description('Total pesanan dalam rentang filter')
                 ->color('success'),
         ];
     }
