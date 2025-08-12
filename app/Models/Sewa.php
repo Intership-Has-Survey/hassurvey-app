@@ -91,7 +91,8 @@ class Sewa extends Model
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if ($attributes['is_locked']) {
+                // Use null-safe access to prevent undefined array key errors
+                if (isset($attributes['is_locked']) && $attributes['is_locked']) {
                     return 'Selesai';
                 }
 

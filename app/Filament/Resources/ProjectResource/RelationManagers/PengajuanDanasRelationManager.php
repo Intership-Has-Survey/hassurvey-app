@@ -52,6 +52,7 @@ class PengajuanDanasRelationManager extends RelationManager
                 TextColumn::make('bank.nama_bank'),
                 TextColumn::make('bankAccount.no_rek')->label('Nomor Rekening'),
                 TextColumn::make('bankAccount.nama_pemilik')->label('Nama Pemilik'),
+                TextColumn::make('nilai')->money('IDR'),
                 TextColumn::make('user.name'),
             ])
             ->filters([
@@ -70,7 +71,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = $firstStep->role_id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -94,7 +95,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = $firstStep->role_id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -128,7 +129,7 @@ class PengajuanDanasRelationManager extends RelationManager
             ->first();
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
-            $roleName = $firstStep->role_id;
+            $roleName = optional($firstStep?->role)->id;
             $pengajuan->update([
                 'level_id'     => $level->id,
                 'dalam_review' => $roleName,

@@ -62,7 +62,7 @@ class DetailPenjualanRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
-                    ->requiured()
+                    ->required()
                     ->prefix('Rp')
                     ->validationMessages([
                         'required' => 'Harga wajib diisi',

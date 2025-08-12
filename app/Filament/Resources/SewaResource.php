@@ -263,8 +263,8 @@ class SewaResource extends Resource
                                 return filled($get('harga_fix')) && !$record?->is_locked;
                             })
                     ])->columns(1),
-            ])
-            ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
+            ]);
+        // ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
     }
 
     public static function table(Table $table): Table
@@ -280,7 +280,7 @@ class SewaResource extends Resource
                         if ($record->corporate) {
                             return $record->corporate->nama;
                         }
-                        return $record->perorangan->first()?->nama ?? 'N/A';
+                        return $record->perorangan->first()?->nama ?? 'HAS Survey';
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query
@@ -289,6 +289,15 @@ class SewaResource extends Resource
                     }),
                 TextColumn::make('perorangan.nama')
                     ->label('PIC')
+                    ->state(function (Sewa $record): string {
+                        if ($record->corporate) {
+                            return $record->corporate->nama;
+                        }
+                        return $record->perorangan->first()?->nama ?? 'HAS Survey';
+                    })
+                    // ->placeholder('HAS Survey')
+                    // ->formatStateUsing(fn($state) => $state ?: 'HAS Survey')
+                    // ->formatStateUsing(fn($state) => empty($state) ? ['HAS Survey'] : $state)
                     ->listWithLineBreaks()
                     ->limitList(2),
                 TextColumn::make('tgl_mulai')

@@ -105,8 +105,13 @@ class DetailKalibrasiRelationManager extends RelationManager
                                 // Jika perorangan
                                 Select::make('perorangan_id')
                                     ->label('Pilih Customer')
-                                    ->relationship('perorangan', 'nama')
+                                    // ->relationship('perorangan', 'nama')
+                                    ->relationship('perorangan', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                                     ->searchable()
+                                    ->options(fn() => self::getPeroranganOptions())
+                                    ->validationMessages([
+                                        'required' => 'Kolom customer wajib diisi',
+                                    ])
                                     ->createOptionForm(self::getPeroranganForm())
                                     ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
                                     ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')

@@ -19,6 +19,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\Placeholder;
+use Filament\Facades\Filament;
 use Filament\Resources\RelationManagers\RelationManager;
 
 class TransaksiPembayaransRelationManager extends RelationManager
@@ -48,19 +49,29 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Nilai wajib diisi',
+                    ])
                     ->prefix('Rp')
                     ->maxlength(20),
-                DatePicker::make('tanggal_transaksi')->required()->native(false),
+                DatePicker::make('tanggal_transaksi')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Tanggal transaksi wajib diisi',
+                    ])
+                    ->native(false),
                 Select::make('metode_pembayaran')
                     ->options(['Transfer' => 'Transfer', 'Tunai' => 'Tunai'])->required(),
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->directory('bukti-pembayaran'),
-                TextColumn::make('keterangan')
+                TextInput::make('keterangan')
                     ->label('Keterangan')
                     ->maxlength(500)
                     ->nullable(),
                 Hidden::make('user_id')->default(auth()->id()),
+                Hidden::make('company_id')->default(Filament::getTenant()->id),
             ]);
     }
 

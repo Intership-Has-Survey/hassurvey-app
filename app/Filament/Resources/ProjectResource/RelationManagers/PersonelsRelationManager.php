@@ -44,7 +44,7 @@ class PersonelsRelationManager extends RelationManager
                     ->date()
                     ->placeholder('Belum Berakhir'),
                 Tables\Columns\TextColumn::make('tenggat_waktu')
-                    ->label('Tenggat Waktu (Hari)')
+                    ->label('Rentang Waktu (Hari)')
                     ->state(function ($record) {
                         $tanggalMulai = $record->pivot->tanggal_mulai;
                         $tanggalBerakhir = $record->pivot->tanggal_berakhir;

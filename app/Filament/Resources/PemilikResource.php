@@ -84,7 +84,7 @@ class PemilikResource extends Resource
             ->schema([
                 Section::make('Informasi Pribadi')
                     ->schema([
-                        TextInput::make('nik')
+                        TextInput::make('NIK')
                             ->label('Nomor Induk Kependudukan (NIK)')
                             ->required()
                             ->length(16)

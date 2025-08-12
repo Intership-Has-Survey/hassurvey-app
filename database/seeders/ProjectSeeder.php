@@ -6,19 +6,36 @@ use Illuminate\Database\Seeder;
 use App\Models\Project;
 use App\Models\Personel;
 use App\Models\Perorangan;
+use App\Models\Company;
+use App\Models\User;
 use Carbon\Carbon;
 
 class ProjectSeeder extends Seeder
 {
     public function run()
     {
+        // Ensure we have users
+        $users = User::all();
+        if ($users->count() < 1) {
+            $users = User::factory()->count(5)->create();
+        }
+
+        // Get available companies
+        $companies = Company::all();
+        if ($companies->count() < 2) {
+            $companies = Company::factory()->count(2)->create();
+        }
+
         // Create 50 projects with random created_at from 2023-01-01 to now
         $startDate = Carbon::create(2023, 1, 1);
         $endDate = Carbon::now();
 
-        Project::factory()->count(3)->create()->each(function ($project) use ($startDate, $endDate) {
+        Project::factory()->count(50)->create([
+            'user_id' => $users->random()->id
+        ])->each(function ($project) use ($startDate, $endDate, $companies) {
             $project->created_at = $this->randomDate($startDate, $endDate);
             $project->updated_at = $project->created_at;
+            $project->company_id = $companies->random()->id;
             $project->save();
 
             // Assign personels with roles

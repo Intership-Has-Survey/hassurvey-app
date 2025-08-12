@@ -23,7 +23,8 @@ class DetailPengajuansRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\TextInput::make('deskripsi')
-                    ->required()->columnSpan(2),
+                    ->label('Nama Item')
+                    ->required(),
                 Forms\Components\TextInput::make('qty')
                     ->label('Jumlah')
                     ->required()
@@ -38,7 +39,10 @@ class DetailPengajuansRelationManager extends RelationManager
                         'min_value' => 'Jumlah tidak boleh kurang dari 0',
                     ]),
 
-                Forms\Components\Textinput::make('satuan')->required()->maxLength(50),
+                Forms\Components\Textinput::make('satuan')
+                    ->required()
+                    ->placeholder('Contoh: liter,kilogram,dll')
+                    ->maxLength(50),
                 Forms\Components\TextInput::make('harga_satuan')
                     ->mask(RawJs::make('$money($input)'))
                     ->label('Harga Satuan')
@@ -54,7 +58,7 @@ class DetailPengajuansRelationManager extends RelationManager
                         'min_value' => 'Tidak boleh kurang dari Rp 0',
                     ]),
 
-            ])->columns(5);
+            ])->columns(4);
     }
 
     public function table(Table $table): Table
