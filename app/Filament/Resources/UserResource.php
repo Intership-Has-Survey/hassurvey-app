@@ -81,7 +81,7 @@ class UserResource extends Resource
                     ->mutateDehydratedStateUsing(fn($state) => filled($state) ? Hash::make($state) : null),
                 Select::make('roles')
                     // ->multiple()
-                    ->relationship('roles', 'name')
+                    ->relationship('roles', 'name', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
                     ->preload()
                     ->required()
                     ->validationMessages([
