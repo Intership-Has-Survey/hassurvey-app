@@ -558,13 +558,7 @@ trait GlobalForms
                     if (empty($selectedIds)) {
                         return; // Don't sync if no valid IDs
                     }
-
-                    // Determine peran based on customer type
-                    $peran = 'Pribadi'; // Default for individual customers
-                    if ($record->corporate_id) {
-                        $peran = $record->corporate->nama ?? 'Corporate';
-                    }
-
+                    $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
                     // Sync dengan project dan simpan peran
                     $syncData = [];
                     foreach ($selectedIds as $id) {
@@ -586,7 +580,7 @@ trait GlobalForms
                         // Tambahkan PIC baru yang belum terhubung
                         foreach ($selectedIds as $peroranganId) {
                             if (!in_array($peroranganId, $existingIds)) {
-                                $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id(), 'peran' => $peran]);
+                                $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
                             }
                         }
 
