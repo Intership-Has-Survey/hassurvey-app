@@ -4,19 +4,27 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Sewa;
+use App\Models\Company;
 use Carbon\Carbon;
 
 class SewaSeeder extends Seeder
 {
     public function run()
     {
+        // Get available companies
+        $companies = Company::all();
+        if ($companies->count() < 2) {
+            $companies = Company::factory()->count(2)->create();
+        }
+
         // Create 50 sewa records with random created_at from 2023-01-01 to now
         $startDate = Carbon::create(2023, 1, 1);
         $endDate = Carbon::now();
 
-        Sewa::factory()->count(50)->create()->each(function ($sewa) use ($startDate, $endDate) {
+        Sewa::factory()->count(50)->create()->each(function ($sewa) use ($startDate, $endDate, $companies) {
             $sewa->created_at = $this->randomDate($startDate, $endDate);
             $sewa->updated_at = $sewa->created_at;
+            $sewa->company_id = $companies->random()->id;
             $sewa->save();
 
             // Assign customer based on customer_flow_type

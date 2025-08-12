@@ -19,20 +19,23 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             // KategoriSeeder::class,
-            //PemilikSeeder::class,
+                //PemilikSeeder::class,
             CompanySeeder::class,
             PeroranganSeeder::class,
             CorporateSeeder::class,
             // PersonelSeeder::class,
-            //SalesSeeder::class,
-            //MerkSeeder::class,
-            //JenisAlatSeeder::class,
-            //DaftarAlatSeeder::class,
+                //SalesSeeder::class,
+                //MerkSeeder::class,
+                //JenisAlatSeeder::class,
+                //DaftarAlatSeeder::class,
             BankSeeder::class,
-            //ProjectSeeder::class,
-            // SewaSeeder::class,
-
-            UserCompanySeeder::class
+            UserCompanySeeder::class,
+            ProjectSeeder::class,
+            KalibrasiSeeder::class,
+            PenjualanSeeder::class,
+            SewaSeeder::class,
+            StatusPembayaranSeeder::class,
+            PengajuanDanaSeeder::class,
         ]);
     }
 }
