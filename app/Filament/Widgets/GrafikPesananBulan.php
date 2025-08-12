@@ -151,11 +151,10 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
             ->toArray();
 
         foreach ($labels as $label) {
-            $key = Carbon::parse($label)->format('Y-m-01');
-            $SewaOrders[$label] = $SewaData[$key] ?? 0;
-            $ProjectOrders[$label] = $ProjectData[$key] ?? 0;
-            $KalibrasiOrders[$label] = $KalibrasiData[$key] ??
-                $PenjualanOrders[$label] = $PenjualanData[$key] ?? 0;
+            $SewaOrders[$label] = $SewaData[$label] ?? 0;
+            $ProjectOrders[$label] = $ProjectData[$label] ?? 0;
+            $KalibrasiOrders[$label] = $KalibrasiData[$label] ?? 0;
+            $PenjualanOrders[$label] = $PenjualanData[$label] ?? 0;
             $allOrders[$label] = $SewaOrders[$label] + $ProjectOrders[$label] + $KalibrasiOrders[$label] + $PenjualanOrders[$label];
         }
 
