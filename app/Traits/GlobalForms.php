@@ -515,7 +515,10 @@ trait GlobalForms
                     if (!$state) {
                         $set('peran', 'Pribadi');
                     }
-                }),
+                })
+                ->validationMessages([
+                    'required' => 'Kolom Customer wajib diisi',
+                ]),
 
             Repeater::make('perorangan')
                 ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
