@@ -264,16 +264,20 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                     ->mask(RawJs::make('$money($input)'))
                                     ->stripCharacters(','),
                             ]),
+                        Section::make('Bukti Pengembalian')
+                            ->schema([
                                 FileUpload::make('foto_bukti_path')
-                                    ->label('Bukti Pengembalian')
+                                    ->label('')
                                     ->image()
                                     ->maxSize(1024)
                                     ->required()
                                     ->disk('public')
                                     ->directory('bukti-pengembalian')
                                     ->columnSpanFull(),
-                                Hidden::make('company_id')->default(request()->segment(2)),
-                            
+                            ]),
+
+                        Hidden::make('company_id')->default(request()->segment(2)),
+
                     ]),
                 Tables\Actions\EditAction::make()
                     ->label('Kembalikan')
