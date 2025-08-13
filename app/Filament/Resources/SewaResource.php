@@ -384,7 +384,15 @@ class SewaResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withTrashed();
+            ->withTrashed()
+            ->where(function (Builder $query) {
+                // Tampilkan sewa yang bukan dari project
+                $query->whereDoesntHave('projects')
+                    // Atau sewa dari project yang sudah memiliki alat
+                    ->orWhereHas('projects', function (Builder $projectQuery) {
+                        $projectQuery->whereHas('daftarAlat');
+                    });
+            });
     }
     protected function getActions(): array
     {
