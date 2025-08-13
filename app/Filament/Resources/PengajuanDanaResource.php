@@ -27,6 +27,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
@@ -226,6 +227,14 @@ class PengajuanDanaResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->options([
+                        '0' => 'Belum Bayar',
+                        '1' => 'Lunas',
+                        '2' => 'Lebih Bayar',
+                        '3' => 'Belum Ada Tagihan',
+                    ])
+                    ->label('Status'),
             ])
             ->actions([
                 ViewAction::make(),
