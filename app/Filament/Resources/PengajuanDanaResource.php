@@ -27,6 +27,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
@@ -153,6 +154,7 @@ class PengajuanDanaResource extends Resource
                         }, 0);
                     })
                     ->money('IDR'),
+                TextColumn::make('level.nama')->label('Level'),
                 TextColumn::make('roles.name')
                     ->badge()
                     ->label('Dalam Review')
@@ -175,8 +177,49 @@ class PengajuanDanaResource extends Resource
                     }),
                 TextColumn::make('disetujui')->label('Disetujui'),
                 TextColumn::make('ditolak')->label('Ditolak'),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->getStateUsing(function ($record) {
+                        // Hitung ulang status
+                        $totalTagihan = $record->detailPengajuans()->sum('total');
+                        $totalPembayaran = $record->statusPengeluarans()->sum('nilai');
+
+                        $statusBaru = null;
+
+                        if ($totalTagihan == 0 && $totalPembayaran == 0) {
+                            $statusBaru = 3; // Belum Ada Tagihan
+                        } elseif ($totalTagihan === $totalPembayaran) {
+                            $statusBaru = 1; // Lunas
+                        } elseif ($totalTagihan > $totalPembayaran) {
+                            $statusBaru = 0; // Belum Bayar
+                        } else {
+                            $statusBaru = 2; // Lebih Bayar
+                        }
+
+                        // Update hanya jika berbeda
+                        if ($record->status !== $statusBaru) {
+                            $record->status = $statusBaru;
+                            $record->saveQuietly(); // supaya tidak trigger event berkali-kali
+                        }
+
+                        // Return label berdasarkan status
+                        return match ($record->status) {
+                            0 => 'Belum Bayar',
+                            1 => 'Lunas',
+                            2 => 'Lebih Bayar',
+                            3 => 'Belum Ada Tagihan',
+                            default => '-',
+                        };
+                    })
+                    ->badge()
+                    ->colors([
+                        'info' => fn($state) => $state === 'Belum Ada Tagihan',
+                        'success' => fn($state) => $state === 'Lunas',
+                        'danger' => fn($state) => $state === 'Belum Bayar',
+                        'warning' => fn($state) => $state === 'Lebih Bayar',
+                    ]),
+
                 TextColumn::make('user.name')->label('Dibuat oleh'),
-                TextColumn::make('level.nama')->label('Level'),
                 TextColumn::make('created_at')->dateTime('d M Y')->sortable(),
             ])
             ->emptyStateHeading('Belum Ada Pengajuan Dana Terdaftar')
@@ -184,6 +227,14 @@ class PengajuanDanaResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->options([
+                        '0' => 'Belum Bayar',
+                        '1' => 'Lunas',
+                        '2' => 'Lebih Bayar',
+                        '3' => 'Belum Ada Tagihan',
+                    ])
+                    ->label('Status'),
             ])
             ->actions([
                 ViewAction::make(),
@@ -257,7 +308,7 @@ class PengajuanDanaResource extends Resource
     {
         return [
             DetailPengajuansRelationManager::class,
-            TransaksiPembayaransRelationManager::class,
+            \App\Filament\Resources\PengajuanDanaResource\RelationManagers\ConcreteTransaksiPembayaransRelationManager::class,
             ActivitylogRelationManager::class,
         ];
     }
