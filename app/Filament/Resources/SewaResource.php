@@ -160,10 +160,11 @@ class SewaResource extends Resource
                                     ->label('Tanggal Mulai')
                                     ->live(onBlur: true)
                                     ->native(false)
+                                    ->withoutTime()
                                     ->validationMessages([
                                         'required' => 'Tanggal mulai wajib diisi',
                                     ])
-                                    ->default(now())
+                                    ->default(today())
                                     ->afterStateUpdated($calculateRentang),
                                 DatePicker::make('tgl_selesai')
                                     ->required()
@@ -255,7 +256,7 @@ class SewaResource extends Resource
                             ->prefix('Rp')
                             ->live(),
 
-                        Toggle::make('tutup_sewa')
+                        Toggle::make('is_locked')
                             ->label('Tutup dan Kunci Transaksi Sewa')
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
                             ->visible(function (Get $get, ?Sewa $record): bool {
