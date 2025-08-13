@@ -255,7 +255,7 @@ class SewaResource extends Resource
                             ->prefix('Rp')
                             ->live(),
 
-                        Toggle::make('tutup_sewa')
+                        Toggle::make('is_locked')
                             ->label('Tutup dan Kunci Transaksi Sewa')
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
                             ->visible(function (Get $get, ?Sewa $record): bool {
@@ -263,8 +263,8 @@ class SewaResource extends Resource
                                 return filled($get('harga_fix')) && !$record?->is_locked;
                             })
                     ])->columns(1),
-            ]);
-        // ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
+            ])
+        ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
     }
 
     public static function table(Table $table): Table
