@@ -163,7 +163,7 @@ class SewaResource extends Resource
                                     ->validationMessages([
                                         'required' => 'Tanggal mulai wajib diisi',
                                     ])
-                                    ->default(now())
+                                    ->default(today())
                                     ->afterStateUpdated($calculateRentang),
                                 DatePicker::make('tgl_selesai')
                                     ->required()
