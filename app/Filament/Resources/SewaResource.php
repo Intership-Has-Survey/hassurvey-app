@@ -260,11 +260,11 @@ class SewaResource extends Resource
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
                             ->visible(function (Get $get, ?Sewa $record): bool {
                                 // Hanya tampil jika harga fix sudah diisi DAN sewa belum terkunci
-                                return filled($get('harga_fix')) && !$record?->is_locked && $record->daftarAlat()->exists();
+                                return filled($get('harga_fix')) && !$record?->is_locked && $record->daftarAlat()->exists() && !$record->daftarAlat()->tgl_masuk();
                             })
                     ])->columns(1),
             ])
-        ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
+            ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
     }
 
     public static function table(Table $table): Table
@@ -390,8 +390,8 @@ class SewaResource extends Resource
                 $query->whereDoesntHave('projects')
                     // Atau sewa dari project yang sudah memiliki alat
                     ->orWhereHas('projects', function (Builder $projectQuery) {
-                        $projectQuery->whereHas('daftarAlat');
-                    });
+                    $projectQuery->whereHas('daftarAlat');
+                });
             });
     }
     protected function getActions(): array
