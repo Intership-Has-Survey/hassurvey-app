@@ -25,38 +25,52 @@ class DetailPengajuansRelationManager extends RelationManager
                 Forms\Components\TextInput::make('deskripsi')
                     ->label('Nama Item')
                     ->required(),
+
                 Forms\Components\TextInput::make('qty')
                     ->label('Jumlah')
-                    ->required()
                     ->numeric()
-                    ->default(1)
                     ->minValue(1)
                     ->maxLength(4)
+                    ->default(1)
+                    ->reactive()
                     ->required()
                     ->validationMessages([
                         'required' => 'Jumlah wajib diisi',
                         'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
                         'min_value' => 'Jumlah tidak boleh kurang dari 0',
-                    ]),
+                    ])
+                    ->afterStateUpdated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
 
                 Forms\Components\Textinput::make('satuan')
                     ->required()
                     ->placeholder('Contoh: liter,kilogram,dll')
                     ->maxLength(50),
+
                 Forms\Components\TextInput::make('harga_satuan')
-                    ->mask(RawJs::make('$money($input)'))
                     ->label('Harga Satuan')
-                    ->stripCharacters(',')
                     ->numeric()
-                    ->required()
-                    ->minValue(0)
                     ->maxLength(9)
-                    ->prefix('Rp')
+                    ->minValue(0)
+                    ->reactive()
+                    ->required()
                     ->validationMessages([
-                        'required' => 'Nilai wajib diisi',
+                        'required' => 'Harga satuan wajib diisi',
                         'max_digits' => 'Tidak boleh lebih dari 9 digit',
-                        'min_value' => 'Tidak boleh kurang dari Rp 0',
-                    ]),
+                        'min_value' => 'Tidak boleh kurang dari 0',
+                    ])
+                    ->afterStateUpdated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
+
+                Forms\Components\Hidden::make('total')
+                    ->dehydrated(true)
+                    ->reactive()
+                    ->default(fn($get) => (int) $get('qty') * (int) $get('harga_satuan'))
+                    ->afterStateHydrated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
 
             ])->columns(4);
     }
@@ -71,7 +85,6 @@ class DetailPengajuansRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('satuan'),
                 Tables\Columns\TextColumn::make('harga_satuan')->money('IDR'),
                 Tables\Columns\TextColumn::make('total')
-                    ->state(fn($record) => $record->qty * $record->harga_satuan)
                     ->money('IDR'),
             ])
             ->headerActions([

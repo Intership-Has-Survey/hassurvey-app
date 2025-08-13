@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->string('ditolak')->nullable();
             $table->string('disetujui')->nullable();
             $table->string('alasan')->nullable();
+            $table->integer('status')->default(false);
             $table->foreignUuid('user_id')->constrained('users');
             $table->foreignUuid('level_id')->nullable();
             $table->timestamps();
