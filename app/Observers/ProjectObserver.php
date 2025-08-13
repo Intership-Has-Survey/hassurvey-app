@@ -6,6 +6,17 @@ use App\Models\Project;
 
 class ProjectObserver
 {
+    public function created(Project $project): void
+    {
+        if ($project->status === 'Closing' && $project->status_pekerjaan !== 'Selesai') {
+            $project->status_pekerjaan = 'Dalam Proses';
+            $project->saveQuietly();
+        } elseif ($project->status !== 'Closing' && $project->status !== 'Selesai') {
+            $project->status_pekerjaan = 'Belum Dikerjakan';
+            $project->saveQuietly();
+        }
+    }
+
     public function updated(Project $project): void
     {
         if ($project->wasChanged('status')) {
