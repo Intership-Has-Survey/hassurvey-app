@@ -501,13 +501,13 @@ trait GlobalForms
                 ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
                 ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
                 ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                ->saveRelationshipsUsing(function ($state, $record) {
-                    if ($state) {
-                        $record->perorangan()->sync([
-                            $state => ['peran' => 'Pribadi'],
-                        ]);
-                    }
-                })
+                // ->saveRelationshipsUsing(function ($state, $record) {
+                //     if ($state) {
+                //         $record->perorangan()->sync([
+                //             $state => ['peran' => 'Pribadi'],
+                //         ]);
+                //     }
+                // })
                 ->afterStateUpdated(function (callable $set, $state) {
                     if ($state) {
                         $set('perorangan', [['perorangan_id' => $state]]);

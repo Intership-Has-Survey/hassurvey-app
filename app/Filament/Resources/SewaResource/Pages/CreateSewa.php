@@ -43,6 +43,7 @@ class CreateSewa extends CreateRecord
         }
 
         unset($data['customer_flow_type']);
+        unset($data['perorangan_single']);
 
         return $data;
     }

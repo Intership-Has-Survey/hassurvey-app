@@ -43,6 +43,7 @@ class EditSewa extends EditRecord
         }
 
         unset($data['customer_flow_type']);
+        unset($data['perorangan_single']);
 
         return $data;
     }
