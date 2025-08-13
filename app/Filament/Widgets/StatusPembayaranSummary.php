@@ -9,9 +9,21 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 class StatusPembayaranSummary extends StatsOverviewWidget
 {
+    public ?string $companyId;
+
+    public function mount(): void
+    {
+        // Cek apakah ada tenant yang aktif, lalu ambil ID-nya.
+        if ($tenant = Filament::getTenant()) {
+            $this->companyId = $tenant->id;
+        } else {
+            $this->companyId = null;
+        }
+    }
 
     use InteractsWithPageFilters;
     protected function getStats(): array
@@ -19,7 +31,9 @@ class StatusPembayaranSummary extends StatsOverviewWidget
         $start = session('filter_start_date');
         $end = session('filter_end_date');
 
-        $query = StatusPembayaran::query();
+        $query = StatusPembayaran::when($this->companyId, function ($query) {
+            return $query->where('company_id', $this->companyId);
+        });
 
         if ($start) {
             $query->whereDate('created_at', '>=', $start);
@@ -33,9 +47,9 @@ class StatusPembayaranSummary extends StatsOverviewWidget
 
         $range = match (true) {
             $start && $end => 'Periode: ' . date('d M Y', strtotime($start)) . ' - ' . date('d M Y', strtotime($end)),
-            $start         => 'Dari: ' . date('d M Y', strtotime($start)),
-            $end           => 'Sampai: ' . date('d M Y', strtotime($end)),
-            default        => 'Tanpa filter tanggal',
+            $start => 'Dari: ' . date('d M Y', strtotime($start)),
+            $end => 'Sampai: ' . date('d M Y', strtotime($end)),
+            default => 'Tanpa filter tanggal',
         };
 
         return [
