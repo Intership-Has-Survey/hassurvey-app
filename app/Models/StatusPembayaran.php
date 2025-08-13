@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class StatusPembayaran extends Model
 {
-    use  HasUuids, SoftDeletes;
+    use  HasUuids, SoftDeletes, LogsActivity;
     protected $guarded = ['id'];
 
     protected static function boot()
@@ -35,5 +37,13 @@ class StatusPembayaran extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('Pemasukan');
     }
 }
