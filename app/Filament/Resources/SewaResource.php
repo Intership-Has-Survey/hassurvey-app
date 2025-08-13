@@ -260,7 +260,7 @@ class SewaResource extends Resource
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
                             ->visible(function (Get $get, ?Sewa $record): bool {
                                 // Hanya tampil jika harga fix sudah diisi DAN sewa belum terkunci
-                                return filled($get('harga_fix')) && !$record?->is_locked;
+                                return filled($get('harga_fix')) && !$record?->is_locked && $record->daftarAlat()->exists();
                             })
                     ])->columns(1),
             ])
