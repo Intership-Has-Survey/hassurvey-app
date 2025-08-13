@@ -20,6 +20,7 @@ use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\Placeholder;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Facades\Filament;
 
 class TransaksiPembayaransRelationManager extends RelationManager
 {
@@ -138,7 +139,6 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->numeric()
                     ->required()
                     ->prefix('Rp')
-                    ->maxlength(20)
                     ->validationMessages([
                         'required' => 'Nilai pembayaran tidak boleh kosong',
                         'regex' => 'Nilai pembayaran harus berupa angka',
@@ -169,7 +169,7 @@ class TransaksiPembayaransRelationManager extends RelationManager
                     ->visible(fn(callable $get) => filled($get('bulan_pembayaran'))),
 
                 Hidden::make('user_id')->default(auth()->id()),
-                Hidden::make('company_id')->default(request()->segment(2)),
+                Hidden::make('company_id')->default(Filament::getTenant()->id),
 
             ])
             ->columns(1);
