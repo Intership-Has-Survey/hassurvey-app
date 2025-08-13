@@ -83,6 +83,7 @@ class TransaksiPembayaransRelationManager extends RelationManager
                             return 'Pilih bulan pembayaran terlebih dahulu';
                         }
 
+
                         // Calculate date range: 27th of previous month to 26th of selected month
                         $year = now()->year;
                         $bulanInt = (int) $bulan;
@@ -90,15 +91,16 @@ class TransaksiPembayaransRelationManager extends RelationManager
                         $endDate = now()->year($year)->month($bulanInt)->setDay(26);
 
                         // Get the pemilik (owner) record to calculate pendapatan investor
-                        $pemilik = $pengajuan->user->pemilik ?? null;
+                        // $pemilik = $pengajuan->user->pemilik ?? null;
                         $totalTagihan = 0;
 
-                        if ($pemilik) {
-                            // Calculate pendapatan investor for the specified date range
-                            $totalTagihan = $pemilik->riwayatSewaAlat()
-                                ->whereBetween('tgl_keluar', [$startDate, $endDate])
-                                ->sum('pendapataninv_final');
-                        }
+                        // if ($pemilik) {
+                        // Calculate pendapatan investor for the specified date range
+                        $totalTagihan = $pengajuan->riwayatSewaAlat()
+                            ->whereBetween('tgl_keluar', [$startDate, $endDate])
+                            ->sum('pendapataninv_final');
+                        // }
+                        // dd($pemilik);
 
                         return 'Rp ' . number_format($totalTagihan, 0, ',', '.');
                     })

@@ -160,6 +160,7 @@ class SewaResource extends Resource
                                     ->label('Tanggal Mulai')
                                     ->live(onBlur: true)
                                     ->native(false)
+                                    ->withoutTime()
                                     ->validationMessages([
                                         'required' => 'Tanggal mulai wajib diisi',
                                     ])

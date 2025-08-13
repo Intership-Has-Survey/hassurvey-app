@@ -24,6 +24,12 @@ class Sewa extends Model
     protected $table = 'sewa';
     protected $guarded = [];
 
+    protected $casts = [
+        'tgl_mulai' => 'date',
+        'tgl_selesai' => 'date',
+        'is_locked' => 'boolean',
+    ];
+
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
@@ -83,9 +89,7 @@ class Sewa extends Model
         return $this->morphMany(StatusPembayaran::class, 'payable');
     }
 
-    protected $casts = [
-        'is_locked' => 'boolean',
-    ];
+
 
     protected function status(): Attribute
     {
