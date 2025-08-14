@@ -84,12 +84,12 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
-                'Jabatan dan Hak Akses',
-                'Manajemen Data Master',
-                'Customer',
+                'Layanan',
                 'Keuangan',
-                'Jasa Pemetaan',
-                'Jasa Sewa',
+                'Customer',
+                'Manajemen Data Master',
+                'Jabatan dan Hak Akses',
+                'Log Aktifitas',
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
