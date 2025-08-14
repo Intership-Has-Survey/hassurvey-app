@@ -33,6 +33,8 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+
+        $isLogin = request()->routeIs('filament.admin.auth.login');
         return $panel
             ->default()
             ->id('admin')
@@ -49,8 +51,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->profile()
             ->passwordReset()
-            // ->brandLogo(asset('logo-siap.svg'))
-            ->brandLogo(asset('Logo Siap.svg'))
+            // ->brandLogo(asset('siap_login.svg'))
+            ->brandLogo(function () {
+                if (request()->routeIs('filament.admin.auth.login')) {
+                    return asset('siap_login.svg'); // Logo login
+                }
+
+                return asset('Logo Siap.svg'); // Logo dashboard
+            })
+            // ->brandLogoHeight('3rem');
             ->brandLogoHeight('4rem')
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('20rem')
@@ -84,12 +93,12 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
-                'Layanan',
-                'Keuangan',
-                'Customer',
-                'Manajemen Data Master',
                 'Jabatan dan Hak Akses',
-                'Log Aktifitas',
+                'Manajemen Data Master',
+                'Customer',
+                'Keuangan',
+                'Jasa Pemetaan',
+                'Jasa Sewa',
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
