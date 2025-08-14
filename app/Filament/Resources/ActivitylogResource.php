@@ -74,15 +74,8 @@ class ActivitylogResource extends Resource
         return ActivitylogPlugin::get()->getNavigationIcon();
     }
 
-    public static function getNavigationSort(): ?int
-    {
-        return ActivitylogPlugin::get()->getNavigationSort();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return ActivitylogPlugin::get()->getNavigationGroup();
-    }
+    protected static ?string $navigationGroup = 'Log Aktifitas';
+    protected static ?int $navigationSort = 2;
 
     public static function getNavigationBadge(): ?string
     {
