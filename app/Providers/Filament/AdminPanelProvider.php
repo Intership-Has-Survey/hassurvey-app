@@ -49,6 +49,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->profile()
             ->passwordReset()
+            // ->brandLogo(asset('logo-siap.svg'))
+            ->brandLogo(asset('Logo Siap.svg'))
+            ->brandLogoHeight('4rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('20rem')
 
             // ->emailVerification()
             ->colors([
