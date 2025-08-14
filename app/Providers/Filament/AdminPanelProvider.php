@@ -59,8 +59,15 @@ class AdminPanelProvider extends PanelProvider
 
                 return asset('Logo Siap.svg'); // Logo dashboard
             })
+            ->brandLogoHeight(function () {
+                if (request()->routeIs('filament.admin.auth.login')) {
+                    return '8rem'; // Logo login
+                }
+
+                return '4rem'; // Logo dashboard
+            })
             // ->brandLogoHeight('3rem');
-            ->brandLogoHeight('4rem')
+            // ->brandLogoHeight('4rem')
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('20rem')
 
