@@ -54,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             // ->brandLogo(asset('siap_login.svg'))
             ->brandLogo(function () {
                 if (request()->routeIs('filament.admin.auth.login')) {
-                    return asset('siap_login.svg'); // Logo login
+                    return asset('siap_login_trans.svg'); // Logo login
                 }
 
                 return asset('Logo Siap.svg'); // Logo dashboard
