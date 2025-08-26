@@ -20,21 +20,6 @@ class PengajuanDana extends Model
 
     protected $guarded = ['id'];
 
-    protected $fillable = [
-        'judul_pengajuan',
-        'deskripsi_pengajuan',
-        'bank_id',
-        'bank_account_id',
-        'nilai',
-        'dalam_review',
-        'user_id',
-        'level_id',
-        'disetujui',
-        'ditolak',
-        'alasan',
-        'company_id',
-    ];
-
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\ProjectResource\Widgets\RingkasanPemetaan;
 
 class ViewProject extends ViewRecord
 {
@@ -17,6 +18,14 @@ class ViewProject extends ViewRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            RingkasanPemetaan::class,
+        ];
+    }
+
 
     protected function mutateFormDataBeforeFill(array $data): array
     {

@@ -92,6 +92,11 @@ class Project extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function pembayaranPersonel()
+    {
+        return $this->hasMany(PembayaranPersonel::class);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
