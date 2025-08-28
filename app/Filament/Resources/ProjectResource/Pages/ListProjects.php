@@ -38,8 +38,9 @@ class ListProjects extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            ProjectStatsOverview::make(['filters' => $this->filters]),
             ProjectsFilter::make(),
+            ProjectStatsOverview::make(['filters' => $this->filters]),
+            ProjectStatusChart::make(),
         ];
     }
 

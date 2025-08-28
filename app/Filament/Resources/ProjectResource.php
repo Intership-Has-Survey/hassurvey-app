@@ -309,14 +309,14 @@ class ProjectResource extends Resource
         ];
     }
 
-    public static function getHeaderWidgets(): array
-    {
-        return [
-            ProjectStatsOverview::class,
-            // ProjectsFilter::class,
-            // ProjectStatusChart::class,
-        ];
-    }
+    // public static function getHeaderWidgets(): array
+    // {
+    //     return [
+    //         ProjectStatsOverview::class,
+    //         // ProjectsFilter::class,
+    //         ProjectStatusChart::class,
+    //     ];
+    // }
     protected function getActions(): array
     {
         return [

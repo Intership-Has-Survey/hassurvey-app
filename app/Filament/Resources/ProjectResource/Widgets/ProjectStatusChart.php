@@ -40,42 +40,103 @@ class ProjectStatusChart extends ChartWidget
         $query = Project::query()
             ->select(
                 'status',
-                DB::raw("DATE_FORMAT(tanggal_informasi_masuk, '%Y-%m') as month"),
-                DB::raw('count(*) as count')
+                DB::raw("DATE_FORMAT(tanggal_informasi_masuk, '%Y-%m') as month_key"),
+                DB::raw("DATE_FORMAT(tanggal_informasi_masuk, '%b %Y') as month_label"),
+                DB::raw('COUNT(*) as total')
             )
-            ->groupBy('status', 'month')
-            ->orderBy('month');
+            ->when(
+                $this->startDate,
+                fn($q) =>
+                $q->where('tanggal_informasi_masuk', '>=', $this->startDate)
+            )
+            ->when(
+                $this->endDate,
+                fn($q) =>
+                $q->where('tanggal_informasi_masuk', '<=', $this->endDate)
+            )
+            ->groupBy('status', 'month_key', 'month_label')
+            ->orderBy('month_key')
+            ->get();
 
-        if ($this->startDate) {
-            $query->where('tanggal_informasi_masuk', '>=', $this->startDate);
-        }
-        if ($this->endDate) {
-            $query->where('tanggal_informasi_masuk', '<=', $this->endDate);
-        }
+        $labels = $query->pluck('month_label', 'month_key')->unique()->sortKeys()->values();
 
-        $data = $query->get();
+        $statuses = [
+            'Prospect' => '#3B82F6',     // biru
+            'Follow up 1' => '#F97316',  // oranye
+            'Follow up 2' => '#FACC15',  // kuning
+            'Follow up 3' => '#8B5CF6',  // ungu
+            'Closing' => '#10B981',      // hijau
+            'Failed' => '#EF4444',       // merah
+        ];
 
-        $statuses = ['Prospect', 'Follow up 1', 'Follow up 2', 'Follow up 3', 'Closing', 'Failed'];
         $datasets = [];
-        $labels = $data->pluck('month')->unique()->sort()->values();
 
-        foreach ($statuses as $status) {
+        foreach ($statuses as $status => $color) {
             $datasets[] = [
                 'label' => $status,
-                'data' => $labels->map(function ($month) use ($data, $status) {
-                    return $data->where('month', $month)->where('status', $status)->first()->count ?? 0;
+                'data' => $labels->map(function ($label) use ($query, $status) {
+                    $item = $query->firstWhere(
+                        fn($row) =>
+                        $row->month_label === $label && $row->status === $status
+                    );
+                    return $item ? (int) $item->total : 0;
                 })->toArray(),
+                'borderColor' => $color,
+                'backgroundColor' => $color,
+                'fill' => false,
+                'tension' => 0.3,
             ];
         }
 
         return [
             'datasets' => $datasets,
-            'labels' => $labels,
+            'labels' => $labels->toArray(),
         ];
     }
 
     protected function getType(): string
     {
         return 'line';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => true,
+                    'position' => 'bottom',
+                ],
+                'tooltip' => [
+                    'enabled' => true,
+                ],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'stepSize' => 1,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function render(): \Illuminate\Contracts\View\View
+    {
+        $data = $this->getData();
+
+        $hasData = collect($data['datasets'])
+            ->flatMap(fn($ds) => $ds['data'])
+            ->sum() > 0;
+
+        if (! $hasData) {
+            return view('filament.widgets.empty-chart', [
+                'heading' => static::$heading,
+                'message' => 'Tidak ada data untuk periode ini.',
+            ]);
+        }
+
+        return parent::render();
     }
 }

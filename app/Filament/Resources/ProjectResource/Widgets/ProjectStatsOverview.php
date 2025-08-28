@@ -85,15 +85,48 @@ class ProjectStatsOverview extends BaseWidget
             })
             ->sum('nilai');
 
+        $totalTagihan = StatusPembayaran::query()
+            ->whereIn('payable_id', $projectIds)
+            ->where('payable_type', Project::class)
+            ->sum('nilai');
+
+        $totalDibayar = TransaksiPembayaran::query()
+            ->whereHasMorph('payable', [Project::class], function (Builder $q) use ($projectIds) {
+                $q->whereIn('id', $projectIds);
+            })
+            ->sum('nilai');
+
+        $belumDibayar = $totalTagihan - $totalDibayar;
+
+        $closing = $query->clone()->where('status', 'Closing')->count();
+        $prospect = $query->clone()->where('status', 'Prospect')->count();
+        $follow1 = $query->clone()->where('status', 'Follow up 1')->count();
+        $follow2 = $query->clone()->where('status', 'Follow up 2')->count();
+        $follow3 = $query->clone()->where('status', 'Follow up 3')->count();
+        $failed  = $query->clone()->where('status', 'Failed')->count();
+
         return [
-            Stat::make('Jumlah Proyek (Sesuai Filter)', $query->clone()->count())
-                ->description('Total proyek berdasarkan tab yang dipilih'),
-            Stat::make('Pendapatan Proyek', 'Rp ' . number_format($pendapatan))
-                ->description('Total pembayaran yang masuk dari status pembayaran')
+            // Stat::make('Jumlah Proyek', $query->clone()->count())
+            //     ->description('Total proyek sesuai filter'),
+
+            Stat::make('Closing', $closing)->color('success'),
+            Stat::make('Prospect', $prospect)->color('info'),
+            Stat::make('Follow Up 1', $follow1)->color('warning'),
+            Stat::make('Follow Up 2', $follow2)->color('warning'),
+            Stat::make('Follow Up 3', $follow3)->color('warning'),
+            Stat::make('Failed', $failed)->color('danger'),
+
+            Stat::make('Pendapatan Proyek', 'Rp ' . number_format($pendapatan, 0, ',', '.'))
+                ->description('Total pendapatan')
                 ->color('success'),
-            Stat::make('Pengeluaran Proyek', 'Rp ' . number_format($pengeluaran))
-                ->description('Total transaksi pembayaran dari pengajuan dana')
+
+            Stat::make('Pengeluaran Proyek', 'Rp ' . number_format($pengeluaran, 0, ',', '.'))
+                ->description('Total pengeluaran')
                 ->color('danger'),
+
+            Stat::make('Belum Dibayar', 'Rp ' . number_format(max($belumDibayar, 0), 0, ',', '.'))
+                ->description('Sisa tagihan yang belum dibayar')
+                ->color('warning'),
         ];
     }
 }
