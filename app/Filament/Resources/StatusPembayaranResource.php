@@ -8,18 +8,31 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\StatusPembayaran;
 use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TrashedFilter;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\StatusPembayaranResource\Pages;
-use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Tables\Filters\Filter;
+use Filament\Pages\Actions;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use App\Filament\Resources\StatusPembayaranResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\StatusPembayaranResource\RelationManagers;
+use App\Filament\Resources\StatusPembayaranResource\Pages\ListStatusPembayarans;
+use App\Filament\Resources\StatusPembayaranResource\Pages\CreateStatusPembayaran;
 
 
 class StatusPembayaranResource extends Resource
@@ -27,23 +40,26 @@ class StatusPembayaranResource extends Resource
     protected static ?string $model = StatusPembayaran::class;
     // protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pemasukan';
     protected static ?string $title = 'Pemasukan';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
+    protected static ?string $pluralModelLabel = 'Pemasukan';
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 // Field untuk memilih proyek terkait
-                Select::make('project_id')
-                    ->relationship('project', 'nama_project')
-                    ->searchable()
-                    ->preload()
-                    ->label('Proyek')
-                    ->required(),
+                // Select::make('project_id')
+                //     ->relationship('project', 'nama_project')
+                //     ->searchable()
+                //     ->preload()
+                //     ->label('Proyek')
+                //     ->required(),
 
                 Select::make('nama_pembayaran')
                     ->label('Metode Pembayaran')
@@ -72,6 +88,9 @@ class StatusPembayaranResource extends Resource
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
@@ -83,9 +102,10 @@ class StatusPembayaranResource extends Resource
                 TextColumn::make('payable_type')
                     ->label('Jenis Layanan')
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'App\\Models\\Project' => 'Jasa Pemetaan',
-                        'App\\Models\\Sewa' => 'Sewa',
-                        'App\\Models\\Kalibrasi' => 'Kalibrasi',
+                        'App\Models\Project' => 'Jasa Pemetaan',
+                        'App\Models\Sewa' => 'Sewa',
+                        'App\Models\Kalibrasi' => 'Kalibrasi',
+                        'App\Models\Penjualan' => 'Penjualan',
                         default => 'Lainnya'
                     }),
                 TextColumn::make('nama_layanan')
@@ -94,6 +114,8 @@ class StatusPembayaranResource extends Resource
                         return match ($record->payable_type) {
                             'App\\Models\\Project' => $record->payable?->nama_project,
                             'App\\Models\\Sewa' => $record->payable?->judul,
+                            'App\\Models\\Kalibrasi' => $record->payable?->nama,
+                            'App\\Models\\Penjualan' => $record->payable?->nama_penjualan,
                             default => '-'
                         };
                     }),
@@ -129,14 +151,22 @@ class StatusPembayaranResource extends Resource
                             ->when($data['end_date'], fn($query) => $query->whereDate('created_at', '<=', $data['end_date']));
                     }),
 
+                TrashedFilter::make(),
+
             ])
             ->actions([
-                // Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -153,7 +183,7 @@ class StatusPembayaranResource extends Resource
         return [
             'index' => Pages\ListStatusPembayarans::route('/'),
             'create' => Pages\CreateStatusPembayaran::route('/create'),
-            // 'view' => Pages\ListStatusPembayaran::route('/{record}'),
+            'view' => Pages\ViewStatusPembayaran::route('/{record}'),
             'edit' => Pages\EditStatusPembayaran::route('/{record}/edit'),
         ];
     }
@@ -172,10 +202,28 @@ class StatusPembayaranResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
     // public static function getWidgets(): array
     // {
     //     return [
     //         \App\Filament\Resources\StatusPembayaranResource\Widgets\TotalPembayaran::class,
     //     ];
     // }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
+    }
 }

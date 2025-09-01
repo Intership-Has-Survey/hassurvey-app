@@ -5,11 +5,28 @@ namespace App\Filament\Resources;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Pages\Actions;
 use App\Models\JenisPekerjaan;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\JenisPekerjaanResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\JenisPekerjaanResource\Pages\EditJenisPekerjaan;
+use App\Filament\Resources\JenisPekerjaanResource\Pages\ListJenisPekerjaans;
+use App\Filament\Resources\JenisPekerjaanResource\Pages\CreateJenisPekerjaan;
 
 class JenisPekerjaanResource extends Resource
 {
@@ -45,14 +62,21 @@ class JenisPekerjaanResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -71,5 +95,18 @@ class JenisPekerjaanResource extends Resource
             'create' => Pages\CreateJenisPekerjaan::route('/create'),
             'edit' => Pages\EditJenisPekerjaan::route('/{record}/edit'),
         ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

@@ -5,117 +5,120 @@ namespace App\Filament\Resources;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
+use App\Models\Corporate;
+use App\Traits\GlolForms;
 use App\Models\Perorangan;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
 use App\Models\AlatCustomer;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\AlatCustomerResource\Pages\EditAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\Pages\ListAlatCustomers;
 use App\Filament\Resources\AlatCustomerResource\Pages\CreateAlatCustomer;
+use App\Filament\Resources\AlatCustomerResource\Pages\ViewAlatCustomer;
 use App\Filament\Resources\AlatCustomerResource\RelationManagers\DetailKalibrasiRelationManager;
 
 class AlatCustomerResource extends Resource
 {
     use GlobalForms;
     protected static ?string $model = AlatCustomer::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationLabel = 'Alat Customer';
     protected static ?string $navigationGroup = 'Customer';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('jenis_alat_id')
-                    ->relationship('jenisAlat', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('nama')
-                            ->label('Nama Jenis Alat')
-                            ->required(),
-                        TextInput::make('keterangan')
-                            ->label('Keterangan')
-                            ->nullable(),
-                    ]),
-                TextInput::make('nomor_seri')
-                    ->required()
-                    ->unique()
-                    ->maxLength(255)
-                    ->validationMessages([
-                        'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
-                    ])
-                    ->required(),
-                Select::make('merk_id')
-                    ->relationship('merk', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('nama')
-                            ->label('Nama Merk')
-                            ->required(),
-                    ])
-                    ->required(),
-
-                Select::make('kondisi')
-                    ->label('Kondisi Alat')
-                    ->required()
-                    ->options([
-                        true => 'Baik',
-                        false => 'Dipakai',
-                    ])
-                    ->visibleOn('edit'),
-                Textarea::make('keterangan')
-                    ->nullable()
-                    ->columnSpanFull(),
-                Section::make('Informasi Customer')
+                Section::make('Informasi Alat')
                     ->schema([
-                        Select::make('customer_flow_type')
-                            ->label('Tipe Customer')
-                            ->options([
-                                'perorangan' => 'Perorangan',
-                                'corporate' => 'Corporate'
-                            ])
-                            ->live()
-                            ->required()
-                            ->dehydrated(false) // karena ini bukan field database
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('corporate_id', null);
-                                $set('perorangan_id', null);
-                            }),
-
-                        // Jika corporate
-                        Select::make('corporate_id')
-                            ->label('Pilih Perusahaan')
-                            ->relationship('corporate', 'nama')
-                            ->createOptionForm(self::getCorporateForm())
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                            ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
-
-                        // Jika perorangan
-                        Select::make('perorangan_id')
-                            ->label('Pilih Customer')
-                            ->options(function (Get $get) {
-                                if ($get('customer_flow_type') !== 'perorangan') {
-                                    return [];
-                                }
-                                return Perorangan::all()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                            })
+                        Select::make('jenis_alat_id')
+                            ->label('Jenis Alat')
+                            ->relationship('jenisAlat', 'nama')
                             ->searchable()
-                            ->createOptionForm(self::getPeroranganForm())
-                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id)
-                            ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
-                            ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan'),
+                            ->preload()
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Jenis Alat wajib dipilih.',
+                            ])
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Jenis Alat')
+                                    ->unique(ignoreRecord: true)
+                                    ->required()
+                                    ->validationMessages([
+                                        'unique' => 'Nama alat ini sudah terdaftar, silakan gunakan yang lain.',
+                                    ]),
+                                TextInput::make('keterangan')
+                                    ->label('Keterangan')
+                                    ->nullable(),
+                            ]),
+                        TextInput::make('nomor_seri')
+                            ->required()
+                            ->label('Nomor Seri')
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                $rule->where('company_id', Filament::getTenant()->id);
+                                return $rule;
+                            })
+                            ->maxLength(255)
+                            ->validationMessages([
+                                'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
+                            ])
+                            ->required(),
+                        Select::make('merk_id')
+                            ->relationship('merk', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Merk')
+                                    ->required(),
+                            ])
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Merk wajib dipilih.',
+                            ]),
+
+                        Select::make('kondisi')
+                            ->label('Kondisi Alat')
+                            ->required()
+                            ->options([
+                                true => 'Baik',
+                                false => 'Dipakai',
+                            ])
+                            ->visibleOn('edit'),
+                        Textarea::make('keterangan')
+                            ->nullable()
+                            ->columnSpanFull(),
                     ]),
+                Section::make('Informasi Customer')
+                    ->schema(self::getCustomerForm()),
+
+                Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 
@@ -135,14 +138,21 @@ class AlatCustomerResource extends Resource
                 TextColumn::make('nomor_seri'),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make(),
+                ViewAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -161,6 +171,21 @@ class AlatCustomerResource extends Resource
             'index' => ListAlatCustomers::route('/'),
             'create' => CreateAlatCustomer::route('/create'),
             'edit' => EditAlatCustomer::route('/{record}/edit'),
+            'view' => ViewAlatCustomer::route('/{record}'),
+            // 'view' => ViewAlatC::route('/{record}'),
         ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

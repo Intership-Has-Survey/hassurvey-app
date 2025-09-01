@@ -5,6 +5,8 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB; // <-- Import DB facade
 use App\Models\User; // <-- Import model User
+use App\Models\Company;
+
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Corporate>
@@ -33,6 +35,11 @@ class CorporateFactory extends Factory
         $cityCode = substr($villageCode, 0, 5);
         $provinceCode = substr($villageCode, 0, 2);
 
+        $company = Company::inRandomOrder()->first();
+        if (!$company) {
+            throw new \Exception('No companies found in the database. Please run CompanySeeder first.');
+        }
+
         return [
             'nama' => $this->faker->company(),
             'nib' => $this->faker->unique()->numerify('#############'), // NIB biasanya 13 digit
@@ -50,6 +57,7 @@ class CorporateFactory extends Factory
             // Mengambil user_id secara acak dari tabel users yang sudah ada
             // atau membuat user baru jika tabel user kosong.
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            'company_id' => $company->id,
             'created_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
             'updated_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
         ];

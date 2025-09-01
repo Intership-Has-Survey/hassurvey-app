@@ -27,4 +27,17 @@ class CreateDaftarAlat extends CreateRecord
             $this->getCancelFormAction()->label('Batal'),
         ];
     }
+
+    // protected function mutateFormDataBeforeCreate(array $data): array
+    // {
+    //     // session(['nama' => 'Syahrial']);
+    //     // $data['company_id'] = session('company_id');
+    //     // dd(auth()->user()->companies()->company_id); // atau tenant()->id jika pakai package
+    //     $currentUrl = request();           // http://127.0.0.1:8000/admin/xxx/create
+    //     // $slug = request()->segment(2);                // admin
+    //     // $uuid = request()->segment(3);
+    //     dd($currentUrl); // atau tenant()->id jika pakai package
+
+    //     return $data;
+    // }
 }

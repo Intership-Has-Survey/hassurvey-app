@@ -3,10 +3,11 @@
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 })->name('home');
 
 Route::view('dashboard', 'dashboard')
@@ -21,4 +22,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
-require __DIR__.'/auth.php';
+Route::get('/admin/{uuid}', [Controller::class, 'setCompanyContext']);
+
+require __DIR__ . '/auth.php';

@@ -24,16 +24,22 @@ use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugi
 use Romalramos\FilamentLogger\FilamentLoggerPlugin;
 use Filament\Facades\Filament;
 use Filament\Navigation\UserMenuItem;
+use App\Models\Company;
+// use App\Scopes\ApplyTenantScopes;
+use App\Http\Middleware\ApplyTenantScopes;
+// use App\Http\Middleware\ApplyTenantScopes;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+
+        $isLogin = request()->routeIs('filament.admin.auth.login');
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
-            // ->registration()
+            ->tenant(Company::class)
             ->login()
             ->userMenuItems([
                 UserMenuItem::make()
@@ -45,6 +51,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->profile()
             ->passwordReset()
+            // ->brandLogo(asset('siap_login.svg'))
+            ->brandLogo(function () {
+                if (request()->routeIs('filament.admin.auth.login')) {
+                    return asset('siap_login_trans.svg'); // Logo login
+                }
+
+                return asset('Logo Siap.svg'); // Logo dashboard
+            })
+            ->brandLogoHeight(function () {
+                if (request()->routeIs('filament.admin.auth.login')) {
+                    return '8rem'; // Logo login
+                }
+
+                return '4rem'; // Logo dashboard
+            })
+            // ->brandLogoHeight('3rem');
+            // ->brandLogoHeight('4rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('20rem')
 
             // ->emailVerification()
             ->colors([
@@ -75,16 +100,18 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
-                'Jabatan dan Hak Akses',
-                'Manajemen Data Master',
-                'Customer',
+                'Layanan',
                 'Keuangan',
-                'Jasa Pemetaan',
-                'Jasa Sewa',
+                'Customer',
+                'Manajemen Data Master',
+                'Jabatan dan Hak Akses',
+                'Log Aktifitas',
             ])
+            ->tenantMiddleware([
+                ApplyTenantScopes::class,
+            ], isPersistent: true)
             ->plugins([
                 ActivitylogPlugin::make(),
-            ])
-        ;
+            ]);
     }
 }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama');
             $table->decimal('max_nilai', 15, 2);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

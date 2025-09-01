@@ -32,8 +32,6 @@ class StatusPembayaranRelationManager extends RelationManager
 
     protected static ?string $title = 'Riwayat Pembayaran';
 
-    protected static bool $isLazy = false;
-
     public function form(Form $form): Form
     {
         $project = $this->ownerRecord;
@@ -60,9 +58,13 @@ class StatusPembayaranRelationManager extends RelationManager
                         'Lainnya' => 'Lainnya',
                     ])
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->validationMessages([
+                        'required' => 'Metode pembayaran wajib diisi',
+                    ]),
 
                 Select::make('jenis_pembayaran')
+                    ->label('Jenis Pembayaran')
                     ->options([
                         'DP' => 'DP',
                         'Pelunasan' => 'Pelunasan',
@@ -70,14 +72,20 @@ class StatusPembayaranRelationManager extends RelationManager
                         'Termin 2' => 'Termin 2',
                     ])
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->validationMessages([
+                        'required' => 'Jenis Pembayaran wajib diisi',
+                    ]),
 
                 TextInput::make('nilai')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->numeric()
+                    ->required()
                     ->prefix('Rp')
-                    ->maxlength(20),
+                    ->validationMessages([
+                        'required' => 'Nilai wajib diisi',
+                    ]),
 
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
@@ -86,10 +94,22 @@ class StatusPembayaranRelationManager extends RelationManager
                     ->required()
                     ->disk('public')
                     ->directory('bukti-pembayaran')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->validationMessages([
+                        'required' => 'Bukti pembayaran wajib diisi',
+                    ]),
 
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+
+                Hidden::make('payable_id')
+                    ->default(fn() => $this->ownerRecord->id),
+
+                Hidden::make('payable_type')
+                    ->default(fn() => get_class($this->ownerRecord)),
+
+                Hidden::make('company_id')
+                    ->default(fn() => $this->ownerRecord->company_id),
             ]);
     }
 

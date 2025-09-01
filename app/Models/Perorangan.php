@@ -45,9 +45,9 @@ class Perorangan extends Model
             ->withTimestamps();
     }
 
-    public function alatcustomer()
+    public function alatCustomer()
     {
-        return $this->belongsToMany(AlatCustomer::class, 'alat_customers_perorangan')
+        return $this->belongsToMany(AlatCustomer::class, 'alat_customers_perorangan', 'perorangan_id', 'alat_customers_id')
             ->withPivot('alat_customers_id', 'perorangan_id', 'peran')
             ->withTimestamps();
     }
@@ -72,5 +72,10 @@ class Perorangan extends Model
             ->using(PeroranganCorporate::class)
             ->withPivot('user_id')
             ->withTimestamps();
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

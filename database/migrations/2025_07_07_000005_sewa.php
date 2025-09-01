@@ -12,15 +12,16 @@ return new class extends Migration {
     {
         Schema::create('sewa', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->uuid('sales_id')->nullable();
             $table->text('judul');
             $table->date('tgl_mulai');
             $table->date('tgl_selesai')->nullable();
             $table->string('rentang')->nullable();
-            $table->string('provinsi', 2);
-            $table->string('kota', 5);
-            $table->string('kecamatan', 8);
-            $table->string('desa', 13);
-            $table->text('detail_alamat');
+            $table->string('provinsi', 2)->nullable();
+            $table->string('kota', 5)->nullable();
+            $table->string('kecamatan', 8)->nullable();
+            $table->string('desa', 13)->nullable();
+            $table->text('detail_alamat')->nullable();
 
             $table->decimal('harga_perkiraan', 15, 2)->nullable();
             $table->decimal('harga_real', 15, 2)->nullable();

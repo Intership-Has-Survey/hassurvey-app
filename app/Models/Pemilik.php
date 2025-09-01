@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Carbon\Carbon;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 
 class Pemilik extends Model
 {
-    use HasUuids, HasFactory, SoftDeletes;
+    use HasUuids, HasFactory, SoftDeletes, LogsActivity;
 
     protected $table = 'pemilik';
 
@@ -48,5 +51,44 @@ class Pemilik extends Model
          * daftar_alat.id -> riwayat_sewa.daftar_alat_id
          */
         return $this->hasManyThrough(AlatSewa::class, DaftarAlat::class);
+    }
+
+    public function statusPengeluarans()
+    {
+        return $this->morphMany(TransaksiPembayaran::class, 'payable');
+    }
+
+    public function getStatusPembayaranBulanIniAttribute()
+    {
+        $now = Carbon::now();
+
+        // Determine the current period: from 27th of previous month to 26th of current month
+        $periodStart = $now->copy()->subMonth()->setDay(27);
+        $periodEnd = $now->copy()->setDay(26);
+
+        // Find payment that covers the current period
+        $payment = $this->statusPengeluarans()
+            ->whereBetween('tanggal_transaksi', [$periodStart->startOfDay(), $periodEnd->endOfDay()])
+            ->orderBy('tanggal_transaksi', 'desc')
+            ->first();
+
+        if ($payment) {
+            return 'Lunas';
+        }
+
+        return 'Belum Dibayar';
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('Pemilik');
     }
 }

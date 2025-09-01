@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('transaksi_pembayarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('payable_id');
+            $table->foreignUuid('payable_id')->nullable();
             $table->string('payable_type')->nullable();
-            $table->foreignUuid('user_id')->constrained('users');
+            $table->string('bulan_pembayaran')->nullable();
             $table->decimal('nilai', 15, 2);
             $table->date('tanggal_transaksi');
             $table->string('metode_pembayaran');
             $table->string('bukti_pembayaran_path')->nullable();
+            $table->string('keterangan')->nullable();
             $table->timestamps();
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->softDeletes();
         });
     }
 

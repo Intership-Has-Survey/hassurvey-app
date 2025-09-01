@@ -13,7 +13,6 @@ use Carbon\Carbon;
 
 class StatusPembayaranSummary extends StatsOverviewWidget
 {
-
     use InteractsWithPageFilters;
     protected function getStats(): array
     {

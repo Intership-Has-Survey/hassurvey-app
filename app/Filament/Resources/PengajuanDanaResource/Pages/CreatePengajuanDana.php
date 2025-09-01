@@ -30,7 +30,7 @@ class CreatePengajuanDana extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['tipe_pengajuan'] = 'inhouse';
+        // $data['tipe_pengajuan'] = 'inhouse'; // Removed as column no longer exists
         return $data;
     }
 }

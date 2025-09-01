@@ -48,7 +48,16 @@ class ActivitylogResource extends Resource
     protected static ?string $pluralModelLabel = 'Log Aktifitas';
     protected static ?string $slug = 'activitylogs';
 
+    // protected static ?string $tenantOwnershipRelationshipName = 'tenant';
+
     protected static bool $shouldRegisterNavigation = true;
+
+    public static function isTenantAware(): bool
+    {
+        return false;
+    }
+
+
 
     public static function getModel(): string
     {
@@ -65,15 +74,8 @@ class ActivitylogResource extends Resource
         return ActivitylogPlugin::get()->getNavigationIcon();
     }
 
-    public static function getNavigationSort(): ?int
-    {
-        return ActivitylogPlugin::get()->getNavigationSort();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return ActivitylogPlugin::get()->getNavigationGroup();
-    }
+    protected static ?string $navigationGroup = 'Log Aktifitas';
+    protected static ?int $navigationSort = 2;
 
     public static function getNavigationBadge(): ?string
     {
@@ -674,8 +676,8 @@ class ActivitylogResource extends Resource
         }
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->can('kelola Log Aktifitas'); // atau permission spesifik
-    }
+    // public static function canAccess()
+    // {
+    //     return auth()->user()?->hasRole('Super Admin');
+    // }
 }

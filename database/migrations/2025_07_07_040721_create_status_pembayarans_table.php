@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('status_pembayarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama_pembayaran');
-            $table->foreignUuid('payable_id');
+            $table->foreignUuid('payable_id')->nullable();
             $table->string('payable_type')->nullable();
             $table->string('jenis_pembayaran');
             $table->string('bukti_pembayaran_path')->nullable();
@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignUuid('user_id')->constrained('users');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

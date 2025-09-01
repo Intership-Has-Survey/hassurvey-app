@@ -14,6 +14,8 @@ class DetailKalibrasiRelationManager extends RelationManager
 {
     protected static string $relationship = 'kalibrasis';
 
+    protected static ?string $title = 'Riwayat Kalibrasi dan Servis';
+
     public function form(Form $form): Form
     {
         return $form

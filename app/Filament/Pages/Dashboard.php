@@ -35,15 +35,15 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         Select::make('serviceType')
-                            ->label('Jenis Layanan')
                             ->options([
                                 'Semua' => 'Semua',
                                 'Layanan Pemetaan' => 'Layanan Pemetaan',
                                 'Layanan Sewa' => 'Layanan Sewa',
-                                //'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
-                                //'Layanan Penjualan Alat' => 'Layanan Penjualan Alat', 
+                                'Layanan Servis dan Kalibrasi' => 'Layanan Servis dan Kalibrasi',
+                                'Layanan Penjualan Alat' => 'Layanan Penjualan Alat',
                             ])
-                            ->default('Semua'),
+                            ->default('Semua')
+                            ->in(['Semua', 'Layanan Pemetaan', 'Layanan Sewa', 'Layanan Servis dan Kalibrasi', 'Layanan Penjualan Alat']),
                         DateRangePicker::make('created_at')
                             ->label('Filter Berdasarkan Rentang Tanggal'),
                     ])

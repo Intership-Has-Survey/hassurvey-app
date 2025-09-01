@@ -55,6 +55,11 @@ class PengajuanDana extends Model
         return $this->belongsTo(Bank::class);
     }
 
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount::class);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -137,5 +142,10 @@ class PengajuanDana extends Model
     public function statusPengeluarans()
     {
         return $this->morphMany(TransaksiPembayaran::class, 'payable');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

@@ -9,13 +9,13 @@ use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Placeholder;
-use App\Models\BankAccount;
+use Filament\Facades\Filament;
+use Illuminate\Validation\Rules\Unique;
 
 trait GlobalForms
 {
@@ -26,10 +26,19 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Perusahaan')
-                        ->maxLength(200),
+                        ->maxLength(60)
+                        ->required(),
                     TextInput::make('nib')
                         ->label('NIB')
-                        ->maxLength(20),
+                        ->maxLength(16)
+                        ->minLength(15)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->validationMessages([
+                            'unique' => 'NIB ini sudah terdaftar, silakan gunakan yang lain.',
+                        ]),
                     Select::make('level')
                         ->label('Level Perusahaan')
                         ->options([
@@ -39,12 +48,19 @@ trait GlobalForms
                         ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->email()
-                        ->maxLength(100),
+                        ->maxLength(254)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->validationMessages([
+                            'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                        ])
+                        ->email(),
                     TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25),
                 ])->columns(2),
 
             Section::make('Alamat Perusahaan')
@@ -53,6 +69,10 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')
+                ->default(fn() => Filament::getTenant()?->getKey()),
+
         ];
     }
 
@@ -63,21 +83,36 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Lengkap')
-
-                        ->maxLength(100),
+                        ->required()
+                        ->maxLength(254),
                     TextInput::make('nik')
-                        ->label('NIK')
-                        ->numeric()
-                        ->maxLength(16)
-                        ->unique(ignoreRecord: true),
+                        ->label('Nomor Induk Kependudukan (NIK)')
+                        ->length(length: 16)
+                        ->rule('regex:/^\d+$/')
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->validationMessages([
+                            'unique' => 'NIK sudah pernah terdaftar',
+                            'regex' => 'NIK hanya boleh berisi angka',
+                        ]),
                     TextInput::make('email')
                         ->label('Email')
-                        ->email()
-                        ->maxLength(100),
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->validationMessages([
+                            'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
+                            'email' => 'Email tidak valid',
+                        ])
+                        ->email(),
                     TextInput::make('telepon')
                         ->label('Telepon')
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25),
                     Select::make('gender')
                         ->label('Jenis Kelamin')
                         ->options([
@@ -92,6 +127,10 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')
+                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+
         ];
     }
 
@@ -100,7 +139,6 @@ trait GlobalForms
         return [
             Select::make('provinsi')
                 ->label('Provinsi')
-
                 ->placeholder('Pilih provinsi')
                 ->options(TrefRegion::query()
                     ->where(DB::raw('LENGTH(code)'), 2)
@@ -177,61 +215,9 @@ trait GlobalForms
                 ->label('Detail Alamat')
                 ->rows(3)
                 ->columnSpanFull(),
-        ];
-    }
+            Hidden::make('company_id')
+                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
 
-    private static function getKeuanganFields(): array
-    {
-        return [
-            TextInput::make('nilai_project_awal')
-                ->label('Nilai Proyek')
-                ->numeric()
-                ->prefix('Rp ')
-                ->mask(RawJs::make('$money($input)'))
-                ->stripCharacters(',')
-                ->live()
-                ->maxLength(20)
-                ->placeholder('Masukkan anggaran proyek')
-                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
-            Toggle::make('dikenakan_ppn')
-                ->label('Kenakan PPN (12%)')
-                ->live()
-                ->disabled(fn(callable $get) => $get('status') === 'Closing'),
-
-            Placeholder::make('nilai_ppn_display')
-                ->label('Nilai PPN (12%)')
-                ->content(function (Get $get): string {
-                    if ($get('dikenakan_ppn')) {
-                        $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
-                        $nilaiBulat = floor($nilai);
-                        return 'Rp ' . number_format($nilaiBulat * 0.12, 0, ',');
-                    }
-                    return 'Rp 0';
-                }),
-
-            Placeholder::make('nilai_project')
-                ->label('Total Tagihan')
-                ->content(function (Get $get): string {
-                    $nilai = (float) str_replace([','], '', $get('nilai_project_awal'));
-                    $nilaiBulat = floor($nilai);
-                    $total = $nilaiBulat;
-                    if ($get('dikenakan_ppn')) {
-                        $total = $nilaiBulat + ($nilaiBulat * 0.12);
-                    }
-                    return 'Rp ' . number_format($total, 0, ',');
-                }),
-            Select::make('status')
-                ->label('Status Proyek')
-                ->options([
-                    'Prospect' => 'Prospect',
-                    'Follow up 1' => 'Follow up 1',
-                    'Follow up 2' => 'Follow up 2',
-                    'Follow up 3' => 'Follow up 3',
-                    'Closing' => 'Closing',
-                    'Failed' => 'Failed',
-                ])
-
-                ->native(false),
         ];
     }
 
@@ -242,24 +228,45 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Sales')
-
-                        ->maxLength(100),
+                        ->required()
+                        ->maxLength(255),
                     TextInput::make('nik')
-                        ->label('NIK')
-
-                        ->maxLength(16)
-                        ->unique(ignoreRecord: true)
-                        ->numeric(),
+                        ->label('Nomor Induk Kependudukan (NIK)')
+                        ->length(16)
+                        ->required()
+                        ->rule('regex:/^\d+$/')
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->validationMessages([
+                            'unique' => 'NIK sudah pernah terdaftar',
+                            'regex' => 'NIK hanya boleh berisi angka',
+                            'required' => 'NIK wajib diisi',
+                        ]),
                     TextInput::make('email')
                         ->label('Email')
-
                         ->email()
-                        ->maxLength(100),
+                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                            $rule->where('company_id', Filament::getTenant()->id);
+                            return $rule;
+                        })
+                        ->required()
+                        ->maxLength(254)
+                        ->validationMessages([
+                            'unique' => 'Email sudah digunakan',
+                            'required' => 'Email wajib diisi',
+                            'regex' => 'Email tidak valid',
+                        ]),
                     TextInput::make('telepon')
+                        ->required()
                         ->label('Telepon')
-
                         ->tel()
-                        ->maxLength(15),
+                        ->maxLength(25)
+                        ->validationMessages([
+                            'required' => 'Telepon wajib diisi',
+                            'regex' => 'Telepon tidak valid',
+                        ]),
                 ])->columns(2),
 
             Section::make('Alamat Sales')
@@ -268,6 +275,10 @@ trait GlobalForms
 
             Hidden::make('user_id')
                 ->default(auth()->id()),
+
+            Hidden::make('company_id')
+                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+
         ];
     }
 
@@ -278,7 +289,8 @@ trait GlobalForms
                 ->schema([
                     TextInput::make('nama')
                         ->label('Nama Kategori')
-
+                        ->nullable()
+                        ->required()
                         ->maxLength(100),
                     Textarea::make('keterangan')
                         ->label('Deskripsi')
@@ -302,14 +314,16 @@ trait GlobalForms
                         ->columnSpanFull(),
                     Textarea::make('deskripsi_pengajuan')
                         ->label('Deskripsi Umum')
-                        ->columnSpanFull(),
-
-                    Hidden::make('tipe_pengajuan')
-                        ->default('project'),
+                        ->columnSpanFull()
+                        ->maxLength(5000),
                     Hidden::make('nilai')
                         ->default('0'),
                     Hidden::make('user_id')
                         ->default(auth()->id()),
+                ]),
+
+            Section::make('Informasi Rekening Penerima')
+                ->schema([
                     Select::make('bank_id')
                         ->relationship('bank', 'nama_bank')
                         ->placeholder('Pilih Bank')
@@ -318,7 +332,11 @@ trait GlobalForms
                         ->label('Daftar Bank')
                         ->required()
                         ->reactive()
+                        ->validationMessages([
+                            'required' => 'Bank wajib diisi',
+                        ])
                         ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
+
                     Select::make('bank_account_id')
                         ->label('Nomor Rekening')
                         ->options(function (callable $get) {
@@ -337,10 +355,19 @@ trait GlobalForms
                         ->createOptionForm([
                             TextInput::make('no_rek')
                                 ->label('Nomor Rekening')
-                                ->required(),
+                                ->numeric()
+                                ->maxLength(25)
+                                ->required()
+                                ->placeholder('Contoh: 1234567890')
+                                ->validationMessages([
+                                    'required' => 'Nomor rekening wajib diisi',
+                                    'max_digits' => 'Tidak boleh lebih dari 25 digit',
+                                ]),
                             TextInput::make('nama_pemilik')
                                 ->label('Nama Pemilik')
-                                ->required(),
+                                ->required()
+                                ->maxLength(255),
+
                             Hidden::make('bank_id')
                                 ->default(fn(callable $get) => $get('bank_id')),
                             Hidden::make('user_id')
@@ -354,33 +381,238 @@ trait GlobalForms
                         })
                         ->searchable()
                         ->native(false)
-                        ->required(),
-
-                    Repeater::make('detailPengajuans')
-                        ->relationship()
-                        ->columnSpanFull()
-                        ->label('Rincian Pengajuan Dana')
-                        ->schema([
-                            TextInput::make('deskripsi')
-                                ->label('Nama Item')
-                                ->required(),
-                            TextInput::make('qty')
-                                ->label('Jumlah')
-                                ->numeric()
-                                ->required(),
-
-                            TextInput::make('harga_satuan')
-                                ->label('Harga Satuan')
-                                ->numeric()
-                                ->prefix('Rp ')
-                                ->mask(RawJs::make('$money($input)'))
-                                ->stripCharacters(',')
-                                ->required(),
-                        ])
-                        ->defaultItems(1)
-                        ->createItemButtonLabel('Tambah Rincian')
-                        ->columns(3),
+                        ->required()
+                        ->visible(fn(callable $get) => !empty($get('bank_id')))
+                        ->validationMessages([
+                            'required' => 'Nomor Rekening wajib diisi',
+                        ]),
                 ]),
+
+            Repeater::make('detailPengajuans')
+                ->relationship()
+                ->columnSpanFull()
+                ->label('Rincian Pengajuan Dana')
+                ->schema([
+                    TextInput::make('deskripsi')
+                        ->label('Nama Item')
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('qty')
+                        ->label('Jumlah')
+                        ->numeric()
+                        ->maxLength(4)
+                        ->minValue(1)
+                        ->default(1)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Jumlah wajib diisi',
+                            'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
+                            'min_value' => 'Jumlah tidak boleh kurang dari 0',
+                        ]),
+
+                    TextInput::make('satuan')
+                        ->placeholder('contoh : liter/kilogram/dll,...')
+                        ->required()
+                        ->maxLength(50),
+
+                    TextInput::make('harga_satuan')
+                        ->label('Harga Satuan')
+                        ->numeric()
+                        ->prefix('Rp ')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
+                        ->required()
+                        ->minValue(0)
+                        ->maxLength(9)
+                        ->validationMessages([
+                            'required' => 'Harga Satuan wajib diisi',
+                            'max_digits' => 'Tidak boleh lebih dari 9 digit',
+                            'min_value' => 'Tidak boleh kurang dari Rp 0'
+                        ]),
+
+                ])
+                ->defaultItems(1)
+                ->createItemButtonLabel('Tambah Rincian')
+                ->columns(4),
+
+            Hidden::make('company_id')
+                ->default(fn() => Filament::getTenant()?->getKey()),
+
         ];
+    }
+
+    private static function getCustomerForm(): array
+    {
+        return [
+            Select::make('customer_flow_type')
+                ->label('Tipe Customer')
+                ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
+                ->live()
+                ->native(false)
+                ->required()
+                ->afterStateUpdated(function (Set $set, $state) {
+                    if ($state === 'perorangan') {
+                        $set('corporate_id', null);
+                    }
+                })
+                ->validationMessages([
+                    'required' => 'Customer tidak boleh kosong',
+                ]),
+
+            Select::make('corporate_id')
+                ->relationship('corporate', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                ->label('Pilih Perusahaan')
+                ->live()
+                ->searchable()
+                ->preload()
+                ->createOptionForm(self::getCorporateForm())
+                ->afterStateUpdated(function ($state, callable $set) {
+                    if (!$state) {
+                        $set('perorangan', []);
+                        return;
+                    }
+
+                    $corporate = \App\Models\Corporate::with('perorangan')->find($state);
+
+                    if (!$corporate) {
+                        $set('perorangan', []);
+                        return;
+                    }
+
+                    $perorangan = $corporate->perorangan->map(fn($p) => [
+                        'perorangan_id' => $p->id,
+                    ])->toArray();
+
+                    $set('perorangan', $perorangan);
+                })
+                ->required(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                ->validationMessages([
+                    'required' => 'Perusahaan wajib diisi',
+                ])
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate'),
+
+            Select::make('perorangan_single')
+                ->label('Pilih Customer')
+                ->relationship('perorangan', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                ->getOptionLabelFromRecordUsing(fn(\App\Models\Perorangan $record) => "{$record->nama} - {$record->nik}")
+                ->searchable()
+                ->preload()
+                ->createOptionForm(self::getPeroranganForm())
+                ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                ->required(fn(Get $get) => $get('customer_flow_type') === 'perorangan')
+                ->saveRelationshipsUsing(function ($state, $record) {
+                    if ($state && is_string($state)) {
+                        $record->perorangan()->sync([
+                            $state => ['peran' => 'Pribadi'],
+                        ]);
+                    } elseif ($state && is_array($state)) {
+                        // Handle array case
+                        $syncData = [];
+                        foreach ($state as $id) {
+                            if (!empty($id)) {
+                                $syncData[$id] = ['peran' => 'Pribadi'];
+                            }
+                        }
+                        if (!empty($syncData)) {
+                            $record->perorangan()->sync($syncData);
+                        }
+                    }
+                })
+                ->afterStateUpdated(function (callable $set, $state) {
+                    if ($state) {
+                        $set('perorangan', [['perorangan_id' => $state]]);
+                    } else {
+                        $set('perorangan', []);
+                    }
+                })
+                ->validationMessages([
+                    'required' => 'Kolom Customer wajib diisi',
+                ]),
+
+            Repeater::make('perorangan')
+                ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
+                ->relationship()
+                ->schema([
+                    Select::make('perorangan_id')
+                        ->label(false)
+                        ->options(function (Get $get, $state): array {
+                            $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
+                            $selectedPicIds = array_diff($selectedPicIds, [$state]);
+                            return \App\Models\Perorangan::where('company_id', \Filament\Facades\Filament::getTenant()?->getKey())
+                                ->whereNotIn('id', $selectedPicIds)
+                                ->get()
+                                ->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
+                        })
+                        ->searchable()
+                        ->createOptionForm(self::getPeroranganForm())
+                        ->createOptionUsing(fn(array $data): string => \App\Models\Perorangan::create($data)->id)
+                        ->required()
+                        ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
+                        ->validationMessages([
+                            'required' => 'Kolom Customer wajib diisi',
+                        ])
+                        ->rules(['required', 'uuid']),
+                ])
+                ->minItems(1)
+                ->distinct()
+                ->required()
+                ->validationMessages([
+                    'required' => 'PIC tidak boleh kosong',
+                ])
+                ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
+                ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
+                ->addActionLabel('Tambah PIC')
+                // ->visible(fn(Get $get) => filled($get('customer_flow_type') === 'corporate'))
+                ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
+                ->saveRelationshipsUsing(function (Model $record, array $state): void {
+                    // Filter out empty or null perorangan_id values
+                    $selectedIds = array_filter(array_map(fn($item) => $item['perorangan_id'] ?? null, $state));
+                    if (empty($selectedIds)) {
+                        return; // Don't sync if no valid IDs
+                    }
+                    $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
+                    // Sync dengan project dan simpan peran
+                    $syncData = [];
+                    foreach ($selectedIds as $id) {
+                        if (!empty($id)) {
+                            $syncData[$id] = ['peran' => $peran];
+                        }
+                    }
+
+                    if (!empty($syncData)) {
+                        $record->perorangan()->sync($syncData);
+                    }
+
+                    if ($record->corporate_id) {
+                        $corporate = $record->corporate;
+
+                        // Ambil semua ID PIC yang terhubung sebelumnya
+                        $existingIds = $corporate->perorangan()->pluck('perorangan_id')->toArray();
+
+                        // Tambahkan PIC baru yang belum terhubung
+                        foreach ($selectedIds as $peroranganId) {
+                            if (!in_array($peroranganId, $existingIds)) {
+                                $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
+                            }
+                        }
+
+                        // Hapus PIC yang tidak ada di list sekarang
+                        $toDetach = array_diff($existingIds, $selectedIds);
+                        if (!empty($toDetach)) {
+                            $corporate->perorangan()->detach($toDetach);
+                        }
+                    }
+                }),
+        ];
+    }
+
+    private static function getPeroranganOptions($excludeIds = []): array
+    {
+        return \App\Models\Perorangan::where('company_id', \Filament\Facades\Filament::getTenant()?->getKey())
+            ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds))
+            ->get()
+            ->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])
+            ->all();
     }
 }

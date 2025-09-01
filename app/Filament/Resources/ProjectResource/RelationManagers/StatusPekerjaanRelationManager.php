@@ -22,8 +22,6 @@ class StatusPekerjaanRelationManager extends RelationManager
 {
     protected static string $relationship = 'statusPekerjaan';
 
-    protected static bool $isLazy = false;
-
     public function form(Form $form): Form
     {
         return $form
@@ -46,6 +44,9 @@ class StatusPekerjaanRelationManager extends RelationManager
                         'laporan' => 'Laporan',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis pekerjaan harus dipilih'
+                    ])
                     ->native(false),
                 Select::make('status')
                     ->label('Status')
@@ -55,12 +56,14 @@ class StatusPekerjaanRelationManager extends RelationManager
                         'Tidak Perlu' => 'Tidak Perlu',
                     ])
                     ->required()
+                    ->validationMessages([
+                        'required' => 'Status pekerjaan wajib diisi'
+                    ])
                     ->native(false),
                 FileUpload::make('bukti_pekerjaan_path')
                     ->label('Bukti Pekerjaan')
                     ->image()
                     ->maxSize(1024)
-                    ->required()
                     ->disk('public')
                     ->directory('bukti-pekerjaan')
                     ->columnSpanFull(),

@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Sales>
@@ -23,10 +24,16 @@ class SalesFactory extends Factory
             $user = User::factory()->create();
         }
 
-        $provinceCode = '33'; // Jawa Tengah
-        $cityCode = '33.27'; // Kab. Pemalang
-        $districtCode = '33.27.08'; // Kec. Pemalang
-        $villageCode = '33.27.08.2010'; // Kel. Pelutan
+        $randomVillage = DB::table('tref_regions')->inRandomOrder()->first();
+
+        if (!$randomVillage) {
+            throw new \Exception('Tabel wilayah (villages) kosong. Jalankan TrefRegionSeeder terlebih dahulu.');
+        }
+
+        $villageCode = $randomVillage->code;
+        $districtCode = substr($villageCode, 0, 8);
+        $cityCode = substr($villageCode, 0, 5);
+        $provinceCode = substr($villageCode, 0, 2);
 
         return [
             'nama' => $this->faker->name(),
@@ -37,7 +44,7 @@ class SalesFactory extends Factory
             'kota' => $cityCode,
             'kecamatan' => $districtCode,
             'desa' => $villageCode,
-            'detail_alamat' => $this->faker->streetAddress(),
+            'detail_alamat' => 'Jl. ' . $this->faker->streetName() . ' No. ' . $this->faker->buildingNumber(),
             'user_id' => $user->id,
         ];
     }

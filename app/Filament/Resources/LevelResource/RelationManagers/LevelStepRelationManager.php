@@ -9,24 +9,34 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Facades\Filament;
 
 class LevelStepRelationManager extends RelationManager
 {
     protected static string $relationship = 'levelsteps';
-    protected static ?string $title = 'Urutan persetujuan';
-
+    protected static ?string $title = 'Tahap Persetujuan';
+    // protected static ?string $heading = 'Buat Tahap Persetujuan';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('step')
-                    ->label('urutan ke')
+                    ->label('Tahap Ke')
+                    ->required()
+                    ->minValue(1)
                     ->numeric(),
+
                 Forms\Components\Select::make('role_id')
-                    ->relationship('role', 'name')
+                    ->required()
+                    ->relationship(
+                        name: 'role',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn($query) => $query->where('company_id',  Filament::getTenant()->id)
+                    )
                     ->preload()
-                    ->label('Jabatan'),
+                    ->label('Penyetuju'),
             ]);
     }
 
@@ -36,23 +46,27 @@ class LevelStepRelationManager extends RelationManager
             ->recordTitleAttribute('level_id')
             ->columns([
                 // Tables\Columns\TextColumn::make('level'),
-                Tables\Columns\TextColumn::make('step')->label('urutan pengajuan')->sortable(),
-                Tables\Columns\TextColumn::make('role.name')->label('Jabatan'),
+                Tables\Columns\TextColumn::make('step')->label('No')->sortable(),
+                Tables\Columns\TextColumn::make('role.name')->label('Penyetuju'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Buat Tahap Persetujuan'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->recordTitle(fn(Model $record) => "data ini?"), // Ini kuncinya
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('step', 'asc');
     }
 }

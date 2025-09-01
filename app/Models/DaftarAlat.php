@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth; // <-- Import class Auth
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 
 class DaftarAlat extends Model
 {
-    use HasUuids, HasFactory, SoftDeletes;
+    use HasUuids, HasFactory, SoftDeletes, LogsActivity;
 
     protected $primaryKey = 'id';
     protected $table = 'daftar_alat';
@@ -97,5 +99,29 @@ class DaftarAlat extends Model
                 2 => 'Terjual',
             },
         );
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+
+    //     static::creating(function ($model) {
+    //         if (session()->has('company_id')) {
+    //             $model->company_id = session('company_id');
+    //         }
+    //     });
+    // }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('Daftar Alat');
     }
 }

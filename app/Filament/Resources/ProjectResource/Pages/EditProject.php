@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
+use App\Filament\Resources\ProjectResource\Widgets\RingkasanPemetaan;
 use App\Models\Corporate;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -16,6 +17,7 @@ class EditProject extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];
     }
@@ -50,6 +52,14 @@ class EditProject extends EditRecord
 
         return $data;
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            RingkasanPemetaan::class,
+        ];
+    }
+
 
     protected function afterSave(): void
     {

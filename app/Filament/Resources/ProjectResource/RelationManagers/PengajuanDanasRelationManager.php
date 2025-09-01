@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -34,7 +35,6 @@ class PengajuanDanasRelationManager extends RelationManager
     protected static string $relationship = 'pengajuanDanas';
     protected static ?string $title = 'Pengajuan Dana';
 
-    protected static bool $isLazy = false;
     public function form(Form $form): Form
     {
         return $form
@@ -49,10 +49,10 @@ class PengajuanDanasRelationManager extends RelationManager
             ->recordTitleAttribute('judul_pengajuan')
             ->columns([
                 TextColumn::make('judul_pengajuan'),
-                TextColumn::make('deskripsi_pengajuan'),
                 TextColumn::make('bank.nama_bank'),
-                TextColumn::make('bank.accounts.no_rek')->label('Nomor Rekening'),
-                TextColumn::make('bank.accounts.nama_pemilik')->label('Nama Pemilik'),
+                TextColumn::make('bankAccount.no_rek')->label('Nomor Rekening'),
+                TextColumn::make('bankAccount.nama_pemilik')->label('Nama Pemilik'),
+                TextColumn::make('nilai')->money('IDR'),
                 TextColumn::make('user.name'),
             ])
             ->filters([
@@ -71,7 +71,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = $firstStep->role_id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -82,7 +82,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
             ])
             ->actions([
-                DeleteAction::make(),
+                ViewAction::make(),
                 EditAction::make()
                     ->after(function ($livewire, $record) {
                         $record->updateTotalHarga();
@@ -95,7 +95,7 @@ class PengajuanDanasRelationManager extends RelationManager
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                            $roleName = $firstStep->role_id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $record->update([
                                 'level_id'     => $level->id,
@@ -103,6 +103,7 @@ class PengajuanDanasRelationManager extends RelationManager
                             ]);
                         }
                     }),
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -128,7 +129,7 @@ class PengajuanDanasRelationManager extends RelationManager
             ->first();
         if ($level) {
             $firstStep = $level->levelSteps()->orderBy('step')->first();
-            $roleName = $firstStep->role_id;
+            $roleName = optional($firstStep?->role)->id;
             $pengajuan->update([
                 'level_id'     => $level->id,
                 'dalam_review' => $roleName,

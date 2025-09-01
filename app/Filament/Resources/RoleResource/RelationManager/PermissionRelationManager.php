@@ -48,7 +48,7 @@ class PermissionRelationManager extends RelationManager
                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.name')),
                 TextInput::make('guard_name')
                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.guard_name'))
-                    ->visible(fn () => config('filament-spatie-roles-permissions.should_show_guard', true)),
+                    ->visible(fn() => config('filament-spatie-roles-permissions.should_show_guard', true)),
             ]);
     }
 
@@ -64,19 +64,17 @@ class PermissionRelationManager extends RelationManager
                 TextColumn::make('guard_name')
                     ->searchable()
                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.guard_name'))
-                    ->visible(fn () => config('filament-spatie-roles-permissions.should_show_guard', true)),
+                    ->visible(fn() => config('filament-spatie-roles-permissions.should_show_guard', true)),
 
             ])
-            ->filters([
-
-            ])->headerActions([
-                AttachAction::make('Attach Permission')->preloadRecordSelect()->after(fn () => app()
-                    ->make(PermissionRegistrar::class)
-                    ->forgetCachedPermissions()),
+            ->filters([])->headerActions([
+                // AttachAction::make('Attach Permission')->preloadRecordSelect()->after(fn () => app()
+                //     ->make(PermissionRegistrar::class)
+                //     ->forgetCachedPermissions()),
             ])->actions([
-                DetachAction::make()->after(fn () => app()->make(PermissionRegistrar::class)->forgetCachedPermissions()),
+                DetachAction::make()->after(fn() => app()->make(PermissionRegistrar::class)->forgetCachedPermissions()),
             ])->bulkActions([
-                DetachBulkAction::make()->after(fn () => app()->make(PermissionRegistrar::class)->forgetCachedPermissions()),
+                DetachBulkAction::make()->after(fn() => app()->make(PermissionRegistrar::class)->forgetCachedPermissions()),
             ]);
     }
 }

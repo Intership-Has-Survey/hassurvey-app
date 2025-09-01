@@ -3,13 +3,20 @@
 namespace App\Filament\Resources\PemilikResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Hidden;
+use Filament\Tables\Actions\EditAction;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 
 class DaftarAlatRelationManager extends RelationManager
@@ -22,11 +29,15 @@ class DaftarAlatRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('nomor_seri')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                        $rule->where('company_id', Filament::getTenant()->id);
+                        return $rule;
+                    })
                     ->maxLength(255),
-                Forms\Components\Select::make('jenis_alat')
+                Forms\Components\Select::make('jenis_alat_id')
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
+                    ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Jenis Alat')
@@ -34,18 +45,26 @@ class DaftarAlatRelationManager extends RelationManager
                         Forms\Components\TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->nullable(),
+                    ])->validationMessages([
+                        'required' => 'Jenis alat wajib dipilih.',
                     ])
                     ->required(),
-                Forms\Components\Select::make('merk')
+                Forms\Components\Select::make('merk_id')
                     ->relationship('merk', 'nama')
                     ->searchable()
+                    ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Merk')
                             ->required(),
-                    ])->required(),
-            ])->columns(2);
+                    ])->required()
+                    ->validationMessages([
+                        'required' => 'Merk wajib dipilih.',
+                    ]),
 
+                Hidden::make('company_id')
+                    ->default(fn() => $this->ownerRecord->company_id),
+            ])->columns(2);
     }
 
     public function table(Table $table): Table
@@ -64,8 +83,6 @@ class DaftarAlatRelationManager extends RelationManager
                         true => 'success',
                         false => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status Alat'),
                 BadgeColumn::make('status')
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Tidak Tersedia')
                     ->color(fn(bool $state): string => match ($state) {
@@ -74,18 +91,34 @@ class DaftarAlatRelationManager extends RelationManager
                     }),
             ])
             ->filters([
-                //
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                SelectFilter::make('jenis_alat')
+                    ->relationship('jenisAlat', 'nama')
+                    ->searchable()
+                    ->preload(),
+                TernaryFilter::make('kondisi')
+                    ->label('Kondisi')
+                    ->placeholder('Semua Kondisi')
+                    ->trueLabel('Baik')
+                    ->falseLabel('Bermasalah'),
+
+                TernaryFilter::make('status')
+                    ->label('Ketersediaan')
+                    ->placeholder('Semua Status')
+                    ->trueLabel('Tersedia')
+                    ->falseLabel('Tidak Tersedia'),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

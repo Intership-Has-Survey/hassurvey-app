@@ -3,14 +3,15 @@
 namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Level;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use App\Models\Level;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DetailPengajuansRelationManager extends RelationManager
 {
@@ -21,9 +22,56 @@ class DetailPengajuansRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('deskripsi')->required()->columnSpan(2),
-                Forms\Components\TextInput::make('qty')->required()->numeric()->default(1),
-                Forms\Components\TextInput::make('harga_satuan')->required()->numeric()->prefix('Rp'),
+                Forms\Components\TextInput::make('deskripsi')
+                    ->label('Nama Item')
+                    ->required(),
+
+                Forms\Components\TextInput::make('qty')
+                    ->label('Jumlah')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxLength(4)
+                    ->default(1)
+                    ->reactive()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jumlah wajib diisi',
+                        'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
+                        'min_value' => 'Jumlah tidak boleh kurang dari 0',
+                    ])
+                    ->afterStateUpdated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
+
+                Forms\Components\Textinput::make('satuan')
+                    ->required()
+                    ->placeholder('Contoh: liter,kilogram,dll')
+                    ->maxLength(50),
+
+                Forms\Components\TextInput::make('harga_satuan')
+                    ->label('Harga Satuan')
+                    ->numeric()
+                    ->maxLength(9)
+                    ->minValue(0)
+                    ->reactive()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Harga satuan wajib diisi',
+                        'max_digits' => 'Tidak boleh lebih dari 9 digit',
+                        'min_value' => 'Tidak boleh kurang dari 0',
+                    ])
+                    ->afterStateUpdated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
+
+                Forms\Components\Hidden::make('total')
+                    ->dehydrated(true)
+                    ->reactive()
+                    ->default(fn($get) => (int) $get('qty') * (int) $get('harga_satuan'))
+                    ->afterStateHydrated(function (callable $set, $get) {
+                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    }),
+
             ])->columns(4);
     }
 
@@ -34,9 +82,9 @@ class DetailPengajuansRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('deskripsi'),
                 Tables\Columns\TextColumn::make('qty'),
+                Tables\Columns\TextColumn::make('satuan'),
                 Tables\Columns\TextColumn::make('harga_satuan')->money('IDR'),
                 Tables\Columns\TextColumn::make('total')
-                    ->state(fn($record) => $record->qty * $record->harga_satuan)
                     ->money('IDR'),
             ])
             ->headerActions([
@@ -56,10 +104,10 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }
@@ -83,10 +131,10 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }
@@ -107,10 +155,10 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->roles)->id;
+                            $roleName = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'level_id'     => $level->id,
+                                'level_id' => $level->id,
                                 'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
                             ]);
                         }

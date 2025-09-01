@@ -9,24 +9,47 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\Corporate;
+use App\Models\JenisAlat;
 use App\Models\Penjualan;
+use App\Models\DaftarAlat;
 use App\Models\Perorangan;
 use App\Models\TrefRegion;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Support\RawJs;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Pages\Actions;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PenjualanResource\Pages;
 use App\Filament\Resources\PenjualanResource\RelationManagers;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\PenjualanResource\Pages\EditPenjualan;
+use App\Filament\Resources\PenjualanResource\Pages\ListPenjualans;
+use App\Filament\Resources\PenjualanResource\Pages\CreatePenjualan;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use App\Filament\Resources\PenjualanResource\RelationManagers\DetailPenjualanRelationManager;
+use App\Filament\Resources\PenjualanResource\RelationManagers\StatusPembayaranRelationManager;
 
 class PenjualanResource extends Resource
 {
@@ -39,94 +62,38 @@ class PenjualanResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+        $uuid = request()->segment(2);
         return $form
             ->schema([
-                TextInput::make('nama_penjualan')
-                    ->label('Nama Penjualan')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-                DatePicker::make('tanggal_penjualan')
-                    ->required()
-                    ->default(now())
-                    ->label('Tanggal Penjualan')
-                    ->displayFormat('d/m/Y')
-                    ->native(false),
-                Select::make('customer_flow_type')
-                    ->label('Tipe Customer')
-                    ->options(['perorangan' => 'Perorangan', 'corporate' => 'Corporate'])
-                    ->live()->dehydrated(false)->native(false)
-                    ->afterStateUpdated(fn(Set $set) => $set('corporate_id', null))
-                    ->columnSpanFull(),
-                Select::make('corporate_id')
-                    ->label('Pilih Perusahaan')
-                    ->options(
-                        Corporate::whereNotNull('nama')->pluck('nama', 'id')
-                    )
-                    ->live()
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm(self::getCorporateForm())
-                    ->visible(fn(Get $get) => $get('customer_flow_type') === 'corporate')
-                    ->columnSpanFull(),
-
-                Repeater::make('perorangan')
-                    ->label(fn(Get $get): string => $get('customer_flow_type') === 'corporate' ? 'PIC' : 'Pilih Customer')
-                    ->relationship()
+                Section::make('Informasi Penjualan')
                     ->schema([
-                        Select::make('perorangan_id')
-                            ->label(false)
-                            ->options(function (Get $get, $state): array {
-                                $selectedPicIds = collect($get('../../perorangan'))->pluck('perorangan_id')->filter()->all();
-                                $selectedPicIds = array_diff($selectedPicIds, [$state]);
-                                return Perorangan::whereNotIn('id', $selectedPicIds)->get()->mapWithKeys(fn($p) => [$p->id => "{$p->nama} - {$p->nik}"])->all();
-                            })
+                        TextInput::make('nama_penjualan')
+                            ->label('Nama Penjualan')
+                            ->required(),
+                        DatePicker::make('tanggal_penjualan')
+                            ->required()
+                            ->default(now())
+                            ->label('Tanggal Penjualan')
+                            ->displayFormat('d/m/Y')
+                            ->native(false),
+                        Select::make('sales_id')
+                            ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                            ->label('Sales')
+                            ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
+                            ->placeholder('Pilih sales')
                             ->searchable()
-                            ->createOptionForm(self::getPeroranganForm())
-                            ->createOptionUsing(fn(array $data): string => Perorangan::create($data)->id),
-                    ])
-                    ->minItems(1)
-                    ->distinct()
-                    ->maxItems(fn(Get $get): ?int => $get('customer_flow_type') === 'corporate' ? null : 1)
-                    ->addable(fn(Get $get): bool => $get('customer_flow_type') === 'corporate')
-                    ->addActionLabel('Tambah PIC')
-                    ->columnSpanFull()
-                    ->visible(fn(Get $get) => filled($get('customer_flow_type')))
-                    ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                        $ids = array_map(fn($item) => $item['perorangan_id'], $state);
-                        $peran = $record->corporate_id ? $record->corporate->nama : 'Pribadi';
-                        
-                        // Sync dengan project dan simpan peran
-                        $syncData = [];
-                        foreach ($ids as $id) {
-                            $syncData[$id] = ['peran' => $peran];
-                        }
-                        $record->perorangan()->sync($syncData);
+                            ->preload()
+                            ->createOptionForm(self::getSalesForm()),
 
-                        if ($record->corporate_id) {
-                            $corporate = $record->corporate;
-                            foreach ($ids as $peroranganId) {
-                                if (!$corporate->perorangan()->wherePivot('perorangan_id', $peroranganId)->exists()) {
-                                    $corporate->perorangan()->attach($peroranganId, ['user_id' => auth()->id()]);
-                                }
-                            }
-                        }
-                    }),
-                Select::make('sales_id')
-                    ->label('Sales')
-                    ->options(function () {
-                        return Sales::query()
-                            ->select('id', 'nama', 'nik')
-                            ->get()
-                            ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                    })->searchable()
-                    ->required()
-                    ->preload()
-                    ->columnSpanFull()
-                    ->createOptionForm(self::getSalesForm()),
-
-                Textarea::make('catatan'),
-                Hidden::make('user_id')
-                    ->default(auth()->id()),
+                        Textarea::make('catatan'),
+                        Hidden::make('user_id')
+                            ->default(auth()->id()),
+                    ])->columns(2),
+                Section::make('Informasi Customer')
+                    ->schema(self::getCustomerForm()),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
@@ -162,20 +129,24 @@ class PenjualanResource extends Resource
                     default => 'info',
                 }),
                 TextColumn::make('total_items')
-                    ->label('Total Item')
-                    ->state(function (\App\Models\Penjualan $record): string {
-                        return 'Rp ' . number_format($record->detailPenjualan->sum('harga'), 0, ',', '.');
-                    }),
+                    ->label('Total Item'),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -184,7 +155,15 @@ class PenjualanResource extends Resource
     {
         return [
             RelationManagers\DetailPenjualanRelationManager::class,
+            RelationManagers\StatusPembayaranRelationManager::class,
+
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 
     public static function getPages(): array
@@ -193,6 +172,15 @@ class PenjualanResource extends Resource
             'index' => Pages\ListPenjualans::route('/'),
             'create' => Pages\CreatePenjualan::route('/create'),
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
+            'view' => Pages\ViewPenjualan::route('/{record}'),
+        ];
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }

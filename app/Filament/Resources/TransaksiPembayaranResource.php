@@ -14,29 +14,42 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Pages\Actions;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\TransaksiPembayaranResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\TransaksiPembayaranResource\Pages\ListTransaksiPembayarans;
+use App\Filament\Resources\TransaksiPembayaranResource\Pages\CreateTransaksiPembayaran;
 
 class TransaksiPembayaranResource extends Resource
 {
     protected static ?string $model = TransaksiPembayaran::class;
 
     // protected static bool $shouldRegisterNavigation = false;
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $navigationLabel = 'Semua Pengeluaran';
-    protected static ?string $title = 'Semua Pengeluaran';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-up-on-square-stack';
+    protected static ?string $navigationLabel = 'Pengeluaran';
+    protected static ?string $title = 'Pengeluaran';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Keuangan';
+    protected static ?string $pluralModelLabel = 'Pengeluaran';
 
     public static function form(Form $form): Form
     {
+        $uuid = request()->segment(2);
         return $form
             ->schema([
                 // Forms\Components\Select::make('pengajuan_dana_id')
@@ -62,10 +75,20 @@ class TransaksiPembayaranResource extends Resource
                     ->native(false),
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
+                    ->image()
+                    ->maxSize(1024)
+                    ->required()
+                    ->disk('public')
                     ->directory('bukti-pembayaran')
-                    ->image(),
+                    ->columnSpanFull(),
+                TextInput::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxlength(500)
+                    ->nullable(),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
+                Hidden::make('company_id')
+                    ->default($uuid),
             ]);
     }
 
@@ -78,6 +101,7 @@ class TransaksiPembayaranResource extends Resource
                     ->formatStateUsing(fn($state) => match ($state) {
                         'App\\Models\\PengajuanDana' => 'Pengajuan Dana',
                         'App\\Models\\PembayaranPersonel' => 'Pembayaran Personel',
+                        'App\\Models\\Pemilik' => 'Pembayaran Investor',
                         default => 'Lainnya'
                     })
                     ->sortable(),
@@ -100,15 +124,22 @@ class TransaksiPembayaranResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                TrashedFilter::make(),
+
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -125,13 +156,26 @@ class TransaksiPembayaranResource extends Resource
         return [
             'index' => Pages\ListTransaksiPembayarans::route('/'),
             'create' => Pages\CreateTransaksiPembayaran::route('/create'),
-            // 'view' => Pages\ViewTransaksiPembayaran::route('/{record}'),
+            'view' => Pages\ViewTransaksiPembayaran::route('/{record}'),
             'edit' => Pages\EditTransaksiPembayaran::route('/{record}/edit'),
         ];
     }
 
-    public static function canAccess(): bool
+    public static function canCreate(): bool
     {
-        return auth()->user()->can('view-any Project'); // atau permission spesifik
+        return false;
+    }
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 }

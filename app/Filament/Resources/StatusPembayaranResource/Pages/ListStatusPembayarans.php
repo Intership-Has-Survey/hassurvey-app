@@ -15,6 +15,8 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 class ListStatusPembayarans extends ListRecords
 {
     protected static string $resource = StatusPembayaranResource::class;
+    protected static ?string $title = 'Pemasukan';
+
 
     public ?Project $project = null;
 

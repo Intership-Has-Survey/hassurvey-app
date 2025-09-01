@@ -34,9 +34,9 @@ class ProjectFactory extends Factory
 
             // Mengambil ID dari tabel relasi secara acak.
             // Pastikan seeder untuk Kategori, Sales, dan User sudah dijalankan.
-            'kategori_id' => Kategori::inRandomOrder()->first()->id ?? Kategori::factory(),
-            'sales_id' => Sales::inRandomOrder()->first()->id ?? Sales::factory(),
-            'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            'kategori_id' => Kategori::inRandomOrder()->first()->id ?? Kategori::factory()->create()->id,
+            'sales_id' => Sales::inRandomOrder()->first()->id ?? Sales::factory()->create()->id,
+            'user_id' => User::inRandomOrder()->first()->id ?? User::factory()->create()->id,
 
             'tanggal_informasi_masuk' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'sumber' => $this->faker->randomElement(['online', 'offline']),

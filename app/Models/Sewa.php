@@ -14,13 +14,21 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 
 class Sewa extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivity;
     protected $table = 'sewa';
     protected $guarded = [];
+
+    protected $casts = [
+        'tgl_mulai' => 'date',
+        'tgl_selesai' => 'date',
+        'is_locked' => 'boolean',
+    ];
 
     public function daftarAlat()
     {
@@ -35,6 +43,16 @@ class Sewa extends Model
         static::creating(function ($sewa) {
             if (!$sewa->user_id && Auth::check()) {
                 $sewa->user_id = Auth::id();
+            }
+        });
+
+        static::updated(function ($sewa) {
+            if ($sewa->is_locked) {
+                $sewa->daftarAlat()->each(function ($alat) use ($sewa) {
+                    $relationManager = app(\App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager::class);
+                    // Remove call to setOwnerRecord as method does not exist
+                    $relationManager->perhitunganFinal($alat, $sewa);
+                });
             }
         });
     }
@@ -71,15 +89,14 @@ class Sewa extends Model
         return $this->morphMany(StatusPembayaran::class, 'payable');
     }
 
-    protected $casts = [
-        'is_locked' => 'boolean',
-    ];
+
 
     protected function status(): Attribute
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if ($attributes['is_locked']) {
+                // Use null-safe access to prevent undefined array key errors
+                if (isset($attributes['is_locked']) && $attributes['is_locked']) {
                     return 'Selesai';
                 }
 
@@ -114,5 +131,46 @@ class Sewa extends Model
         }
 
         return true;
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function sales(): BelongsTo
+    {
+        return $this->belongsTo(Sales::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'sales_id',
+                'judul',
+                'tgl_mulai',
+                'tgl_selesai',
+                'rentang',
+                'provinsi',
+                'kota',
+                'kecamatan',
+                'desa',
+                'detail_alamat',
+                'harga_perkiraan',
+                'harga_real',
+                'harga_fix',
+                'status',
+                'needs_replacement',
+                'is_locked',
+                'created_at',
+                'updated_at',
+                'corporate_id',
+                'user_id',
+                'deleted_at',
+                'company_id',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('Sewa');
     }
 }

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB; // <-- Jangan lupa import DB facade
 use App\Models\User;
+use App\Models\Company;
 
 class PeroranganFactory extends Factory
 {
@@ -25,6 +26,11 @@ class PeroranganFactory extends Factory
         $cityCode = substr($villageCode, 0, 5);
         $provinceCode = substr($villageCode, 0, 2);
 
+        $company = Company::inRandomOrder()->first();
+        if (!$company) {
+            throw new \Exception('No companies found in the database. Please run CompanySeeder first.');
+        }
+
         return [
             'nama' => $this->faker->name(),
             'gender' => $this->faker->randomElement(['Pria', 'Wanita']),
@@ -39,7 +45,8 @@ class PeroranganFactory extends Factory
             'detail_alamat' => 'Jl. ' . $this->faker->streetName() . ' No. ' . $this->faker->buildingNumber(),
 
             'nik' => $this->faker->unique()->numerify('################'),
-            'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            'user_id' => User::inRandomOrder()->first()->id ?? User::factory()->create()->id,
+            'company_id' => $company->id,
             'created_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
             'updated_at' => $this->faker->dateTimeBetween('2023-01-01', '2025-12-31'),
         ];

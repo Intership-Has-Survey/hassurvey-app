@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kalibrasi extends Model
 {
     //
-    use HasUuids;
+    use HasUuids, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -59,5 +62,34 @@ class Kalibrasi extends Model
     public function pengajuanDanas()
     {
         return $this->hasMany(PengajuanDana::class);
+    }
+
+    public function statusPembayaran()
+    {
+        return $this->morphMany(StatusPembayaran::class, 'payable');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'id',
+                'nama',
+                'corporate_id',
+                'perorangan_id',
+                'user_id',
+                'harga',
+                'status',
+                'created_at',
+                'updated_at',
+                'company_id',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('Kalibrasi');
     }
 }

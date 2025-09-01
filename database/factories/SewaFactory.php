@@ -55,6 +55,9 @@ class SewaFactory extends Factory
 
             // Mengambil user_id secara acak
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            
+            // Add missing is_locked field
+            'is_locked' => $this->faker->boolean(20), // 20% chance of being locked
         ];
     }
 }

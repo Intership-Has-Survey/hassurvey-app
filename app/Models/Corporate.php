@@ -49,4 +49,9 @@ class Corporate extends Model
     {
         return $this->HasMany(Penjualan::class, 'corporate_id');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

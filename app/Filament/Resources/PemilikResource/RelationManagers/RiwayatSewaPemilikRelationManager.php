@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Pages\Actions;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder; // <-- Tambahkan import ini
 use Illuminate\Database\Eloquent\Model;
@@ -49,20 +50,29 @@ class RiwayatSewaPemilikRelationManager extends RelationManager
                     ->date('d M Y')
                     ->placeholder('Belum Kembali'),
 
-                Tables\Columns\TextColumn::make('biaya_sewa_alat')
+                Tables\Columns\TextColumn::make('biaya_sewa_alat_final')
                     ->label('Pendapatan Kotor')
                     ->money('IDR')
                     ->placeholder('-'),
 
-                Tables\Columns\TextColumn::make('pendapataninv')
+                Tables\Columns\TextColumn::make('pendapataninv_final')
                     ->label('Pendapatan Investor/Pemilik')
                     ->money('IDR')
                     ->placeholder('-'),
 
-                
+
             ])
             ->headerActions([])
             ->actions([])
             ->bulkActions([]);
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
     }
 }

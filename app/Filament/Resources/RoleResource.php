@@ -27,6 +27,10 @@ use Illuminate\Database\Eloquent\Model;
 class RoleResource extends Resource
 {
 
+    public static function isTenantAware(): bool
+    {
+        return false; // 🚫 Matikan tenant-awareness
+    }
 
     protected static ?string $navigationLabel = 'Jabatan';
 
@@ -86,11 +90,7 @@ class RoleResource extends Resource
                                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.name'))
                                     ->required()
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                                        // If using teams and Tenancy, ensure uniqueness against current tenant
-                                        if (config('permission.teams', false) && Filament::hasTenancy()) {
-                                            // Check uniqueness against current user/team
-                                            $rule->where(config('permission.column_names.team_foreign_key', 'team_id'), Filament::getTenant()->id);
-                                        }
+                                        $rule->where('company_id', Filament::getTenant()->id);
                                         return $rule;
                                     }),
 
@@ -101,18 +101,18 @@ class RoleResource extends Resource
                                     ->visible(fn() => config('filament-spatie-roles-permissions.should_show_guard', true))
                                     ->required(),
 
-                                Select::make('permissions')
-                                    ->columnSpanFull()
-                                    ->multiple()
-                                    ->label(__('filament-spatie-roles-permissions::filament-spatie.field.permissions'))
-                                    ->relationship(
-                                        name: 'permissions',
-                                        modifyQueryUsing: fn(Builder $query) => $query->orderBy('name'),
-                                    )
-                                    ->visible(config('filament-spatie-roles-permissions.should_show_permissions_for_roles'))
-                                    ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} ({$record->guard_name})")
-                                    ->searchable(['name', 'guard_name']) // searchable on both name and guard_name
-                                    ->preload(config('filament-spatie-roles-permissions.preload_permissions')),
+                                // Select::make('permissions')
+                                //     ->columnSpanFull()
+                                //     ->multiple()
+                                //     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.permissions'))
+                                //     ->relationship(
+                                //         name: 'permissions',
+                                //         modifyQueryUsing: fn(Builder $query) => $query->orderBy('name'),
+                                //     )
+                                //     ->visible(config('filament-spatie-roles-permissions.should_show_permissions_for_roles'))
+                                //     ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} ({$record->guard_name})")
+                                //     ->searchable(['name', 'guard_name']) // searchable on both name and guard_name
+                                //     ->preload(config('filament-spatie-roles-permissions.preload_permissions')),
 
                                 Select::make(config('permission.column_names.team_foreign_key', 'team_id'))
                                     ->label(__('filament-spatie-roles-permissions::filament-spatie.field.team'))

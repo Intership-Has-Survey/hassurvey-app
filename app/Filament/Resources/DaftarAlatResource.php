@@ -3,19 +3,40 @@
 namespace App\Filament\Resources;
 
 use Filament\Tables;
+use App\Models\Pemilik;
 use Filament\Forms\Form;
 use App\Models\DaftarAlat;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Pages\Actions;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\DaftarAlatResource\Pages;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\DaftarAlatResource\Pages\EditDaftarAlat;
+use App\Filament\Resources\DaftarAlatResource\Pages\ListDaftarAlats;
+use App\Filament\Resources\DaftarAlatResource\Pages\CreateDaftarAlat;
 
 
 class DaftarAlatResource extends Resource
@@ -37,6 +58,10 @@ class DaftarAlatResource extends Resource
                     ->relationship('jenisAlat', 'nama')
                     ->searchable()
                     ->preload()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Jenis alat wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         TextInput::make('nama')
                             ->label('Nama Jenis Alat')
@@ -47,7 +72,10 @@ class DaftarAlatResource extends Resource
                     ]),
                 TextInput::make('nomor_seri')
                     ->required()
-                    ->unique()
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                        $rule->where('company_id', Filament::getTenant()->id);
+                        return $rule;
+                    })
                     ->maxLength(255)
                     ->validationMessages([
                         'unique' => 'Nomor seri ini sudah terdaftar, silakan gunakan yang lain.',
@@ -57,6 +85,9 @@ class DaftarAlatResource extends Resource
                     ->relationship('merk', 'nama')
                     ->searchable()
                     ->preload()
+                    ->validationMessages([
+                        'required' => 'Merk wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         TextInput::make('nama')
                             ->label('Nama Merk')
@@ -67,6 +98,16 @@ class DaftarAlatResource extends Resource
                     ->relationship('pemilik', 'nama')
                     ->searchable()
                     ->preload()
+                    ->options(function () {
+                        return Pemilik::query()
+                            ->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey())
+                            ->select('id', 'nama', 'nik')
+                            ->get()
+                            ->mapWithKeys(fn($pemilik) => [$pemilik->id => "{$pemilik->nama} - {$pemilik->nik}"]);
+                    })
+                    ->validationMessages([
+                        'required' => 'Pemilik wajib dipilih.',
+                    ])
                     ->createOptionForm([
                         Section::make('Informasi Pribadi')
                             ->schema([
@@ -85,7 +126,10 @@ class DaftarAlatResource extends Resource
                                 TextInput::make('NIK')
                                     ->label('Nomor Induk Kependudukan (NIK)')
                                     ->string()
-                                    ->unique()
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                        $rule->where('company_id', Filament::getTenant()->id);
+                                        return $rule;
+                                    })
                                     ->validationMessages([
                                         'unique' => 'NIK ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -94,7 +138,10 @@ class DaftarAlatResource extends Resource
                                     ->required(),
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->unique()
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                        $rule->where('company_id', Filament::getTenant()->id);
+                                        return $rule;
+                                    })
                                     ->validationMessages([
                                         'unique' => 'Email ini sudah terdaftar, silakan gunakan yang lain.',
                                     ])
@@ -120,9 +167,12 @@ class DaftarAlatResource extends Resource
                     ->required()
                     ->options([
                         true => 'Baik',
-                        false => 'Dipakai',
+                        false => 'Bermasalah',
                     ])
                     ->visibleOn('edit'),
+
+                Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 
@@ -171,11 +221,9 @@ class DaftarAlatResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('jenis_alat')
-                    ->options([
-                        'GPS' => 'GPS',
-                        'Drone' => 'Drone',
-                        'OTS' => 'OTS',
-                    ]),
+                    ->relationship('jenisAlat', 'nama')
+                    ->searchable()
+                    ->preload(),
                 TernaryFilter::make('kondisi')
                     ->label('Kondisi')
                     ->placeholder('Semua Kondisi')
@@ -187,19 +235,41 @@ class DaftarAlatResource extends Resource
                     ->placeholder('Semua Status')
                     ->trueLabel('Tersedia')
                     ->falseLabel('Tidak Tersedia'),
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                // EditAction::make(),
+                // DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+                ActivityLogTimelineTableAction::make('Log'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Alat Terdaftar')
             ->emptyStateDescription('Silahkan buat data alat baru untuk memulai.')
             ->defaultSort('created_at', 'desc');
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withTrashed();
     }
 
     public static function getRelations(): array
@@ -215,6 +285,7 @@ class DaftarAlatResource extends Resource
             'index' => Pages\ListDaftarAlats::route('/'),
             'create' => Pages\CreateDaftarAlat::route('/create'),
             'edit' => Pages\EditDaftarAlat::route('/{record}/edit'),
+            'view' => Pages\ViewDaftarAlat::route('/{record}'),
         ];
     }
 

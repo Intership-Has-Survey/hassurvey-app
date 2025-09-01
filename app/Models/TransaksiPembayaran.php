@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class TransaksiPembayaran extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivity;
     protected $guarded = [];
 
     // public function pengajuanDana(): BelongsTo
@@ -22,6 +25,11 @@ class TransaksiPembayaran extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function payable()
     {
         return $this->morphTo();
@@ -30,5 +38,13 @@ class TransaksiPembayaran extends Model
     protected function getTableRecordKey($record): string
     {
         return $record->id ?? $record->payable_id ?? uniqid();
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('Pengeluaran');
     }
 }

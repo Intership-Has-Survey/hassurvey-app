@@ -3,20 +3,30 @@
 namespace App\Models;
 
 use App\Models\DetailPenjualan;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Penjualan extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, LogsActivity, SoftDeletes;
 
     protected $table = 'penjualans';
 
     protected $guarded = [];
+
+    protected $appends = ['total_items'];
+
+    public function getTotalItemsAttribute(): string
+    {
+        return 'Rp ' . number_format($this->detailPenjualan->sum('harga'), 0, ',', '.');
+    }
 
     protected $casts = [
         'tanggal_penjualan' => 'date',
@@ -49,13 +59,36 @@ class Penjualan extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function statusPembayaran(): BelongsTo
+    public function statusPembayaran()
     {
-        return $this->belongsTo(StatusPembayaran::class);
+        return $this->morphMany(StatusPembayaran::class, 'payable');
     }
 
     public function detailPenjualan(): HasMany
     {
         return $this->hasMany(DetailPenjualan::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'id',
+                'nama_penjualan',
+                'tanggal_penjualan',
+                'total_items',
+                'catatan',
+                'status_pembayaran',
+                'user_id',
+                'sales_id',
+                'corporate_id',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('Penjualan');
     }
 }
