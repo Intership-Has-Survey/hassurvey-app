@@ -66,8 +66,6 @@ class CreateVisiMati extends CreateRecord
                                 TextInput::make('operasional.nama')
                                     ->label('Nama Operasional')
                                     ->required(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
-                                Hidden::make('company_id')
-                                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
                             ])
                             ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
 
@@ -83,6 +81,8 @@ class CreateVisiMati extends CreateRecord
         $visiMati = static::getModel()::create([
             'nama' => $data['nama'],
             'deskripsi' => $data['deskripsi'],
+            'user_id' => auth()->id(),
+            'company_id' => \Filament\Facades\Filament::getTenant()?->getKey() ?? auth()->user()->company_id,
         ]);
 
         // Check if 'tabungan' was selected and create the related record

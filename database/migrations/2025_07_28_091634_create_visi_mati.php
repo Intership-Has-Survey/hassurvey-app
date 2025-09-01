@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('visi_mati', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->longText('deskripsi');
+            $table->longText('deskripsi')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
             $table->softDeletes();
             $table->timestamps();
