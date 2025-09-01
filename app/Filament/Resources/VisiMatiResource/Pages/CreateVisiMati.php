@@ -45,29 +45,32 @@ class CreateVisiMati extends CreateRecord
                             ->schema([
                                 TextInput::make('tabungan.nama')
                                     ->label('Nama Tabungan')
-                                    ->required(fn (Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                                    ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
                                 TextInput::make('tabungan.target_nominal')
                                     ->label('Target Nominal')
                                     ->numeric()
-                                    ->required(fn (Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                                    ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
                                 Select::make('tabungan.target_tipe')
                                     ->label('Target Tipe')
                                     ->options([
                                         'orang' => 'Orang',
                                         'bangunan' => 'Bangunan',
                                     ])
-                                    ->required(fn (Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                                    ->required(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
                             ])
-                            ->visible(fn (Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
+                            ->visible(fn(Get $get): bool => in_array('tabungan', $get('sub_kategori') ?? [])),
 
                         Section::make('Detail Operasional')
                             ->schema([
                                 TextInput::make('operasional.nama')
                                     ->label('Nama Operasional')
-                                    ->required(fn (Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+                                    ->required(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
                             ])
-                            ->visible(fn (Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+                            ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+
                     ]),
+                \Filament\Forms\Components\Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ])->columnSpanFull(),
         ]);
     }

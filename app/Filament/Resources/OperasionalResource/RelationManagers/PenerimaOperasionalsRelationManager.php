@@ -23,6 +23,8 @@ class PenerimaOperasionalsRelationManager extends RelationManager
                     ->nullable(),
                 Forms\Components\Textarea::make('keterangan')
                     ->nullable(),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 

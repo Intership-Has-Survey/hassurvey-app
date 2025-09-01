@@ -23,7 +23,10 @@ class PemasukansRelationManager extends RelationManager
                     ->numeric(),
                 Forms\Components\TextInput::make('deskripsi')
                     ->maxLength(255),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
+
     }
 
     public function table(Table $table): Table

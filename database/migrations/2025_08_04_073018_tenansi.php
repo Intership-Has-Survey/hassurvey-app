@@ -64,6 +64,9 @@ return new class extends Migration {
         Schema::table('riwayat_sewa', function (Blueprint $table) {
             $table->ForeignUuid('company_id');
         });
+        Schema::table('visi_mati', function (Blueprint $table) {
+            $table->ForeignUuid('company_id');
+        });
 
 
         // $tableNames = config('permission.table_names', [

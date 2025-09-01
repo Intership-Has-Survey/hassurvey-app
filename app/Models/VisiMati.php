@@ -37,6 +37,12 @@ class VisiMati extends Model
         return $this->hasOne(Operasional::class);
     }
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+
     public function pemasukans()
     {
         return $this->hasManyThrough(

@@ -65,6 +65,11 @@ class Company extends Model
         return $this->hasMany(Project::class);
     }
 
+    public function visiMati()
+    {
+        return $this->hasMany(VisiMati::class);
+    }
+
     public function sewas()
     {
         return $this->hasMany(Sewa::class);

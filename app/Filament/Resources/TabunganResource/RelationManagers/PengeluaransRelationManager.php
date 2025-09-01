@@ -4,6 +4,7 @@ namespace App\Filament\Resources\TabunganResource\RelationManagers;
 
 use App\Models\Bangunan;
 use App\Models\Orang;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -28,7 +29,7 @@ class PengeluaransRelationManager extends RelationManager
                     ->nullable(),
 
                 Forms\Components\Select::make('pengeluaranable_id')
-                    ->label(fn () => $this->ownerRecord->target_tipe === 'orang' ? 'Pilih Orang' : 'Pilih Bangunan')
+                    ->label(fn() => $this->ownerRecord->target_tipe === 'orang' ? 'Pilih Orang' : 'Pilih Bangunan')
                     ->options(function () {
                         if ($this->ownerRecord->target_tipe === 'orang') {
                             return Orang::all()->pluck('nama', 'id');
@@ -43,6 +44,8 @@ class PengeluaransRelationManager extends RelationManager
                             $component->state($this->getRecord()->pengeluaranable_id);
                         }
                     }),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 

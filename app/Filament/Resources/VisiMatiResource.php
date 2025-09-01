@@ -9,6 +9,7 @@ use App\Filament\Resources\VisiMatiResource\RelationManagers\PenerimaOperasional
 use App\Filament\Resources\VisiMatiResource\RelationManagers\PengeluaransRelationManager;
 use App\Models\VisiMati;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -73,7 +74,10 @@ class VisiMatiResource extends Resource
                         ->required(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
                 ])
                 ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+            Hidden::make('company_id')
+                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
         ]);
+
     }
 
     public static function getRelationManagers(): array

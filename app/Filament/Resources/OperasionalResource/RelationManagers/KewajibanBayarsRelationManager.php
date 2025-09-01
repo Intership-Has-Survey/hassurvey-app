@@ -32,6 +32,8 @@ class KewajibanBayarsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('bukti')
                     ->nullable()
                     ->maxLength(255),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
     }
 
