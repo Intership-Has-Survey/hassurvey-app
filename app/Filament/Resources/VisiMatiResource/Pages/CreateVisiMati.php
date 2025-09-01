@@ -8,6 +8,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -65,12 +66,13 @@ class CreateVisiMati extends CreateRecord
                                 TextInput::make('operasional.nama')
                                     ->label('Nama Operasional')
                                     ->required(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
+                                Hidden::make('company_id')
+                                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
                             ])
                             ->visible(fn(Get $get): bool => in_array('operasional', $get('sub_kategori') ?? [])),
 
                     ]),
-                \Filament\Forms\Components\Hidden::make('company_id')
-                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
+
             ])->columnSpanFull(),
         ]);
     }
