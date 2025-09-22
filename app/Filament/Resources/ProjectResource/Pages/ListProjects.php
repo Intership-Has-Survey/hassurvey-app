@@ -9,6 +9,7 @@ use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
+use App\Filament\Resources\ProjectResource\Widgets\FinanceStatusChart;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 
@@ -41,6 +42,7 @@ class ListProjects extends ListRecords
             ProjectsFilter::make(),
             ProjectStatsOverview::make(['filters' => $this->filters]),
             ProjectStatusChart::make(),
+            FinanceStatusChart::make(),
         ];
     }
 
