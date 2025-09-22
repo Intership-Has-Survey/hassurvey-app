@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\Sales;
 use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -22,6 +23,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KalibrasiResource\Pages;
+use Filament\Forms\Components\Grid;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\KalibrasiResource\RelationManagers\PengajuanDanasRelationManager;
@@ -55,6 +57,27 @@ class KalibrasiResource extends Resource
                             ->prefix('Rp ')
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(','),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('sales_id')
+                                    ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                                    ->label('Sales')
+                                    ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
+                                    ->placeholder('Pilih sales')
+                                    ->searchable()
+                                    ->preload()
+                                    ->createOptionForm(self::getSalesForm()),
+                                Select::make('sumber')
+                                    ->options([
+                                        'Online' => 'Online',
+                                        'Offline' => 'Offline'
+                                    ])
+                                    ->required()
+                                    ->native(false)
+                                    ->validationMessages([
+                                        'required' => 'Sumber tidak boleh kosong',
+                                    ]),
+                            ]),
                         Select::make('status')
                             ->options([
                                 'dalam_proses' => 'Dalam proses',

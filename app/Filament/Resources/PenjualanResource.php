@@ -9,6 +9,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\Corporate;
+use Filament\Forms\Components\Grid;
 use App\Models\JenisAlat;
 use App\Models\Penjualan;
 use App\Models\DaftarAlat;
@@ -77,14 +78,27 @@ class PenjualanResource extends Resource
                             ->label('Tanggal Penjualan')
                             ->displayFormat('d/m/Y')
                             ->native(false),
-                        Select::make('sales_id')
-                            ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
-                            ->label('Sales')
-                            ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
-                            ->placeholder('Pilih sales')
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm(self::getSalesForm()),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('sales_id')
+                                    ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                                    ->label('Sales')
+                                    ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
+                                    ->placeholder('Pilih sales')
+                                    ->searchable()
+                                    ->preload()
+                                    ->createOptionForm(self::getSalesForm()),
+                                Select::make('sumber')
+                                    ->options([
+                                        'Online' => 'Online',
+                                        'Offline' => 'Offline'
+                                    ])
+                                    ->required()
+                                    ->native(false)
+                                    ->validationMessages([
+                                        'required' => 'Sumber tidak boleh kosong',
+                                    ]),
+                            ]),
 
                         Textarea::make('catatan'),
                         Hidden::make('user_id')

@@ -132,27 +132,27 @@ class SewaResource extends Resource
                             ->placeholder('Masukkan Judul Penyewaan')
                             ->label('Judul Penyewaan')
                             ->columnSpanFull(),
-                        // Select::make('sales_id')
-                        // ->relationship('sales', 'nama')
-                        // ->label('Sales')
-                        // ->options(function () {
-                        //     return Sales::query()
-                        //         ->select('id', 'nama', 'nik')
-                        //         ->get()
-                        //         ->mapWithKeys(fn($sales) => [$sales->id => "{$sales->nama} - {$sales->nik}"]);
-                        // })
-                        // ->placeholder('Pilih sales')
-                        // ->searchable()
-                        // ->preload()
-                        // ->createOptionForm(self::getSalesForm()),
-                        Select::make('sales_id')
-                            ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
-                            ->label('Sales')
-                            ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
-                            ->placeholder('Pilih sales')
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm(self::getSalesForm()),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('sales_id')
+                                    ->relationship('sales', 'nama', fn($query) => $query->where('company_id', \Filament\Facades\Filament::getTenant()?->getKey()))
+                                    ->label('Sales')
+                                    ->getOptionLabelFromRecordUsing(fn(Sales $record) => "{$record->nama} - {$record->nik}")
+                                    ->placeholder('Pilih sales')
+                                    ->searchable()
+                                    ->preload()
+                                    ->createOptionForm(self::getSalesForm()),
+                                Select::make('sumber')
+                                    ->options([
+                                        'Online' => 'Online',
+                                        'Offline' => 'Offline'
+                                    ])
+                                    ->required()
+                                    ->native(false)
+                                    ->validationMessages([
+                                        'required' => 'Sumber tidak boleh kosong',
+                                    ]),
+                            ]),
                         Grid::make(2)
                             ->schema([
                                 DatePicker::make('tgl_mulai')
@@ -263,8 +263,7 @@ class SewaResource extends Resource
                                 // Hanya tampil jika harga fix sudah diisi DAN sewa belum terkunci
                                 return filled($get('harga_fix')) && !$record?->is_locked && $record->daftarAlat()->exists() && !$record->daftarAlat()
                                     ->whereNull('tgl_masuk')
-                                    ->exists();
-                                ;
+                                    ->exists();;
                             })
                     ])->columns(1),
             ])
@@ -394,8 +393,8 @@ class SewaResource extends Resource
                 $query->whereDoesntHave('projects')
                     // Atau sewa dari project yang sudah memiliki alat
                     ->orWhereHas('projects', function (Builder $projectQuery) {
-                    $projectQuery->whereHas('daftarAlat');
-                });
+                        $projectQuery->whereHas('daftarAlat');
+                    });
             });
     }
     protected function getActions(): array

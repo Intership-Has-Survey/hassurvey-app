@@ -4,6 +4,9 @@ namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Facades\DB;
 use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
@@ -17,6 +20,18 @@ class DetailPengajuansRelationManager extends RelationManager
 {
     protected static string $relationship = 'detailPengajuans';
     protected static ?string $title = 'Rincian Pengajuan';
+
+    protected static function parseMoney($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        // ambil hanya digit (buang Rp, spasi, titik, koma, dll)
+        $clean = preg_replace('/[^\d]/', '', (string) $value);
+
+        return (int) ($clean ?: 0);
+    }
 
     public function form(Form $form): Form
     {
@@ -39,9 +54,12 @@ class DetailPengajuansRelationManager extends RelationManager
                         'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
                         'min_value' => 'Jumlah tidak boleh kurang dari 0',
                     ])
-                    ->afterStateUpdated(function (callable $set, $get) {
-                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    ->afterStateUpdated(function (Set $set, Get $get) {
+                        $qty   = (int) $get('qty');
+                        $harga = self::parseMoney($get('harga_satuan')); // harga sudah bersih
+                        $set('total', $qty * $harga);
                     }),
+
 
                 Forms\Components\Textinput::make('satuan')
                     ->required()
@@ -51,25 +69,32 @@ class DetailPengajuansRelationManager extends RelationManager
                 Forms\Components\TextInput::make('harga_satuan')
                     ->label('Harga Satuan')
                     ->numeric()
-                    ->maxLength(9)
+                    ->prefix('Rp ')
+                    ->mask(RawJs::make('$money($input)'))
+                    ->stripCharacters(['.', ','])
                     ->minValue(0)
-                    ->reactive()
                     ->required()
                     ->validationMessages([
                         'required' => 'Harga satuan wajib diisi',
                         'max_digits' => 'Tidak boleh lebih dari 9 digit',
                         'min_value' => 'Tidak boleh kurang dari 0',
                     ])
-                    ->afterStateUpdated(function (callable $set, $get) {
-                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    ->afterStateUpdated(function (Set $set, Get $get) {
+                        $qty   = (int) $get('qty');
+                        $harga = self::parseMoney($get('harga_satuan')); // harga sudah bersih
+                        $set('total', $qty * $harga);
                     }),
+
+                // ->afterStateUpdated(function (callable $set, $get) {
+                //     $set('total', (float) $get('qty') * (float) $get('harga_satuan'));
+                // })
 
                 Forms\Components\Hidden::make('total')
                     ->dehydrated(true)
                     ->reactive()
-                    ->default(fn($get) => (int) $get('qty') * (int) $get('harga_satuan'))
-                    ->afterStateHydrated(function (callable $set, $get) {
-                        $set('total', (int) $get('qty') * (int) $get('harga_satuan'));
+                    ->default(fn(Get $get) => (int) $get('qty') * self::parseMoney($get('harga_satuan')))
+                    ->afterStateHydrated(function (Set $set, Get $get) {
+                        $set('total', (int) $get('qty') * self::parseMoney($get('harga_satuan')));
                     }),
 
             ])->columns(4);

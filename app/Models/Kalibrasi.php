@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Traits\LogsActivity;
+
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -72,6 +74,11 @@ class Kalibrasi extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function sales(): BelongsTo
+    {
+        return $this->belongsTo(Sales::class);
     }
 
     public function getActivitylogOptions(): LogOptions

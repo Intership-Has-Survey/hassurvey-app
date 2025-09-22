@@ -19,6 +19,19 @@ use Illuminate\Validation\Rules\Unique;
 
 trait GlobalForms
 {
+
+    protected static function parseMoney($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        // ambil hanya digit (buang Rp, spasi, titik, koma, dll)
+        $clean = preg_replace('/[^\d]/', '', (string) $value);
+
+        return (int) ($clean ?: 0);
+    }
+
     private static function getCorporateForm(): array
     {
         return [
@@ -408,7 +421,12 @@ trait GlobalForms
                             'required' => 'Jumlah wajib diisi',
                             'max_digits' => 'Jumlah tidak boleh lebih dari 12 digit',
                             'min_value' => 'Jumlah tidak boleh kurang dari 0',
-                        ]),
+                        ])
+                        ->afterStateUpdated(function (Set $set, Get $get) {
+                            $qty   = (int) $get('qty');
+                            $harga = self::parseMoney($get('harga_satuan')); // harga sudah bersih
+                            $set('total', $qty * $harga);
+                        }),
 
                     TextInput::make('satuan')
                         ->placeholder('contoh : liter/kilogram/dll,...')
@@ -421,14 +439,27 @@ trait GlobalForms
                         ->prefix('Rp ')
                         ->mask(RawJs::make('$money($input)'))
                         ->stripCharacters(',')
+
                         ->required()
                         ->minValue(0)
-                        ->maxLength(9)
                         ->validationMessages([
                             'required' => 'Harga Satuan wajib diisi',
                             'max_digits' => 'Tidak boleh lebih dari 9 digit',
                             'min_value' => 'Tidak boleh kurang dari Rp 0'
-                        ]),
+                        ])
+                        ->afterStateUpdated(function (Set $set, Get $get) {
+                            $qty   = (int) $get('qty');
+                            $harga = self::parseMoney($get('harga_satuan')); // harga sudah bersih
+                            $set('total', $qty * $harga);
+                        }),
+
+                    Hidden::make('total')
+                        ->dehydrated(true)
+                        ->reactive()
+                        ->default(fn(Get $get) => (int) $get('qty') * self::parseMoney($get('harga_satuan')))
+                        ->afterStateHydrated(function (Set $set, Get $get) {
+                            $set('total', (int) $get('qty') * self::parseMoney($get('harga_satuan')));
+                        }),
 
                 ])
                 ->defaultItems(1)
