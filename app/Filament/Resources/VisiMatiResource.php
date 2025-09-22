@@ -44,8 +44,7 @@ class VisiMatiResource extends Resource
                             'operasional' => 'Operasional',
                         ])
                         ->minItems(1)
-                        ->live()
-                        ->disabledOn('edit'),
+                        ->live(),
                 ]),
 
             Section::make('Detail Tabungan')

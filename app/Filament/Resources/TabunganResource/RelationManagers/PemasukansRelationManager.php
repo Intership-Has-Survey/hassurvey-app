@@ -29,15 +29,6 @@ class PemasukansRelationManager extends RelationManager
 
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        // Cari tabungan pertama milik visi_mati
-        $tabungan = $this->ownerRecord->tabungans()->first();
-        $data['tabungan_id'] = $tabungan?->id;
-
-        return $data;
-    }
-
     public function table(Table $table): Table
     {
         return $table

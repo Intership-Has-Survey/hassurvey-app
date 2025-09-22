@@ -75,8 +75,7 @@ class EditVisiMati extends EditRecord
             }
         }
 
-        // Remove sub_kategori, tabungan, and operasional from main data to prevent mass assignment issues
-        unset($data['sub_kategori']);
+        // Remove tabungan, and operasional from main data to prevent mass assignment issues
         unset($data['tabungan']);
         unset($data['operasional']);
 

@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('nama');
             $table->longText('deskripsi')->nullable();
             $table->foreignUuid('user_id')->constrained('users');
+            $table->json('sub_kategori')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

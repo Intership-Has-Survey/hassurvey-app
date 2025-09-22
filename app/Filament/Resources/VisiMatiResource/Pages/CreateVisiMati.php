@@ -81,6 +81,7 @@ class CreateVisiMati extends CreateRecord
         $visiMati = static::getModel()::create([
             'nama' => $data['nama'],
             'deskripsi' => $data['deskripsi'],
+            'sub_kategori' => $data['sub_kategori'],
             'user_id' => auth()->id(),
             'company_id' => \Filament\Facades\Filament::getTenant()?->getKey() ?? auth()->user()->company_id,
         ]);

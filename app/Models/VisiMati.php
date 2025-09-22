@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VisiMati extends Model
@@ -20,14 +19,8 @@ class VisiMati extends Model
         'nama',
         'deskripsi',
         'user_id',
-        'sub_kategori',
-        'tabungan',
-        'operasional',
-        'kewajiban_bayars',
-        'penerima_operasionals',
-        'pemasukans',
-        'pengeluarans',
         'company_id',
+        'sub_kategori',
     ];
 
     protected $casts = [
@@ -111,27 +104,5 @@ class VisiMati extends Model
             }
         });
 
-        static::created(function (VisiMati $visimati) {
-            DB::transaction(function () use ($visimati) {
-                if (in_array('tabungan', $visimati->sub_kategori ?? [])) {
-                    if (!$visimati->tabungan) {
-                        $tabungan = new \App\Models\Tabungan();
-                        $tabungan->nama = 'Tabungan untuk VisiMati: ' . $visimati->nama;
-                        $tabungan->target_nominal = 0;
-                        $tabungan->target_tipe = 'orang';
-                        $tabungan->visimati_id = $visimati->id;
-                        $tabungan->save();
-                    }
-                }
-                if (in_array('operasional', $visimati->sub_kategori ?? [])) {
-                    if (!$visimati->operasional) {
-                        $operasional = new \App\Models\Operasional();
-                        $operasional->nama = 'Operasional untuk VisiMati: ' . $visimati->nama;
-                        $operasional->visimati_id = $visimati->id;
-                        $operasional->save();
-                    }
-                }
-            });
-        });
     }
 }
