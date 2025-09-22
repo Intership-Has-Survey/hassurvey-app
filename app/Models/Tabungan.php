@@ -19,11 +19,20 @@ class Tabungan extends Model
         'target_nominal',
         'target_tipe',
         'visi_mati_id',
+        'pemasukans',
+        'pengeluarans',
+        'company_id',
+        'id',
     ];
 
     public function visiMati(): BelongsTo
     {
         return $this->belongsTo(VisiMati::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function pemasukans(): HasMany
@@ -35,4 +44,14 @@ class Tabungan extends Model
     {
         return $this->hasMany(Pengeluaran::class);
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (blank($model->company_id)) {
+                $model->company_id = \Filament\Facades\Filament::getTenant()?->getKey();
+            }
+        });
+    }
+
 }

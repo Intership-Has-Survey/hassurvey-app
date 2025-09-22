@@ -85,16 +85,23 @@ class EditVisiMati extends EditRecord
 
     public function getRelationManagers(): array
     {
-        return [
-            RelationGroup::make('Tabungan', [
+        $relations = [];
+
+        if ($this->record->tabungan) {
+            $relations[] = RelationGroup::make('Tabungan', [
                 PemasukansRelationManager::class,
                 PengeluaransRelationManager::class,
-            ]),
-            RelationGroup::make('Operasional', [
+            ]);
+        }
+
+        if ($this->record->operasional) {
+            $relations[] = RelationGroup::make('Operasional', [
                 KewajibanBayarsRelationManager::class,
                 PenerimaOperasionalsRelationManager::class,
-            ]),
-        ];
+            ]);
+        }
+
+        return $relations;
     }
 
     // protected function getFooterWidgets(): array

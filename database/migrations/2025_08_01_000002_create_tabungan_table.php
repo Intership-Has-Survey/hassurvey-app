@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->foreignUuid('visi_mati_id')->constrained('visi_mati')->onDelete('cascade');
+            $table->foreignUuid('company_id')->constrained('companies')->onDelete('cascade');
         });
     }
 

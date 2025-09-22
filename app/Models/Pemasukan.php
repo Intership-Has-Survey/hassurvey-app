@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pemasukan extends Model
 {
-    protected $table = 'pemasukans';
-
     protected $fillable = [
         'tabungan_id',
         'tanggal',
@@ -19,5 +17,10 @@ class Pemasukan extends Model
     public function tabungan(): BelongsTo
     {
         return $this->belongsTo(Tabungan::class);
+    }
+
+    public function visiMati(): BelongsTo
+    {
+        return $this->tabungan()->first()?->visiMati();
     }
 }

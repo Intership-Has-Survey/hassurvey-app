@@ -83,10 +83,19 @@ class VisiMatiResource extends Resource
     public static function getRelationManagers(): array
     {
         return [
-            PemasukansRelationManager::class,
-            PengeluaransRelationManager::class,
-            KewajibanBayarsRelationManager::class,
-            PenerimaOperasionalsRelationManager::class,
+            // Relation untuk Tabungan
+            \Filament\Resources\RelationManagers\RelationGroup::make('Tabungan Relations', [
+                PemasukansRelationManager::class,
+                PengeluaransRelationManager::class,
+            ])
+                ->when(fn($record) => in_array('tabungan', $record?->sub_kategori ?? [])),
+
+            // Relation untuk Operasional
+            \Filament\Resources\RelationManagers\RelationGroup::make('Operasional Relations', [
+                KewajibanBayarsRelationManager::class,
+                PenerimaOperasionalsRelationManager::class,
+            ])
+                ->when(fn($record) => in_array('operasional', $record?->sub_kategori ?? [])),
         ];
     }
 

@@ -21,7 +21,7 @@ class TabunganResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return false; 
+        return true; 
     }
 
     public static function form(Form $form): Form

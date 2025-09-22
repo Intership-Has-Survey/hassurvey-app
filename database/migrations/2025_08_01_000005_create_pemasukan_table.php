@@ -12,14 +12,16 @@ return new class extends Migration {
     {
         Schema::create('pemasukans', function (Blueprint $table) {
             $table->id();
-            $table->uuid('tabungan_id');
             $table->date('tanggal');
             $table->decimal('jumlah', 15, 2);
             $table->string('deskripsi')->nullable();
             $table->timestamps();
 
-            $table->foreign('tabungan_id')->references('id')->on('tabungans')->onDelete('cascade');
+            $table->foreignUuid('tabungan_id')
+                ->constrained('tabungans')
+                ->cascadeOnDelete();
         });
+
     }
 
     /**

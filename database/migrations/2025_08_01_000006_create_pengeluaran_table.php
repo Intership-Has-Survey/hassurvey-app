@@ -12,12 +12,15 @@ return new class extends Migration {
     {
         Schema::create('pengeluarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tabungan_id')->constrained('tabungans')->onDelete('cascade');
+            $table->uuid('tabungan_id')->nullable();
+            $table->foreign('tabungan_id')->references('id')->on('tabungans')->onDelete('cascade');
             $table->date('tanggal');
             $table->decimal('jumlah', 15, 2);
             $table->text('deskripsi')->nullable();
             $table->uuidMorphs('pengeluaranable'); // Adds pengeluaranable_id and pengeluaranable_type
             $table->timestamps();
+
+            $table->foreignUuid('visi_mati_id')->constrained('visi_mati')->onDelete('cascade');
         });
     }
 
