@@ -16,11 +16,18 @@ class VisiMati extends Model
     use HasUuids, SoftDeletes, HasFactory;
     protected $table = 'visi_mati';
 
-    protected $fillable = [
+    protected $fillable= [
         'nama',
         'deskripsi',
         'user_id',
         'sub_kategori',
+        'tabungan',
+        'operasional',
+        'kewajiban_bayars',
+        'penerima_operasionals',
+        'pemasukans',
+        'pengeluarans',
+        'company_id',
     ];
 
     protected $casts = [
