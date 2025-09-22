@@ -40,8 +40,9 @@ class PengeluaransRelationManager extends BasePengeluaransRelationManager
                     })
                     ->required()
                     ->afterStateHydrated(function (\Filament\Forms\Components\Select $component, $state) {
-                        if ($this->getRecord()?->pengeluaranable_type === Orang::class || $this->getRecord()?->pengeluaranable_type === Bangunan::class) {
-                            $component->state($this->getRecord()->pengeluaranable_id);
+                        $record = $this->getMountedTableActionRecord();
+                        if ($record && ($record->pengeluaranable_type === Orang::class || $record->pengeluaranable_type === Bangunan::class)) {
+                            $component->state($record->pengeluaranable_id);
                         }
                     }),
                 \Filament\Forms\Components\Hidden::make('company_id')
