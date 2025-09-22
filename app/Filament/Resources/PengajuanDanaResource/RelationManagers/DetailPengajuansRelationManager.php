@@ -4,13 +4,14 @@ namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Level;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Illuminate\Support\Facades\DB;
-use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
@@ -118,9 +119,12 @@ class DetailPengajuansRelationManager extends RelationManager
                         $pengajuan = $livewire->getOwnerRecord();
                         $pengajuan->updateTotalHarga();
 
-                        $nilai = $pengajuan->nilai;
+                        $uuid = Filament::getTenant()->id;
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        // dd($uuid);
+                        $nilai = $pengajuan->nilai;
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 

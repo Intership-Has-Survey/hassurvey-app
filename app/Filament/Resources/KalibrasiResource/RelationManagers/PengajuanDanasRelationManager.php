@@ -7,6 +7,7 @@ use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Traits\GlobalForms;
+use Filament\Facades\Filament;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
 
@@ -48,9 +49,12 @@ class PengajuanDanasRelationManager extends RelationManager
                         // dd($record);
                         $record->updateTotalHarga();
 
-                        $nilai = $record->nilai;
+                        $uuid = Filament::getTenant()->id;
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        // dd($uuid);
+                        $nilai = $record->nilai;
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
