@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use App\Models\Level;
 use Filament\Forms\Form;
+use Filament\Facades\Filament;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
 use App\Traits\GlobalForms;
@@ -63,11 +64,19 @@ class PengajuanDanasRelationManager extends RelationManager
                     ->after(function ($livewire, $record) {
                         $record->updateTotalHarga();
 
-                        $nilai = $record->nilai;
+                        // $company_id = tenant('id'); // atau auth()->user()->tenant_id
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        $uuid = Filament::getTenant()->id;
+
+                        // dd($uuid);
+                        $nilai = $record->nilai;
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
+                        // $level = Level::where('max_nilai', '>=', $nilai)
+                        //     ->orderBy('max_nilai')
+                        //     ->first();
 
                         if ($level) {
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
