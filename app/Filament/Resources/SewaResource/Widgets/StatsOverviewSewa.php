@@ -4,6 +4,7 @@ namespace App\Filament\Resources\SewaResource\Widgets;
 
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use App\Filament\Resources\SewaResource\Pages\ListSewa;
+use App\Filament\Resources\SewaResource;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use App\Models\PengajuanDana;
 use App\Models\Sewa;
@@ -18,17 +19,13 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 
 class StatsOverviewSewa extends BaseWidget
 {
-    use InteractsWithPageTable;
     // Properti untuk menyimpan state filter tanggal range
-
     public ?array $filters = [];
-
     public ?string $companyId; // Pastikan properti ini ada
 
     public function mount(): void
@@ -46,9 +43,34 @@ class StatsOverviewSewa extends BaseWidget
         return ListSewa::class;
     }
 
+    protected function getPageTableQuery(): ?Builder
+    {
+        try {
+            // Get the table query directly from the resource without using the trait
+            $resource = app(SewaResource::class);
+            $query = $resource::getEloquentQuery();
+
+            // Apply company scope if tenant is active
+            if ($this->companyId) {
+                $query->where('company_id', $this->companyId);
+            }
+
+            return $query;
+        } catch (\Exception $e) {
+            // If there's any error getting the table query, return null
+            report($e);
+            return null;
+        }
+    }
+
     protected function getStats(): array
     {
         $query = $this->getPageTableQuery();
+
+        // If no query is available, return empty stats
+        if (!$query) {
+            return $this->getEmptyStats();
+        }
 
         // Apply filters from the page
         foreach ($this->filters ?? [] as $filterName => $filterValue) {
@@ -72,7 +94,13 @@ class StatsOverviewSewa extends BaseWidget
             }
         }
 
-        $sewaIds = $query->clone()->pluck('id');
+        // Safely get sewa IDs
+        $sewaIds = $query->clone()->pluck('id')->toArray();
+
+        // If no sewa IDs found, return empty stats
+        if (empty($sewaIds)) {
+            return $this->getEmptyStats();
+        }
 
         $pendapatan = StatusPembayaran::query()
             ->whereIn('payable_id', $sewaIds)
@@ -88,7 +116,6 @@ class StatsOverviewSewa extends BaseWidget
             ->sum('nilai');
 
         return [
-
             Stat::make('Jumla Penyewaan (Sesuai Filter)', $query->clone()->count())
                 ->description('Jumlah proses sewa dalam periode waktu yang dipilih')
                 ->color('info'),
@@ -98,7 +125,20 @@ class StatsOverviewSewa extends BaseWidget
             Stat::make('Pengeluaran Sewa', 'Rp ' . number_format($pengeluaran))
                 ->description('Total pengeluaran terkait sewa')
                 ->color('danger'),
-
+        ];
+    }
+    protected function getEmptyStats(): array
+    {
+        return [
+            Stat::make('Jumla Penyewaan (Sesuai Filter)', 0)
+                ->description('Tidak ada data sewa')
+                ->color('gray'),
+            Stat::make('Pemasukan Sewa', 'Rp 0')
+                ->description('Total pembayaran sewa yang diterima')
+                ->color('gray'),
+            Stat::make('Pengeluaran Sewa', 'Rp 0')
+                ->description('Total pengeluaran terkait sewa')
+                ->color('gray'),
         ];
     }
 }
