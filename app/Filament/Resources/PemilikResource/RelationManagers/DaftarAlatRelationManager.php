@@ -8,6 +8,8 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Illuminate\Validation\Rules\Unique;
 use Filament\Tables\Columns\BadgeColumn;
@@ -61,6 +63,17 @@ class DaftarAlatRelationManager extends RelationManager
                     ->validationMessages([
                         'required' => 'Merk wajib dipilih.',
                     ]),
+                Textarea::make('keterangan')
+                    ->nullable()
+                    ->columnSpanFull(),
+
+                Select::make('kondisi')
+                    ->label('Kondisi Alat')
+                    ->required()
+                    ->options([
+                        true => 'Baik',
+                        false => 'Rusak',
+                    ]),
 
                 Hidden::make('company_id')
                     ->default(fn() => $this->ownerRecord->company_id),
@@ -78,7 +91,7 @@ class DaftarAlatRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('merk.nama')
                     ->label('Merk Alat'),
                 BadgeColumn::make('kondisi')
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Rusak')
                     ->color(fn(bool $state): string => match ($state) {
                         true => 'success',
                         false => 'danger',
@@ -99,7 +112,7 @@ class DaftarAlatRelationManager extends RelationManager
                     ->label('Kondisi')
                     ->placeholder('Semua Kondisi')
                     ->trueLabel('Baik')
-                    ->falseLabel('Bermasalah'),
+                    ->falseLabel('Rusak'),
 
                 TernaryFilter::make('status')
                     ->label('Ketersediaan')
