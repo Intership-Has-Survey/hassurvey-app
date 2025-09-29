@@ -149,11 +149,16 @@ class PengajuanDanaResource extends Resource
                     }),
                 TextColumn::make('total')
                     ->state(function (PengajuanDana $record): float {
-                        return $record->detailPengajuans->reduce(function ($carry, $item) {
-                            return $carry + ($item->qty * $item->harga_satuan);
-                        }, 0);
+                        return $record->detailPengajuans->sum('total');
                     })
                     ->money('IDR'),
+                // TextColumn::make('total')
+                //     ->state(function (PengajuanDana $record): float {
+                //         return $record->detailPengajuans->reduce(function ($carry, $item) {
+                //             return $carry + ($item->qty * $item->harga_satuan);
+                //         }, 0);
+                //     })
+                //     ->money('IDR'),
                 TextColumn::make('level.nama')->label('Level'),
                 TextColumn::make('roles.name')
                     ->badge()
@@ -188,7 +193,7 @@ class PengajuanDanaResource extends Resource
 
                         if ($totalTagihan == 0 && $totalPembayaran == 0) {
                             $statusBaru = 3; // Belum Ada Tagihan
-                        } elseif ($totalTagihan === $totalPembayaran) {
+                        } elseif ($totalTagihan == $totalPembayaran) {
                             $statusBaru = 1; // Lunas
                         } elseif ($totalTagihan > $totalPembayaran) {
                             $statusBaru = 0; // Belum Bayar
