@@ -63,7 +63,7 @@ class PengajuanDana extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['judul_pengajuan', 'status', 'deskripsi_pengajuan', 'nama_bank', 'nomor_rekening', 'nama_pemilik_rekening'])
+            ->logAll()
             ->logOnlyDirty()
             ->useLogName('Pengajuan');
     }
