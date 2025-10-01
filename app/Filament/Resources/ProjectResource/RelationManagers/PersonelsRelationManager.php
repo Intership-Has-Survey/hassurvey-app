@@ -138,7 +138,12 @@ class PersonelsRelationManager extends RelationManager
                             ->native(false),
                         Forms\Components\DatePicker::make('tanggal_berakhir')
                             ->label('Tanggal Berakhir')
-                            ->minDate(fn(Get $get) => $get('tanggal_mulai'))
+                            // ->minDate(fn(Get $get) => $get('tanggal_mulai'))
+                            ->minDate(function (Get $get) {
+                                $mulai = $get('tanggal_mulai'); // hasil mentah, misalnya "2025-10-01 04:36:09"
+                                $parsed = $mulai ? \Carbon\Carbon::parse($mulai)->toDateString() : null; // hasil parsing jadi "2025-10-01"
+                                return $parsed;
+                            })
                             ->native(false),
                     ]),
                 // Tables\Actions\ViewAction::make(),
