@@ -82,6 +82,15 @@ class PengajuanDana extends Model
         $this->save();
     }
 
+    public function updateNilai()
+    {
+        $total = $this->detailPengajuans->sum(function ($detail) {
+            return $detail->qty * $detail->harga_satuan;
+        });
+
+        return $total;
+    }
+
     public function level()
     {
         return $this->belongsTo(Level::class);
