@@ -36,7 +36,9 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Alat Keluar')->disabled()->dehydrated(),
-                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->live()->required(),
+                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->required()
+                    ->default(now())
+                    ->native(false),
 
                 Forms\Components\TextInput::make('harga_perhari')
                     ->label('Harga Per Hari')
@@ -194,10 +196,9 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
 
                             Forms\Components\DatePicker::make('tgl_keluar')
                                 ->label('Tanggal Keluar')
-                                ->default(now())
+                                ->default(today())
                                 ->required()
-                                ->minDate(now()->subDays(3))
-                                //->maxDate(now())
+                                ->native(false)
                                 ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))
                                 ->validationMessages([
                                     'required' => 'Tanggal keluar harus diisi!',
