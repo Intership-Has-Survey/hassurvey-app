@@ -133,4 +133,9 @@ class StatusPembayaranSummary extends StatsOverviewWidget
     //             ->color('success'),
     //     ];
     // }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

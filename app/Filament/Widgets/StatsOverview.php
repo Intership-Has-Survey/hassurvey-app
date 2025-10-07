@@ -158,4 +158,9 @@ class StatsOverview extends BaseWidget
                 ->color('success'),
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }
