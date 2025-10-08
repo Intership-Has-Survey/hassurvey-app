@@ -121,9 +121,9 @@ class PengajuanDanaResource extends Resource
                             ->required(),
                     ])->columns(2),
                 Hidden::make('nilai')
-                    ->default(0),
+                    ->default(fn($record) => $record ? $record->nilai : 0),
                 Hidden::make('dalam_review')
-                    ->default(0),
+                    ->default(fn($record) => $record ? $record->dalam_review : 0),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
