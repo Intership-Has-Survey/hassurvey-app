@@ -103,7 +103,7 @@ class Penjualan extends Model
             // Format dengan 3 digit (001, 002, dst)
             $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
 
-            $penjualan->kode_penjualan = 'LPEN' . '-' . $tanggal . '-' . $urutan;
+            $penjualan->kode_penjualan = 'LPEN'  . $tanggal  . $urutan;
         });
     }
 }

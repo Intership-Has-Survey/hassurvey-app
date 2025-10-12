@@ -111,7 +111,7 @@ class Kalibrasi extends Model
             // Format dengan 3 digit (001, 002, dst)
             $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
 
-            $kalibrasi->kode_kalibrasi = 'LKAL' . '-' . $tanggal . '-' . $urutan;
+            $kalibrasi->kode_kalibrasi = 'LKAL' .  $tanggal .  $urutan;
         });
     }
 }

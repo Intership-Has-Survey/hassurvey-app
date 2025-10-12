@@ -149,13 +149,13 @@ class DetailPengajuansRelationManager extends RelationManager
                 EditAction::make()
                     ->after(function ($livewire, $record) {
                         $pengajuan = $livewire->getOwnerRecord();
-                        // $pengajuan->updateTotalHarga();
-                        $nilai = $pengajuan->updateNilai();
+                        $pengajuan->updateTotalHarga();
+                        // $nilai = $pengajuan->updateNilai();
 
                         $uuid = Filament::getTenant()->id;
 
                         // dd($uuid);
-                        // $nilai = $pengajuan->nilai;
+                        $nilai = $pengajuan->nilai;
                         $level = Level::where('company_id', $uuid)
                             ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
@@ -169,7 +169,6 @@ class DetailPengajuansRelationManager extends RelationManager
                             $roleId = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
-                                'nilai' => $nilai,
                                 'level_id' => $level->id,
                                 'dalam_review' => $roleId, // kolom ini sekarang menyimpan Id role
                             ]);

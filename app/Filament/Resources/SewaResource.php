@@ -127,6 +127,11 @@ class SewaResource extends Resource
             ->schema([
                 Section::make('Informasi Kontrak')
                     ->schema([
+                        TextInput::make('kode_sewa')
+                            ->label('Kode Sewa')
+                            ->disabled() // biar user tidak bisa ubah manual
+                            ->dehydrated(false) // jangan simpan input dari user
+                            ->visibleOn(['edit', 'view']),
                         TextInput::make('judul')
                             ->required()
                             ->placeholder('Masukkan Judul Penyewaan')

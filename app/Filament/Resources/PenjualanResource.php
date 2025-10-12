@@ -69,6 +69,11 @@ class PenjualanResource extends Resource
             ->schema([
                 Section::make('Informasi Penjualan')
                     ->schema([
+                        TextInput::make('kode_penjualan')
+                            ->label('Kode Penjualan')
+                            ->disabled() // biar user tidak bisa ubah manual
+                            ->dehydrated(false) // jangan simpan input dari user
+                            ->visibleOn(['edit', 'view']),
                         TextInput::make('nama_penjualan')
                             ->label('Nama Penjualan')
                             ->required(),

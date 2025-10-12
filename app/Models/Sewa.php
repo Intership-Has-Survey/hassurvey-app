@@ -55,7 +55,7 @@ class Sewa extends Model
             // Format dengan 3 digit (001, 002, dst)
             $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
 
-            $sewa->kode_sewa = 'LSEW' . '-' . $tanggal . '-' . $urutan;
+            $sewa->kode_sewa = 'LSEW' . $tanggal  . $urutan;
         });
 
         static::updated(function ($sewa) {

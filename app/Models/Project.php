@@ -116,7 +116,7 @@ class Project extends Model
             // Format dengan 3 digit (001, 002, dst)
             $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
 
-            $project->kode_project = 'LPEM' . '-' . $tanggal . '-' . $urutan;
+            $project->kode_project = 'LPEM' . $tanggal .  $urutan;
         });
     }
 }

@@ -69,6 +69,11 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
+                    TextInput::make('kode_project')
+                        ->label('Kode Proyek')
+                        ->disabled() // biar user tidak bisa ubah manual
+                        ->dehydrated(false) // jangan simpan input dari user
+                        ->visibleOn(['edit', 'view']),
                     TextInput::make('nama_project')
                         ->required()
                         ->label('Nama Proyek')

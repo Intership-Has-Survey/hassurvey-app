@@ -48,6 +48,11 @@ class KalibrasiResource extends Resource
                     ->schema(self::getCustomerForm()),
                 Section::make('Informasi Kalibrasi')
                     ->schema([
+                        TextInput::make('kode_kalibrasi')
+                            ->label('Kode Kalibrasi')
+                            ->disabled() // biar user tidak bisa ubah manual
+                            ->dehydrated(false) // jangan simpan input dari user
+                            ->visibleOn(['edit', 'view']),
                         TextInput::make('nama')
                             ->label('Nama Kalibrasi')
                             ->required(),
