@@ -46,6 +46,18 @@ class Sewa extends Model
             }
         });
 
+        static::creating(function ($sewa) {
+            $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa sewa yang sudah ada di tanggal ini
+            $countToday = Sewa::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            $sewa->kode_sewa = 'LSEW' . '-' . $tanggal . '-' . $urutan;
+        });
+
         static::updated(function ($sewa) {
             if ($sewa->is_locked) {
                 $sewa->daftarAlat()->each(function ($alat) use ($sewa) {

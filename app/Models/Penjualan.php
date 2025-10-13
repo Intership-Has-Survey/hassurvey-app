@@ -91,4 +91,19 @@ class Penjualan extends Model
             ->logOnlyDirty()
             ->useLogName('Penjualan');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($penjualan) {
+            $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa penjualan y+ang sudah ada di tanggal ini
+            $countToday = Penjualan::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            $penjualan->kode_penjualan = 'LPEN' . '-' . $tanggal . '-' . $urutan;
+        });
+    }
 }

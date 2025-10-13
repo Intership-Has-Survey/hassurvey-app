@@ -87,6 +87,7 @@ class KalibrasiResource extends Resource
                             ->default('dalam_proses')
                             ->native(false),
                     ]),
+                Hidden::make('user_id')->default(auth()->id()),
                 Hidden::make('company_id')
                     ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
@@ -118,6 +119,7 @@ class KalibrasiResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('kode_kalibrasi')->sortable()->searchable()->wrap(),
                 Tables\Columns\TextColumn::make('nama')->sortable()->searchable()->wrap(),
                 Tables\Columns\TextColumn::make('customer_display')
                     ->label('Klien Utama')

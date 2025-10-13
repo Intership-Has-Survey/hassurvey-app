@@ -104,4 +104,19 @@ class Project extends Model
             ->logOnlyDirty()
             ->useLogName('Project');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($project) {
+            $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa project yang sudah ada di tanggal ini
+            $countToday = Project::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            $project->kode_project = 'LPEM' . '-' . $tanggal . '-' . $urutan;
+        });
+    }
 }

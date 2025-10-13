@@ -115,6 +115,7 @@ class PenjualanResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('kode_penjualan')->sortable()->searchable()->wrap(),
                 TextColumn::make('nama_penjualan')->searchable()
                     ->label('Nama Penjualan')
                     ->sortable(),

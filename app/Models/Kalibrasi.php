@@ -30,14 +30,14 @@ class Kalibrasi extends Model
         return $this->belongsTo(Corporate::class);
     }
 
-    protected static function booted(): void
-    {
-        static::creating(function ($pemilik) {
-            if (!$pemilik->user_id && Auth::check()) {
-                $pemilik->user_id = Auth::id();
-            }
-        });
-    }
+    // protected static function booted(): void
+    // {
+    //     static::creating(function ($pemilik) {
+    //         if (!$pemilik->user_id && Auth::check()) {
+    //             $pemilik->user_id = Auth::id();
+    //         }
+    //     });
+    // }
 
     public function user()
     {
@@ -98,5 +98,20 @@ class Kalibrasi extends Model
             ])
             ->logOnlyDirty()
             ->useLogName('Kalibrasi');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($kalibrasi) {
+            $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa kalibrasi yang sudah ada di tanggal ini
+            $countToday = Kalibrasi::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            $kalibrasi->kode_kalibrasi = 'LKAL' . '-' . $tanggal . '-' . $urutan;
+        });
     }
 }

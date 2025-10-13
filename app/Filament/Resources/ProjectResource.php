@@ -174,6 +174,7 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('kode_project')->sortable()->searchable()->wrap(),
                 TextColumn::make('nama_project')->sortable()->searchable()->wrap(),
                 TextColumn::make('customer_display')
                     ->label('Klien Utama')
