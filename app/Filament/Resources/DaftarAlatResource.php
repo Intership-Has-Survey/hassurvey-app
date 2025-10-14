@@ -34,6 +34,8 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\DaftarAlatResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\DaftarAlatResource\RelationManagers\PenggunaanAlatRelationManager;
 use App\Filament\Resources\DaftarAlatResource\Pages\EditDaftarAlat;
 use App\Filament\Resources\DaftarAlatResource\Pages\ListDaftarAlats;
 use App\Filament\Resources\DaftarAlatResource\Pages\CreateDaftarAlat;
@@ -276,6 +278,8 @@ class DaftarAlatResource extends Resource
     {
         return [
             //
+            PenggunaanAlatRelationManager::class,
+
         ];
     }
 
