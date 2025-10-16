@@ -50,20 +50,37 @@ class StatsOverview extends BaseWidget
             if ($number < 1000)
                 return (string) Number::format($number, 0);
             if ($number < 1000000)
-                return Number::format($number / 1000, 2) . 'k';
-            return Number::format($number / 1000000, 2) . 'm';
+                return Number::format($number / 1000, 0) . ' ribu';
+            return Number::format($number / 1000000, 0) . ' juta';
         };
 
-        $pendapatanMasuk = StatusPembayaran::where('company_id', $this->companyId)
-            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
-            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
-            ->sum('nilai');
+        $serviceTypeMapping = [
+            'Layanan Pemetaan' => Project::class,
+            'Layanan Sewa' => Sewa::class,
+            'Layanan Servis dan Kalibrasi' => Kalibrasi::class,
+            'Layanan Penjualan Alat' => Penjualan::class,
+        ];
 
-        $pengeluaran = PengajuanDana::where('company_id', $this->companyId)
+        $pendapatanMasukQuery = StatusPembayaran::where('company_id', $this->companyId)
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        if ($serviceType !== 'Semua' && isset($serviceTypeMapping[$serviceType])) {
+            $pendapatanMasukQuery->where('payable_type', $serviceTypeMapping[$serviceType]);
+        }
+
+        $pendapatanMasuk = $pendapatanMasukQuery->sum('nilai');
+
+        $pengeluaranQuery = PengajuanDana::where('company_id', $this->companyId)
             ->where('dalam_review', 'approved')
             ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
-            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
-            ->sum('nilai');
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        if ($serviceType !== 'Semua' && isset($serviceTypeMapping[$serviceType])) {
+            $pendapatanMasukQuery->where('payable_type', $serviceTypeMapping[$serviceType]);
+        }
+
+        $pengeluaran = $pengeluaranQuery->sum('nilai');
 
         $pendapatanBersih = $pendapatanMasuk - $pengeluaran;
 
