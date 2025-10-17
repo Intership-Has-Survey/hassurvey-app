@@ -12,6 +12,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class PengajuanDanasRelationManager extends RelationManager
 {
+    //
     use GlobalForms;
     protected static string $relationship = 'pengajuanDanas';
     protected static ?string $title = 'Pengajuan Dana';

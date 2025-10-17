@@ -157,4 +157,24 @@ class PengajuanDana extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function pengajuanable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function getTargetLabelAttribute(): string
+    {
+        if (! $this->pengajuanable) {
+            return 'Untuk: In-House (Internal)';
+        }
+
+        return 'Untuk ' . class_basename($this->pengajuanable_type) . ': ' . ($this->pengajuanable->nama ?? $this->pengajuanable->judul ?? '-');
+    }
+
+    public function updateDibayar()
+    {
+        $this->dibayar = $this->transaksiPembayarans()->sum('nilai');
+        $this->save();
+    }
 }
