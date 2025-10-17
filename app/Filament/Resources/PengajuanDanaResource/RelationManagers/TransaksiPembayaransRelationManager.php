@@ -62,7 +62,6 @@ abstract class TransaksiPembayaransRelationManager extends RelationManager
         if ($this->getPengajuanDanaRecord()->status !== $statusBaru) {
             $this->getPengajuanDanaRecord()->update(['status' => $statusBaru]);
         }
-
     }
 
     public function form(Form $form): Form
@@ -145,7 +144,15 @@ abstract class TransaksiPembayaransRelationManager extends RelationManager
                 // Kolom status dihapus karena status yang relevan adalah di pengajuan_dana
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->after(function ($record, $livewire) {
+
+                        $pengajuan = $livewire->ownerRecord;
+                        // dd($pengajuan);
+                        $pengajuan->update([
+                            'dibayar' => $pengajuan->statusPengeluarans()->sum('nilai'),
+                        ]);
+                    }),
             ])
             ->actions([
                 EditAction::make(),

@@ -71,10 +71,10 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function pengajuanDanas(): HasMany
-    {
-        return $this->hasMany(PengajuanDana::class);
-    }
+    // public function pengajuanDanas(): HasMany
+    // {
+    //     return $this->hasMany(PengajuanDana::class);
+    // }
     public function Sewa()
     {
         return $this->belongsTo(Sewa::class);
@@ -118,5 +118,10 @@ class Project extends Model
 
             $project->kode_project = 'LPEM' . $tanggal .  $urutan;
         });
+    }
+
+    public function pengajuanDanas()
+    {
+        return $this->morphMany(PengajuanDana::class, 'pengajuanable');
     }
 }
