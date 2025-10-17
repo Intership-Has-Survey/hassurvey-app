@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::table('pengajuan_danas', function (Blueprint $table) {
             $table->uuidMorphs('pengajuanable');
 
-            $table->unsignedBigInteger('dibayar', 15, 2)
-                ->default(0)
+            $table->unsignedInteger('dibayar')
+                ->nullable()
                 ->after('nilai');
             // hasilnya: pengajuanable_id, pengajuanable_type
         });
@@ -27,7 +27,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pengajuan_danas', function (Blueprint $table) {
-            //
+            $table->dropColumn('dibayar');
+            $table->dropMorphs('pengajuanable');
         });
     }
 };

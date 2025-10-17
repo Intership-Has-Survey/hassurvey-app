@@ -8,6 +8,7 @@ use Faker\Core\Uuid;
 use App\Models\Project;
 use App\Models\Kalibrasi;
 use App\Models\Penjualan;
+use App\Models\PembayaranPersonel;
 use App\Helpers\TenantHelper;
 use App\Models\PengajuanDana;
 use Filament\Facades\Filament;
@@ -81,6 +82,15 @@ class StatsOverview extends BaseWidget
             $pengeluaranQuery->where('pengajuanable_type', $serviceTypeMapping[$serviceType]);
         }
 
+        $pembayaran = 0;
+        if ($serviceType == 'Layanan Pemetaan') {
+            $pembayaran = TransaksiPembayaran::where('company_id', $this->companyId)
+                ->where('payable_type', PembayaranPersonel::class)
+                ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+                ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
+                ->sum('nilai');
+        }
+
         $pengeluaran = $pengeluaranQuery->sum('dibayar');
 
         //inhouse
@@ -92,7 +102,7 @@ class StatsOverview extends BaseWidget
 
         $inHouse = $inHouseQuery->sum('dibayar');
 
-        $pendapatanBersih = $pendapatanMasuk - $pengeluaran;
+        $pendapatanBersih = $pendapatanMasuk - $pengeluaran - $pembayaran;
 
         $projectsQuery = Project::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '>=', $startDate))
