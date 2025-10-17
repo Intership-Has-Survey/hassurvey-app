@@ -2,21 +2,22 @@
 
 namespace App\Filament\Resources\ProjectResource\Widgets;
 
-use App\Filament\Resources\ProjectResource\Pages\ListProjects;
-use App\Models\PengajuanDana;
 use App\Models\Project;
-use App\Models\StatusPembayaran;
-use App\Models\TransaksiPembayaran;
-use CodeWithKyrian\FilamentDateRange\Forms\Components\DateRangePicker;
-use Filament\Actions\Action;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Database\Eloquent\Builder;
-use filament\Facades\Filament;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Flowframe\Trend\Trend;
+use Filament\Actions\Action;
+use App\Models\PengajuanDana;
+use filament\Facades\Filament;
 use Flowframe\Trend\TrendValue;
+use App\Models\StatusPembayaran;
+use App\Models\PembayaranPersonel;
+use App\Models\TransaksiPembayaran;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
+use CodeWithKyrian\FilamentDateRange\Forms\Components\DateRangePicker;
 
 class ProjectStatsOverview extends BaseWidget
 {
@@ -85,10 +86,15 @@ class ProjectStatsOverview extends BaseWidget
             })
             ->sum('nilai');
 
-        $totalTagihan = StatusPembayaran::query()
-            ->whereIn('payable_id', $projectIds)
-            ->where('payable_type', Project::class)
+        $pengeluaranDua = TransaksiPembayaran::where('company_id', $this->companyId)
+            ->where('payable_type', PembayaranPersonel::class)
             ->sum('nilai');
+
+        $pengeluaranTiga = PengajuanDana::where('company_id', $this->companyId)
+            ->where('pengajuanable_type', Project::class)
+            ->sum('dibayar');
+
+        $totalTagihan = Project::where('company_id', $this->companyId)->sum('nilai_project');
 
         $totalDibayar = TransaksiPembayaran::query()
             ->whereHasMorph('payable', [Project::class], function (Builder $q) use ($projectIds) {
@@ -96,7 +102,7 @@ class ProjectStatsOverview extends BaseWidget
             })
             ->sum('nilai');
 
-        $belumDibayar = $totalTagihan - $totalDibayar;
+        $belumDibayar = $totalTagihan - $pendapatan;
 
         $closing = $query->clone()->where('status', 'Closing')->count();
         $prospect = $query->clone()->where('status', 'Prospect')->count();
@@ -117,16 +123,19 @@ class ProjectStatsOverview extends BaseWidget
             Stat::make('Failed', $failed)->color('danger'),
 
             Stat::make('Pendapatan Proyek', 'Rp ' . number_format($pendapatan, 0, ',', '.'))
-                ->description('Total pendapatan')
+                ->description('Pembayaran yang sudah diterima, bukan nilai proyek')
                 ->color('success'),
 
-            Stat::make('Pengeluaran Proyek', 'Rp ' . number_format($pengeluaran, 0, ',', '.'))
-                ->description('Total pengeluaran')
+            Stat::make('Pengeluaran Proyek', 'Rp ' . number_format($pengeluaranDua + $pengeluaranTiga, 0, ',', '.'))
+                ->description('Pengeluaran untuk pengajuan dana dan pembayaran personel')
                 ->color('danger'),
 
-            Stat::make('Belum Dibayar', 'Rp ' . number_format(max($belumDibayar, 0), 0, ',', '.'))
-                ->description('Sisa tagihan yang belum dibayar')
-                ->color('warning'),
+            Stat::make('Belum Dibayar', 'Rp ' . number_format($belumDibayar, 0, ',', '.'))
+                ->description('Total nilai project - total pendapatan proyek')
+                ->color('warning')
+                ->extraAttributes([
+                    'title' => 'Total dari semua nilai proyek yang belum dibayar',
+                ])
         ];
     }
 }
