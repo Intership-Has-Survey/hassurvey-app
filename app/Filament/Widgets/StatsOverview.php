@@ -91,7 +91,7 @@ class StatsOverview extends BaseWidget
                 ->sum('nilai');
         }
 
-        $pengeluaran = $pengeluaranQuery->sum('dibayar');
+        $pengeluaran = $pengeluaranQuery->sum('dibayar') + $pembayaran;
 
         //inhouse
         $inHouseQuery = PengajuanDana::where('company_id', $this->companyId)
@@ -102,7 +102,7 @@ class StatsOverview extends BaseWidget
 
         $inHouse = $inHouseQuery->sum('dibayar');
 
-        $pendapatanBersih = $pendapatanMasuk - $pengeluaran - $pembayaran;
+        $pendapatanBersih = $pendapatanMasuk - $pengeluaran;
 
         $projectsQuery = Project::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('tanggal_informasi_masuk', '>=', $startDate))

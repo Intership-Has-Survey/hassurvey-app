@@ -30,7 +30,7 @@ class RingkasanPemetaan extends BaseWidget
         $personelQuery = $project->personels();
         $pembayaranPersonelQuery = $project->pembayaranPersonel();
 
-        $pengeluaran = $pengeluaranQuery->whereNotIn('status', [0, 3])->sum('nilai');
+        $pengeluaran = $pengeluaranQuery->pluck('dibayar')->sum();
         $pembayaran = $pembayaranQuery->sum('nilai');
         $totalAlat = $alatQuery->count();
         $totalPersonel = $personelQuery->count();
