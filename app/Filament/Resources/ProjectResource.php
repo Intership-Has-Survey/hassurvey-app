@@ -38,6 +38,7 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use App\Filament\Resources\ProjectResource\Pages\EditProject;
 use App\Filament\Resources\ProjectResource\Pages\ViewProject;
 use App\Filament\Resources\ProjectResource\Pages\ListProjects;
@@ -51,6 +52,8 @@ use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelati
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 
 class ProjectResource extends Resource
@@ -277,6 +280,9 @@ class ProjectResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()->exports([
+                    ExcelExport::make('table')->withFilename(fn($resource) => $resource::getLabel()),
+                ])
             ])
             ->bulkActions([
                 BulkActionGroup::make([

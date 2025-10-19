@@ -3,15 +3,17 @@
 namespace App\Filament\Resources\ProjectResource\Pages;
 
 use Filament\Actions;
+use Actions\Tables\ExportAction;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\ProjectResource;
-use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
-use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
-use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
-use App\Filament\Resources\ProjectResource\Widgets\FinanceStatusChart;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
+use App\Filament\Resources\ProjectResource\Widgets\FinanceStatusChart;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
+use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
 
 class ListProjects extends ListRecords
 {
@@ -28,6 +30,10 @@ class ListProjects extends ListRecords
                 ->label('Tambah Proyek Pemetaan Baru')
                 ->icon('heroicon-o-plus')
                 ->color('primary'),
+            ExportAction::make()->exports([
+                ExcelExport::make()->withFilename(fn($resource) => $resource::getLabel()),
+            ])
+
         ];
     }
 
