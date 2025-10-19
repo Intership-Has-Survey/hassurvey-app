@@ -331,25 +331,38 @@ class ProjectResource extends Resource
                             //     return $query->where('id', $livewire->mountedTableActionRecord);
                             // })
                             ->modifyQueryUsing(function ($query, $livewire) {
-                                return \App\Models\Project::with('personels')
+                                return \App\Models\Project::with(['personels', 'statusPembayaran', 'pengajuanDanas', 'pembayaranPersonel', 'daftarAlat'])
                                     ->where('id', $livewire->mountedTableActionRecord);
                             })
                             ->withColumns([
-                                Column::make('personels')
-                                    ->heading('Total Personnel')
-                                    ->formatStateUsing(fn($state) => $state->count()),
-                                // Column::make('kosong')
-                                // ->query(\App\Models\Project::with('personels')),
+
+                                Column::make('nilai_project'),
+                                Column::make('statusPembayaran')
+                                    ->heading('pendapatan')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nilai')->sum();
+                                    }),
+                                Column::make('pengajuanDanas')
+                                    ->heading('pengeluaran')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        $totalPengajuanDana = $state->pluck('dibayar')->sum();
+                                        $totalPembayaranPersonel = $record->pembayaranPersonel->pluck('nilai')->sum();
+                                        return $totalPengajuanDana + $totalPembayaranPersonel;
+                                    }),
+                                Column::make('daftarAlat')
+                                    ->heading('Alat digunakan')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        return $state->pluck('nomor_seri')->implode(', ');
+                                    }),
                                 Column::make('personels')
                                     ->formatStateUsing(function ($state) {
                                         return $state->pluck('nama')->implode(', ');
                                     }),
-                                // ->heading('Personnel Names')
-                                // ->formatStateUsing(function ($state) {
-                                // return $state->pluck('nama_personnel')->implode(', ');
-                                // }),
                             ])
-                        // ->withFilename(fn() => 'project-' . $this->record->kode_project . '-' . date('Y-m-d'))
+                            ->withFilename(function ($livewire) {
+                                $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
+                                return $project->kode_project . '-' . date('Y-m-d');
+                            })
                     ])
                 // ExportAction::make('Export')
                 //     ->exports([
