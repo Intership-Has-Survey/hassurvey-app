@@ -30,10 +30,6 @@ class ListProjects extends ListRecords
                 ->label('Tambah Proyek Pemetaan Baru')
                 ->icon('heroicon-o-plus')
                 ->color('primary'),
-            ExportAction::make()->exports([
-                ExcelExport::make()->withFilename(fn($resource) => $resource::getLabel()),
-            ])
-
         ];
     }
 

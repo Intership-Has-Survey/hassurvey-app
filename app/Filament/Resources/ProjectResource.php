@@ -52,8 +52,11 @@ use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelati
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
+
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction as pp;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use pxlrbt\FilamentExcel\Columns\Column;
 
 
 class ProjectResource extends Resource
@@ -273,6 +276,43 @@ class ProjectResource extends Resource
                 TrashedFilter::make(),
 
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                // Define ALL columns you want to export
+                                // Column::make('id'),
+                                Column::make('kode_project'),
+                                Column::make('nama_project'),
+                                Column::make('kategori.nama'),
+                                Column::make('sales.nama'),
+                                Column::make('tanggal_informasi_masuk'),
+                                Column::make('sumber'),
+                                Column::make('provinsiRegion.name'),
+                                Column::make('kotaRegion.name'),
+                                Column::make('kecamatanRegion.name'),
+                                Column::make('desaRegion.name'),
+                                Column::make('detail_alamat'),
+                                // Column::make('nilai_project_awal'),
+                                Column::make('dikenakan_ppn'),
+                                // Column::make('nilai_ppn'),
+                                Column::make('nilai_project'),
+                                Column::make('status'),
+                                Column::make('status_pembayaran'),
+                                Column::make('status_pekerjaan'),
+                                // Column::make('corporate.nama'),
+                                Column::make('created_at'),
+                                Column::make('updated_at'),
+                                // Column::make('sewa_id'),
+                                // Column::make('user_id'),
+                                Column::make('deleted_at'),
+                                // Column::make('company_id'),
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - projects-export')
+                    ])
+            ])
             ->actions([
                 ViewAction::make(),
                 // EditAction::make(),
@@ -280,15 +320,19 @@ class ProjectResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
-                ExportAction::make()->exports([
-                    ExcelExport::make('table')->withFilename(fn($resource) => $resource::getLabel()),
-                ])
+                // ExportAction::make('Export')
+                //     ->exports([
+                //         ExcelExport::make()
+                //             ->fromModel(fn($record) => $record)
+                //         // ->withFilename(fn($record) => 'Project-' . $record->kode_project),
+                //     ]),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                     ForceDeleteBulkAction::make(),
+                    ExportBulkAction::make()
                 ]),
             ])
             ->defaultSort('tanggal_informasi_masuk', 'desc')

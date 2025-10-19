@@ -24,7 +24,8 @@ class ProjectStatsOverview extends BaseWidget
     use InteractsWithPageTable;
 
     public ?array $filters = [];
-    public ?string $companyId; // Pastikan properti ini ada
+    public ?string $companyId = null;
+    // public ?string $companyId; // Pastikan properti ini ada
 
     public function mount(): void
     {

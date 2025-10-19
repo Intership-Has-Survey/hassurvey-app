@@ -124,4 +124,27 @@ class Project extends Model
     {
         return $this->morphMany(PengajuanDana::class, 'pengajuanable');
     }
+
+    public function provinsiRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'provinsi', 'code');
+    }
+
+    // Relationship for kota
+    public function kotaRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'kota', 'code');
+    }
+
+    // Relationship for kecamatan
+    public function kecamatanRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'kecamatan', 'code');
+    }
+
+    // Relationship for desa
+    public function desaRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'desa', 'code');
+    }
 }
