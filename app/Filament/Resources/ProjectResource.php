@@ -15,6 +15,7 @@ use Filament\Pages\Actions;
 use Filament\Support\RawJs;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -25,6 +26,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
@@ -34,11 +36,14 @@ use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction as pp;
 use App\Filament\Resources\ProjectResource\Pages\EditProject;
 use App\Filament\Resources\ProjectResource\Pages\ViewProject;
 use App\Filament\Resources\ProjectResource\Pages\ListProjects;
@@ -47,16 +52,12 @@ use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
+
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
-
-use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
-use pxlrbt\FilamentExcel\Actions\Pages\ExportAction as pp;
-use pxlrbt\FilamentExcel\Exports\ExcelExport;
-use pxlrbt\FilamentExcel\Columns\Column;
 
 
 class ProjectResource extends Resource
@@ -320,6 +321,36 @@ class ProjectResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()
+                    ->exports([
+                        // $var = 1,
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make('form')
+                            ->fromTable()
+                            // ->modifyQueryUsing(function ($query, $livewire) {
+                            //     $var = $query::Personel::find($livewire->mountedTableActionRecord);
+                            //     return $query->where('id', $livewire->mountedTableActionRecord);
+                            // })
+                            ->modifyQueryUsing(function ($query, $livewire) {
+                                return \App\Models\Project::with('personels')
+                                    ->where('id', $livewire->mountedTableActionRecord);
+                            })
+                            ->withColumns([
+                                Column::make('personels')
+                                    ->heading('Total Personnel')
+                                    ->formatStateUsing(fn($state) => $state->count()),
+                                // Column::make('kosong')
+                                // ->query(\App\Models\Project::with('personels')),
+                                Column::make('personels')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nama')->implode(', ');
+                                    }),
+                                // ->heading('Personnel Names')
+                                // ->formatStateUsing(function ($state) {
+                                // return $state->pluck('nama_personnel')->implode(', ');
+                                // }),
+                            ])
+                        // ->withFilename(fn() => 'project-' . $this->record->kode_project . '-' . date('Y-m-d'))
+                    ])
                 // ExportAction::make('Export')
                 //     ->exports([
                 //         ExcelExport::make()
