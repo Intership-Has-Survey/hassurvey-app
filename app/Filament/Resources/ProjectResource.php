@@ -361,7 +361,9 @@ class ProjectResource extends Resource
                             ])
                             ->withFilename(function ($livewire) {
                                 $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
-                                return $project->kode_project . '-' . date('Y-m-d');
+
+                                return ($project->kode_project ?: $project->nama_project ?: 'project')
+                                    . '-' . date('Y-m-d');
                             })
                     ])
                 // ExportAction::make('Export')
