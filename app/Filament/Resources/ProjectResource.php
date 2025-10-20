@@ -359,12 +359,12 @@ class ProjectResource extends Resource
                                         return $state->pluck('nama')->implode(', ');
                                     }),
                             ])
-                            ->withFilename(function ($livewire) {
-                                $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
+                        // ->withFilename(function ($livewire) {
+                        //     $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
 
-                                return ($project->kode_project ?: $project->nama_project ?: 'project')
-                                    . '-' . date('Y-m-d');
-                            })
+                        //     return ($project->kode_project ?: $project->nama_project ?: 'project')
+                        //         . '-' . date('Y-m-d');
+                        // })
                     ])
                 // ExportAction::make('Export')
                 //     ->exports([
