@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\PengajuanDanaResource\Pages;
+namespace App\Filament\Resources\PengajuanResource\Pages;
 
-use App\Filament\Resources\PengajuanDanaResource;
+use App\Filament\Resources\PengajuanResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePengajuan extends CreateRecord
 {
-    protected static string $resource = PengajuanDanaResource::class;
+    protected static string $resource = PengajuanResource::class;
 
     protected static ?string $title = 'Tambah Pengajuan';
 
