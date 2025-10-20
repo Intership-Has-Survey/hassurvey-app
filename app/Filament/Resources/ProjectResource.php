@@ -278,13 +278,11 @@ class ProjectResource extends Resource
 
             ])
             ->headerActions([
-                ExportAction::make()
+                ExportAction::make('semua')
                     ->exports([
-                        ExcelExport::make()
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
                             ->fromTable()
                             ->withColumns([
-                                // Define ALL columns you want to export
-                                // Column::make('id'),
                                 Column::make('kode_project'),
                                 Column::make('nama_project'),
                                 Column::make('kategori.nama'),
@@ -296,20 +294,14 @@ class ProjectResource extends Resource
                                 Column::make('kecamatanRegion.name'),
                                 Column::make('desaRegion.name'),
                                 Column::make('detail_alamat'),
-                                // Column::make('nilai_project_awal'),
                                 Column::make('dikenakan_ppn'),
-                                // Column::make('nilai_ppn'),
                                 Column::make('nilai_project'),
                                 Column::make('status'),
                                 Column::make('status_pembayaran'),
                                 Column::make('status_pekerjaan'),
-                                // Column::make('corporate.nama'),
                                 Column::make('created_at'),
                                 Column::make('updated_at'),
-                                // Column::make('sewa_id'),
-                                // Column::make('user_id'),
                                 Column::make('deleted_at'),
-                                // Column::make('company_id'),
                             ])
                             ->withFilename(date('Y-m-d') . ' - projects-export')
                     ])
@@ -326,10 +318,6 @@ class ProjectResource extends Resource
                         // $var = 1,
                         \pxlrbt\FilamentExcel\Exports\ExcelExport::make('form')
                             ->fromTable()
-                            // ->modifyQueryUsing(function ($query, $livewire) {
-                            //     $var = $query::Personel::find($livewire->mountedTableActionRecord);
-                            //     return $query->where('id', $livewire->mountedTableActionRecord);
-                            // })
                             ->modifyQueryUsing(function ($query, $livewire) {
                                 return \App\Models\Project::with(['personels', 'statusPembayaran', 'pengajuanDanas', 'pembayaranPersonel', 'daftarAlat'])
                                     ->where('id', $livewire->mountedTableActionRecord);
@@ -359,19 +347,13 @@ class ProjectResource extends Resource
                                         return $state->pluck('nama')->implode(', ');
                                     }),
                             ])
-                        // ->withFilename(function ($livewire) {
-                        //     $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
+                            ->withFilename(function ($livewire) {
+                                $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
 
-                        //     return ($project->kode_project ?: $project->nama_project ?: 'project')
-                        //         . '-' . date('Y-m-d');
-                        // })
+                                return ($project->kode_project ?: $project->nama_project ?: 'project')
+                                    . '-' . date('Y-m-d');
+                            })
                     ])
-                // ExportAction::make('Export')
-                //     ->exports([
-                //         ExcelExport::make()
-                //             ->fromModel(fn($record) => $record)
-                //         // ->withFilename(fn($record) => 'Project-' . $record->kode_project),
-                //     ]),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
