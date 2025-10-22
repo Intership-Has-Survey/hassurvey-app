@@ -80,7 +80,8 @@ class ProjectResource extends Resource
                         ->label('Kode Proyek')
                         ->disabled() // biar user tidak bisa ubah manual
                         ->dehydrated(false) // jangan simpan input dari user
-                        ->visibleOn(['edit', 'view']),
+                        ->visibleOn(['edit', 'view'])
+                        ->columnSpan(2),
                     TextInput::make('nama_project')
                         ->required()
                         ->label('Nama Proyek')
@@ -123,6 +124,17 @@ class ProjectResource extends Resource
                         ->validationMessages([
                             'required' => 'Sumber tidak boleh kosong',
                         ]),
+                    DatePicker::make('mulai')
+                        ->label('Project dimulai')
+                        ->native(false)
+                        // ->default(today())
+                        ->live()
+                        ->closeOnDateSelection(),
+                    DatePicker::make('akhir')->label('Project selesai')->native(false)
+                        ->minDate(function (Get $get) {
+                            return $get('mulai');
+                        })
+                        ->validationMessages(['after_or_equal' =>  'Tanggal selesai harus lebih besar atau sama dengan tanggal mulai'])
                 ])
                 ->columns(2)
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai'),
