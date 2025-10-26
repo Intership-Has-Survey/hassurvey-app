@@ -78,7 +78,7 @@ class DaftarAlat extends Model
         return $this->belongsToMany(Sewa::class, 'riwayat_sewa', 'daftar_alat_id', 'sewa_id')
             // SOLUSI: Memberitahu Eloquent untuk menggunakan model pivot kustom kita
             ->using(AlatSewa::class)
-            ->withPivot(['tgl_masuk']) // Pastikan semua kolom pivot ada
+            ->withPivot(['tgl_keluar', 'tgl_masuk']) // Pastikan semua kolom pivot ada
             ->withTimestamps();
     }
 
