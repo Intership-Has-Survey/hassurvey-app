@@ -63,7 +63,7 @@ class PengajuanDana extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['judul_pengajuan', 'status', 'deskripsi_pengajuan', 'nama_bank', 'nomor_rekening', 'nama_pemilik_rekening'])
+            ->logAll()
             ->logOnlyDirty()
             ->useLogName('Pengajuan');
     }
@@ -80,6 +80,15 @@ class PengajuanDana extends Model
         });
 
         $this->save();
+    }
+
+    public function updateNilai()
+    {
+        $total = $this->detailPengajuans->sum(function ($detail) {
+            return $detail->qty * $detail->harga_satuan;
+        });
+
+        return $total;
     }
 
     public function level()
@@ -147,5 +156,25 @@ class PengajuanDana extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function pengajuanable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function getTargetLabelAttribute(): string
+    {
+        if (! $this->pengajuanable) {
+            return 'Untuk: In-House (Internal)';
+        }
+
+        return 'Untuk ' . class_basename($this->pengajuanable_type) . ': ' . ($this->pengajuanable->nama ?? $this->pengajuanable->judul ?? '-');
+    }
+
+    public function updateDibayar()
+    {
+        $this->dibayar = $this->transaksiPembayarans()->sum('nilai');
+        $this->save();
     }
 }

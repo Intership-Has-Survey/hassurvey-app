@@ -77,8 +77,8 @@ class DaftarAlat extends Model
     {
         return $this->belongsToMany(Sewa::class, 'riwayat_sewa', 'daftar_alat_id', 'sewa_id')
             // SOLUSI: Memberitahu Eloquent untuk menggunakan model pivot kustom kita
-            ->using(RiwayatSewa::class)
-            ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa', 'user_id']) // Pastikan semua kolom pivot ada
+            ->using(AlatSewa::class)
+            ->withPivot(['tgl_keluar', 'tgl_masuk']) // Pastikan semua kolom pivot ada
             ->withTimestamps();
     }
 
@@ -123,5 +123,10 @@ class DaftarAlat extends Model
             ->logAll()
             ->logOnlyDirty()
             ->useLogName('Daftar Alat');
+    }
+
+    public function sewar()
+    {
+        return $this->hasMany(AlatSewa::class, 'daftar_alat_id');
     }
 }

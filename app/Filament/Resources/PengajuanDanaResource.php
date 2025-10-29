@@ -21,23 +21,25 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\Pages\EditPengajuanDana;
+use App\Filament\Resources\PengajuanDanaResource\Pages\ViewPengajuanDana;
 use App\Filament\Resources\PengajuanDanaResource\Pages\ListPengajuanDanas;
 use App\Filament\Resources\PengajuanDanaResource\Pages\CreatePengajuanDana;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\TransaksiPembayaransRelationManager;
+use App\Filament\Resources\PengajuanDanaResource\RelationManagers\ConcreteTransaksiPembayaransRelationManager;
 
 class PengajuanDanaResource extends Resource
 {
@@ -120,10 +122,6 @@ class PengajuanDanaResource extends Resource
                             })
                             ->required(),
                     ])->columns(2),
-                Hidden::make('nilai')
-                    ->default(0),
-                Hidden::make('dalam_review')
-                    ->default(0),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
             ]);
@@ -134,26 +132,34 @@ class PengajuanDanaResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('judul_pengajuan')
-                    ->searchable()
+                    // ->searchable()
                     ->description(function (PengajuanDana $record): string {
-                        if ($record->project) {
-                            return 'Untuk Proyek: ' . $record->project->nama_project;
-                        } elseif ($record->sewa) {
-                            return 'Untuk Sewa: ' . $record->sewa->judul;
-                        } elseif ($record->penjualan) {
-                            return 'Untuk Penjualan: ' . $record->penjualan->nama;
-                        } elseif ($record->kalibrasi) {
-                            return 'Untuk Kalibrasi: ' . $record->kalibrasi->nama;
+                        if ($record->pengajuanable) {
+                            switch (class_basename($record->pengajuanable_type)) {
+                                case 'Project':
+                                    return 'Untuk Proyek: ' . $record->pengajuanable->nama_project;
+                                case 'Sewa':
+                                    return 'Untuk Sewa: ' . $record->pengajuanable->judul;
+                                case 'Penjualan':
+                                    return 'Untuk Penjualan: ' . $record->pengajuanable->nama;
+                                case 'Kalibrasi':
+                                    return 'Untuk Kalibrasi: ' . $record->pengajuanable->nama;
+                            }
                         }
                         return 'Untuk: In-House (Internal)';
                     }),
                 TextColumn::make('total')
                     ->state(function (PengajuanDana $record): float {
-                        return $record->detailPengajuans->reduce(function ($carry, $item) {
-                            return $carry + ($item->qty * $item->harga_satuan);
-                        }, 0);
+                        return $record->detailPengajuans->sum('total');
                     })
                     ->money('IDR'),
+                // TextColumn::make('total')
+                //     ->state(function (PengajuanDana $record): float {
+                //         return $record->detailPengajuans->reduce(function ($carry, $item) {
+                //             return $carry + ($item->qty * $item->harga_satuan);
+                //         }, 0);
+                //     })
+                //     ->money('IDR'),
                 TextColumn::make('level.nama')->label('Level'),
                 TextColumn::make('roles.name')
                     ->badge()
@@ -188,7 +194,7 @@ class PengajuanDanaResource extends Resource
 
                         if ($totalTagihan == 0 && $totalPembayaran == 0) {
                             $statusBaru = 3; // Belum Ada Tagihan
-                        } elseif ($totalTagihan === $totalPembayaran) {
+                        } elseif ($totalTagihan == $totalPembayaran) {
                             $statusBaru = 1; // Lunas
                         } elseif ($totalTagihan > $totalPembayaran) {
                             $statusBaru = 0; // Belum Bayar
@@ -335,5 +341,15 @@ class PengajuanDanaResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withTrashed();
+    }
+
+    public static function afterCreate($record): void
+    {
+        if (!$record->pengajuanable_id) {
+            $record->update([
+                'pengajuanable_id' => $record->id,
+                'pengajuanable_type' => \App\Models\PengajuanDana::class,
+            ]);
+        }
     }
 }

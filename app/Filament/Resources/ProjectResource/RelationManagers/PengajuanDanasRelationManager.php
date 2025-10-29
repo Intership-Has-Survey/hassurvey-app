@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use App\Models\Level;
 use Filament\Forms\Form;
+use Filament\Facades\Filament;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
 use App\Traits\GlobalForms;
@@ -31,6 +32,7 @@ use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajua
 
 class PengajuanDanasRelationManager extends RelationManager
 {
+    //
     use GlobalForms;
     protected static string $relationship = 'pengajuanDanas';
     protected static ?string $title = 'Pengajuan Dana';
@@ -62,10 +64,11 @@ class PengajuanDanasRelationManager extends RelationManager
                 CreateAction::make()
                     ->after(function ($livewire, $record) {
                         $record->updateTotalHarga();
-
+                        $uuid = Filament::getTenant()->id;
                         $nilai = $record->nilai;
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
@@ -86,10 +89,11 @@ class PengajuanDanasRelationManager extends RelationManager
                 EditAction::make()
                     ->after(function ($livewire, $record) {
                         $record->updateTotalHarga();
-
+                        $uuid = Filament::getTenant()->id;
                         $nilai = $record->nilai;
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
@@ -103,7 +107,29 @@ class PengajuanDanasRelationManager extends RelationManager
                             ]);
                         }
                     }),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->after(function ($livewire, $record) {
+                        $record->updateTotalHarga();
+
+                        $uuid = Filament::getTenant()->id;
+
+                        // dd($uuid);
+                        $nilai = $record->nilai;
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
+                            ->orderBy('max_nilai')
+                            ->first();
+
+                        if ($level) {
+                            $firstStep = $level->levelSteps()->orderBy('step')->first();
+                            $roleName = optional($firstStep?->role)->id;
+
+                            $record->update([
+                                'level_id'     => $level->id,
+                                'dalam_review' => $roleName,
+                            ]);
+                        }
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

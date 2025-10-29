@@ -34,6 +34,8 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\DaftarAlatResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\DaftarAlatResource\RelationManagers\PenggunaanAlatRelationManager;
 use App\Filament\Resources\DaftarAlatResource\Pages\EditDaftarAlat;
 use App\Filament\Resources\DaftarAlatResource\Pages\ListDaftarAlats;
 use App\Filament\Resources\DaftarAlatResource\Pages\CreateDaftarAlat;
@@ -165,11 +167,11 @@ class DaftarAlatResource extends Resource
                 Select::make('kondisi')
                     ->label('Kondisi Alat')
                     ->required()
+                    ->native(false)
                     ->options([
                         true => 'Baik',
-                        false => 'Bermasalah',
-                    ])
-                    ->visibleOn('edit'),
+                        false => 'Rusak',
+                    ]),
 
                 Hidden::make('company_id')
                     ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
@@ -198,7 +200,7 @@ class DaftarAlatResource extends Resource
                     ->label('Pemilik Alat'),
 
                 BadgeColumn::make('kondisi')
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Rusak')
                     ->color(fn(bool $state): string => match ($state) {
                         true => 'success',
                         false => 'danger',
@@ -228,7 +230,7 @@ class DaftarAlatResource extends Resource
                     ->label('Kondisi')
                     ->placeholder('Semua Kondisi')
                     ->trueLabel('Baik')
-                    ->falseLabel('Bermasalah'),
+                    ->falseLabel('Rusak'),
 
                 TernaryFilter::make('status')
                     ->label('Ketersediaan')
@@ -260,9 +262,9 @@ class DaftarAlatResource extends Resource
     protected function getActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            \Filament\Actions\DeleteAction::make(),
+            \Filament\Actions\ForceDeleteAction::make(),
+            \Filament\Actions\RestoreAction::make(),
         ];
     }
 
@@ -276,6 +278,8 @@ class DaftarAlatResource extends Resource
     {
         return [
             //
+            PenggunaanAlatRelationManager::class,
+
         ];
     }
 

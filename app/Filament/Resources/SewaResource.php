@@ -127,6 +127,11 @@ class SewaResource extends Resource
             ->schema([
                 Section::make('Informasi Kontrak')
                     ->schema([
+                        TextInput::make('kode_sewa')
+                            ->label('Kode Sewa')
+                            ->disabled() // biar user tidak bisa ubah manual
+                            ->dehydrated(false) // jangan simpan input dari user
+                            ->visibleOn(['edit', 'view']),
                         TextInput::make('judul')
                             ->required()
                             ->placeholder('Masukkan Judul Penyewaan')
@@ -266,6 +271,7 @@ class SewaResource extends Resource
                                     ->exists();;
                             })
                     ])->columns(1),
+                Hidden::make('user_id')->default(auth()->id()),
             ])
             ->disabled(fn(?Sewa $record): bool => $record?->is_locked ?? false);
     }
@@ -274,6 +280,7 @@ class SewaResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('kode_sewa')->sortable()->searchable()->wrap(),
                 TextColumn::make('judul')
                     ->label('Judul Penyewaan')
                     ->searchable(),

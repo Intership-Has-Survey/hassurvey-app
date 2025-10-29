@@ -2,21 +2,23 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Kalibrasi;
-use App\Models\Penjualan;
 use Carbon\Carbon;
 use App\Models\Sewa;
-use App\Models\Project;
-use App\Models\StatusPembayaran;
-use App\Models\PengajuanDana;
 use Faker\Core\Uuid;
+use App\Models\Project;
+use App\Models\Kalibrasi;
+use App\Models\Penjualan;
+use App\Models\PembayaranPersonel;
+use App\Helpers\TenantHelper;
+use App\Models\PengajuanDana;
+use Filament\Facades\Filament;
 use Illuminate\Support\Number;
+use App\Models\StatusPembayaran;
 use Illuminate\Support\Facades\DB;
+use App\Models\TransaksiPembayaran;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use App\Helpers\TenantHelper;
-use Filament\Facades\Filament;
 
 class StatsOverview extends BaseWidget
 {
@@ -50,20 +52,55 @@ class StatsOverview extends BaseWidget
             if ($number < 1000)
                 return (string) Number::format($number, 0);
             if ($number < 1000000)
-                return Number::format($number / 1000, 2) . 'k';
-            return Number::format($number / 1000000, 2) . 'm';
+                return Number::format($number / 1000, 0) . ' ribu';
+            return Number::format($number / 1000000, 0) . ' juta';
         };
 
-        $pendapatanMasuk = StatusPembayaran::where('company_id', $this->companyId)
-            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
-            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
-            ->sum('nilai');
+        $serviceTypeMapping = [
+            'Layanan Pemetaan' => Project::class,
+            'Layanan Sewa' => Sewa::class,
+            'Layanan Servis dan Kalibrasi' => Kalibrasi::class,
+            'Layanan Penjualan Alat' => Penjualan::class,
+        ];
 
-        $pengeluaran = PengajuanDana::where('company_id', $this->companyId)
-            ->where('dalam_review', 'approved')
+        $pendapatanMasukQuery = StatusPembayaran::where('company_id', $this->companyId)
             ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
-            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
-            ->sum('nilai');
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        if ($serviceType !== 'Semua' && isset($serviceTypeMapping[$serviceType])) {
+            $pendapatanMasukQuery->where('payable_type', $serviceTypeMapping[$serviceType]);
+        }
+
+        $pendapatanMasuk = $pendapatanMasukQuery->sum('nilai');
+
+        //Pengeluaran
+        $pengeluaranQuery = PengajuanDana::where('company_id', $this->companyId)
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        if ($serviceType !== 'Semua' && isset($serviceTypeMapping[$serviceType])) {
+            $pengeluaranQuery->where('pengajuanable_type', $serviceTypeMapping[$serviceType]);
+        }
+
+        $pembayaran = 0;
+        if ($serviceType == 'Layanan Pemetaan') {
+            $pembayaran = TransaksiPembayaran::where('company_id', $this->companyId)
+                ->where('payable_type', PembayaranPersonel::class)
+                ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+                ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate))
+                ->sum('nilai');
+        }
+
+        $pengeluaran = $pengeluaranQuery->sum('dibayar') + $pembayaran;
+
+        //inhouse
+        $inHouseQuery = PengajuanDana::where('company_id', $this->companyId)
+            ->where('pengajuanable_type', PengajuanDana::class)
+            // ->where($paya, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($startDate, fn($query) => $query->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn($query) => $query->whereDate('created_at', '<=', $endDate));
+
+        $inHouse = $inHouseQuery->sum('dibayar');
 
         $pendapatanBersih = $pendapatanMasuk - $pengeluaran;
 
@@ -149,13 +186,27 @@ class StatsOverview extends BaseWidget
         return [
             Stat::make('Pendapatan Bersih', 'Rp' . $formatNumber($pendapatanBersih))
                 ->description('Pendapatan bersih dalam rentang filter')
+                ->color('primary'),
+            Stat::make('Total Pendapatan', 'Rp' . $formatNumber($pendapatanMasuk))
+                ->description('Total pendapatan kotor')
+                ->color('secondary'),
+            Stat::make('Total Pengeluaran', 'Rp' . $formatNumber($pengeluaran))
+                ->description('Total pengeluaran dalam rentang filter')
                 ->color('secondary'),
             Stat::make('Total Customer', $formatNumber($customerBaru))
                 ->description('Customer baru dalam rentang filter')
-                ->color('primary'),
+                ->color('success'),
             Stat::make('Total Pesanan', $formatNumber($pesananBaru))
                 ->description('Total pesanan dalam rentang filter')
                 ->color('success'),
+            Stat::make('Pengeluaran In-house', $formatNumber($inHouse))
+                ->description('Tidak terpengaruh filter (semua - 4 layanan)')
+                ->color('success'),
         ];
+    }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
     }
 }

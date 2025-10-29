@@ -48,6 +48,11 @@ class KalibrasiResource extends Resource
                     ->schema(self::getCustomerForm()),
                 Section::make('Informasi Kalibrasi')
                     ->schema([
+                        TextInput::make('kode_kalibrasi')
+                            ->label('Kode Kalibrasi')
+                            ->disabled() // biar user tidak bisa ubah manual
+                            ->dehydrated(false) // jangan simpan input dari user
+                            ->visibleOn(['edit', 'view']),
                         TextInput::make('nama')
                             ->label('Nama Kalibrasi')
                             ->required(),
@@ -87,6 +92,7 @@ class KalibrasiResource extends Resource
                             ->default('dalam_proses')
                             ->native(false),
                     ]),
+                Hidden::make('user_id')->default(auth()->id()),
                 Hidden::make('company_id')
                     ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
             ]);
@@ -118,6 +124,7 @@ class KalibrasiResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('kode_kalibrasi')->sortable()->searchable()->wrap(),
                 Tables\Columns\TextColumn::make('nama')->sortable()->searchable()->wrap(),
                 Tables\Columns\TextColumn::make('customer_display')
                     ->label('Klien Utama')

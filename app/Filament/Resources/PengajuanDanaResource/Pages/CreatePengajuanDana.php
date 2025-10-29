@@ -28,9 +28,15 @@ class CreatePengajuanDana extends CreateRecord
         ];
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function afterCreate(): void
     {
-        // $data['tipe_pengajuan'] = 'inhouse'; // Removed as column no longer exists
-        return $data;
+        $record = $this->record;
+
+        if (!$record->pengajuanable_id) {
+            $record->update([
+                'pengajuanable_id' => $record->id,
+                'pengajuanable_type' => \App\Models\PengajuanDana::class,
+            ]);
+        }
     }
 }

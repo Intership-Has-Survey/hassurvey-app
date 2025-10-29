@@ -17,6 +17,7 @@ use Filament\Pages\Actions;
 use Filament\Support\RawJs;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -27,6 +28,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,10 +38,14 @@ use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction as pp;
 use App\Filament\Resources\ProjectResource\Pages\EditProject;
 use App\Filament\Resources\ProjectResource\Pages\ViewProject;
 use App\Filament\Resources\ProjectResource\Pages\ListProjects;
@@ -48,6 +54,7 @@ use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectsFilter;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatusChart;
 use App\Filament\Resources\ProjectResource\Widgets\ProjectStatsOverview;
+
 use App\Filament\Resources\ProjectResource\RelationManagers\PersonelsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
@@ -71,6 +78,12 @@ class ProjectResource extends Resource
         return $form->schema([
             Section::make('Informasi Proyek')
                 ->schema([
+                    TextInput::make('kode_project')
+                        ->label('Kode Proyek')
+                        ->disabled() // biar user tidak bisa ubah manual
+                        ->dehydrated(false) // jangan simpan input dari user
+                        ->visibleOn(['edit', 'view'])
+                        ->columnSpan(2),
                     TextInput::make('nama_project')
                         ->required()
                         ->label('Nama Proyek')
@@ -113,6 +126,17 @@ class ProjectResource extends Resource
                         ->validationMessages([
                             'required' => 'Sumber tidak boleh kosong',
                         ]),
+                    DatePicker::make('mulai')
+                        ->label('Project dimulai')
+                        ->native(false)
+                        // ->default(today())
+                        ->live()
+                        ->closeOnDateSelection(),
+                    DatePicker::make('akhir')->label('Project selesai')->native(false)
+                        ->minDate(function (Get $get) {
+                            return $get('mulai');
+                        })
+                        ->validationMessages(['after_or_equal' =>  'Tanggal selesai harus lebih besar atau sama dengan tanggal mulai'])
                 ])
                 ->columns(2)
                 ->disabled(fn(callable $get) => $get('status_pekerjaan') === 'Selesai' || $get('status') !== 'Closing'),
@@ -175,6 +199,7 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('kode_project')->sortable()->searchable()->wrap(),
                 TextColumn::make('nama_project')->sortable()->searchable()->wrap(),
                 TextColumn::make('customer_display')
                     ->label('Klien Utama')
@@ -265,6 +290,35 @@ class ProjectResource extends Resource
                 TrashedFilter::make(),
 
             ])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                Column::make('kode_project'),
+                                Column::make('nama_project'),
+                                Column::make('kategori.nama'),
+                                Column::make('sales.nama'),
+                                Column::make('tanggal_informasi_masuk'),
+                                Column::make('sumber'),
+                                Column::make('provinsiRegion.name'),
+                                Column::make('kotaRegion.name'),
+                                Column::make('kecamatanRegion.name'),
+                                Column::make('desaRegion.name'),
+                                Column::make('detail_alamat'),
+                                Column::make('dikenakan_ppn'),
+                                Column::make('nilai_project'),
+                                Column::make('status'),
+                                Column::make('status_pembayaran'),
+                                Column::make('status_pekerjaan'),
+                                Column::make('created_at'),
+                                Column::make('updated_at'),
+                                Column::make('deleted_at'),
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - projects-export')
+                    ])
+            ])
             ->actions([
                 ViewAction::make(),
                 // EditAction::make(),
@@ -272,12 +326,54 @@ class ProjectResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()
+                    ->exports([
+                        // $var = 1,
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make('form')
+                            ->fromTable()
+                            ->modifyQueryUsing(function ($query, $livewire) {
+                                return \App\Models\Project::with(['personels', 'statusPembayaran', 'pengajuanDanas', 'pembayaranPersonel', 'daftarAlat'])
+                                    ->where('id', $livewire->mountedTableActionRecord);
+                            })
+                            ->withColumns([
+
+                                Column::make('nilai_project'),
+                                Column::make('statusPembayaran')
+                                    ->heading('pendapatan')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nilai')->sum();
+                                    }),
+                                Column::make('pengajuanDanas')
+                                    ->heading('pengeluaran')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        $totalPengajuanDana = $state->pluck('dibayar')->sum();
+                                        $totalPembayaranPersonel = $record->pembayaranPersonel->pluck('nilai')->sum();
+                                        return $totalPengajuanDana + $totalPembayaranPersonel;
+                                    }),
+                                Column::make('daftarAlat')
+                                    ->heading('Alat digunakan')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        return $state->pluck('nomor_seri')->implode(', ');
+                                    }),
+                                Column::make('personels')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nama')->implode(', ');
+                                    }),
+                            ])
+                            ->withFilename(function ($livewire) {
+                                $project = \App\Models\Project::find($livewire->mountedTableActionRecord);
+
+                                return ($project->kode_project ?: $project->nama_project ?: 'project')
+                                    . '-' . date('Y-m-d');
+                            })
+                    ])
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                     ForceDeleteBulkAction::make(),
+                    ExportBulkAction::make()
                 ]),
             ])
             ->defaultSort('tanggal_informasi_masuk', 'desc')

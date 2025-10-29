@@ -23,10 +23,11 @@ class Pemilik extends Model
 
     protected $guarded = [];
 
-    public function daftarAlat()
-    {
-        return $this->hasMany(DaftarAlat::class, 'pemilik_id');
-    }
+    // public function 
+    // ()
+    // {
+    //     return $this->hasMany(DaftarAlat::class, 'pemilik_id');
+    // }
 
     public function user()
     {
@@ -42,7 +43,7 @@ class Pemilik extends Model
         });
     }
 
-    public function riwayatSewaAlat(): HasManyThrough
+    public function riwayatSewaAlatt(): HasManyThrough
     {
         /**
          * Method ini mengambil RiwayatSewa MELALUI DaftarAlat.
@@ -51,6 +52,16 @@ class Pemilik extends Model
          * daftar_alat.id -> riwayat_sewa.daftar_alat_id
          */
         return $this->hasManyThrough(AlatSewa::class, DaftarAlat::class);
+    }
+
+    public function riwayatSewaAlat(): HasManyThrough
+    {
+        return $this->hasManyThrough(AlatSewa::class, DaftarAlat::class);
+    }
+
+    public function daftarAlat()
+    {
+        return $this->hasMany(DaftarAlat::class, 'pemilik_id');
     }
 
     public function statusPengeluarans()

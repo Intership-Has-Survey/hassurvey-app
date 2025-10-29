@@ -215,4 +215,9 @@ class GrafikPesananBulan extends ChartWidget implements HasForms
             ],
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

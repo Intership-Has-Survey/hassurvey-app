@@ -36,9 +36,10 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Alat Keluar')->disabled()->dehydrated(),
-                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->live()->required(),
+                Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->required()
+                    ->default(now())
+                    ->native(false),
 
-                // --- PERBAIKAN DI SINI ---
                 Forms\Components\TextInput::make('harga_perhari')
                     ->label('Harga Per Hari')
                     ->numeric()
@@ -51,11 +52,11 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                     ->stripCharacters(','),
 
                 Forms\Components\TextInput::make('diskon_hari')->label('Diskon Hari')->numeric()->nullable()->placeholder('Masukkan diskon berapa hari jika ada')->postfix(' Hari')->minValue(0),
-                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Bermasalah' => 'Bermasalah'])->required()->default('Baik')->live()->dehydrated()
+                Forms\Components\Select::make('kondisi_kembali')->label('Kondisi Saat Kembali')->options(['Baik' => 'Baik', 'Rusak' => 'Rusak'])->required()->default('Baik')->live()->dehydrated()
                     ->validationMessages([
                         'required' => 'Kondisi saat kembali tidak boleh kosong',
                     ]),
-                Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Bermasalah')->default(false),
+                Forms\Components\Toggle::make('needs_replacement')->label('Butuh Alat Pengganti?')->helperText('Aktifkan jika alat ini perlu diganti dengan unit lain.')->visible(fn(Get $get): bool => $get('kondisi_kembali') === 'Rusak')->default(false),
                 Forms\Components\Textarea::make('catatan')->label('catatan')->columnSpanFull(),
                 FileUpload::make('foto_bukti_path')
                     ->label('Bukti Pengembalian')
@@ -123,7 +124,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('jenisAlat.nama')->label('Jenis Alat')->searchable(),
                 TextColumn::make('nomor_seri')->searchable(),
-                BadgeColumn::make('kondisi')->label('Kondisi Alat')->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Bermasalah')->color(fn(bool $state) => $state ? 'success' : 'danger'),
+                BadgeColumn::make('kondisi')->label('Kondisi Alat')->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Rusak')->color(fn(bool $state) => $state ? 'success' : 'danger'),
                 TextColumn::make('tgl_keluar')->date('d-m-Y'),
                 TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
                 TextColumn::make('harga_perhari')->money('IDR')->sortable(),
@@ -190,15 +191,14 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 }
                                 return $query->pluck('nomor_seri', 'id')->all();
                             })->searchable()->required()->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))->validationMessages([
-                                        'required' => 'Nomor seri harus dipilih',
-                                    ]),
+                                'required' => 'Nomor seri harus dipilih',
+                            ]),
 
                             Forms\Components\DatePicker::make('tgl_keluar')
                                 ->label('Tanggal Keluar')
-                                ->default(now())
+                                ->default(today())
                                 ->required()
-                                ->minDate(now()->subDays(3))
-                                //->maxDate(now())
+                                ->native(false)
                                 ->visible(fn(Get $get) => filled($get('jenis_alat_id_filter')))
                                 ->validationMessages([
                                     'required' => 'Tanggal keluar harus diisi!',

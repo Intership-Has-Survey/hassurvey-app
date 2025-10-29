@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Tables;
 use App\Models\Pemilik;
 use Filament\Forms\Set;
@@ -11,7 +12,9 @@ use App\Traits\GlobalForms;
 use Filament\Pages\Actions;
 use Filament\Facades\Filament;
 use Illuminate\Support\Number;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -28,9 +31,9 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PemilikResource\Pages\EditPemilik;
+use App\Filament\Resources\PemilikResource\Pages\ViewPemilik;
 use App\Filament\Resources\PemilikResource\Pages\ListPemiliks;
 use App\Filament\Resources\PemilikResource\Pages\CreatePemilik;
-use App\Filament\Resources\PemilikResource\Pages\ViewPemilik;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use App\Filament\Resources\PemilikResource\RelationManagers\DaftarAlatRelationManager;
@@ -183,6 +186,42 @@ class PemilikResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function ($record) {
+                        // Tentukan rentang tanggal dinamis
+                        $now = Carbon::now();
+
+                        // if ($now->day >= 28) {
+                        //     $startDate = $now->copy()->day(28);
+                        //     $endDate = $now->copy()->addMonth()->day(27);
+                        // } else {
+                        //     $startDate = $now->copy()->subMonth()->day(28);
+                        //     $endDate = $now->copy()->day(27);
+                        // }
+
+                        // Ambil data dalam rentang
+                        $filteredItems = $record->riwayatSewaAlat()
+                            // ->whereBetween('tgl_keluar', [$startDate, $endDate])
+                            // ->whereBetween('tgl_masuk', [$startDate, $endDate])
+                            ->get();
+
+                        // Debug dulu kalau mau
+                        // dd($filteredItems);
+
+                        // Generate PDF
+                        $pdf = Pdf::loadView('exports.investor', [
+                            'record' => $record,
+                            'items' => $filteredItems,
+                            // 'startDate' => $startDate,
+                            // 'endDate' => $endDate,
+                        ]);
+
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->stream();
+                        }, 'laporan-' . $record->id . '.pdf');
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

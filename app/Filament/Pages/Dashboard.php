@@ -17,6 +17,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard as BaseDashboard;
 use CodeWithKyrian\FilamentDateRange\Forms\Components\DateRangePicker;
+use Filament\Forms\Components\Placeholder;
 
 class Dashboard extends BaseDashboard
 {
@@ -30,8 +31,28 @@ class Dashboard extends BaseDashboard
         // $earliestSewaDate = Sewa::min('tgl_mulai');
         // $minDate = collect([$earliestProjectDate, $earliestSewaDate])->filter()->min() ?? Carbon::parse('2000-01-01');
 
+        $user = auth()->user();
+        $nama = $user->name ?? 'Pengguna';
+
+
+        // Cek apakah user boleh akses form filter
+        $canUseFilter = $user->hasRole('Super Admin') || $user->can('View Dashboard');
+
+        if (! $canUseFilter) {
+            // Jika user tidak punya izin filter, tampilkan pesan sambutan
+            return $form
+                ->schema([
+                    Section::make('👋 Halo, Selamat Datang di Dashboard')
+                        ->schema([
+                            Placeholder::make('Selamat Datang')
+                                ->content("Halo kak {$nama}, Kami senang Anda bergabung hari ini. Silakan jelajahi modul yang tersedia untuk melanjutkan aktivitas Anda. 
+                Jika beberapa fitur belum dapat diakses, mohon hubungi Super Admin untuk mendapatkan izin. Terima kasih atas kerja samanya 🙏"),
+                        ]),
+                ]);
+        }
+
         return $form
-            ->schema([
+            ->schema($canUseFilter ? [
                 Section::make()
                     ->schema([
                         Select::make('serviceType')
@@ -48,18 +69,8 @@ class Dashboard extends BaseDashboard
                             ->label('Filter Berdasarkan Rentang Tanggal'),
                     ])
                     ->columns(3),
-            ]);
-
-
+            ] : []);
     }
-
-    protected static array $widgets = [
-        StatsOverview::class,
-        GrafikCustomer::class,
-        GrafikCustomerBulan::class,
-        GrafikPesanan::class,
-        GrafikPesananBulan::class,
-    ];
 
     public function getWidgets(): array
     {

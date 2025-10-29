@@ -4,13 +4,14 @@ namespace App\Filament\Resources\PengajuanDanaResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Level;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Illuminate\Support\Facades\DB;
-use App\Models\Level;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
@@ -39,15 +40,15 @@ class DetailPengajuansRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('deskripsi')
                     ->label('Nama Item')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
 
                 Forms\Components\TextInput::make('qty')
                     ->label('Jumlah')
                     ->numeric()
-                    ->minValue(1)
                     ->maxLength(4)
+                    ->minValue(1)
                     ->default(1)
-                    ->reactive()
                     ->required()
                     ->validationMessages([
                         'required' => 'Jumlah wajib diisi',
@@ -71,9 +72,10 @@ class DetailPengajuansRelationManager extends RelationManager
                     ->numeric()
                     ->prefix('Rp ')
                     ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(['.', ','])
-                    ->minValue(0)
+                    ->stripCharacters(',')
+
                     ->required()
+                    ->minValue(0)
                     ->validationMessages([
                         'required' => 'Harga satuan wajib diisi',
                         'max_digits' => 'Tidak boleh lebih dari 9 digit',
@@ -91,7 +93,7 @@ class DetailPengajuansRelationManager extends RelationManager
 
                 Forms\Components\Hidden::make('total')
                     ->dehydrated(true)
-                    ->reactive()
+                    // ->reactive()
                     ->default(fn(Get $get) => (int) $get('qty') * self::parseMoney($get('harga_satuan')))
                     ->afterStateHydrated(function (Set $set, Get $get) {
                         $set('total', (int) $get('qty') * self::parseMoney($get('harga_satuan')));
@@ -117,10 +119,14 @@ class DetailPengajuansRelationManager extends RelationManager
                     ->after(function ($livewire, $record) {
                         $pengajuan = $livewire->getOwnerRecord();
                         $pengajuan->updateTotalHarga();
+                        // $nilai = $pengajuan->updateNilai();
 
+                        $uuid = Filament::getTenant()->id;
+
+                        // dd($uuid);
                         $nilai = $pengajuan->nilai;
-
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
@@ -129,11 +135,11 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->role)->id;
+                            $roleId = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
                                 'level_id' => $level->id,
-                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                                'dalam_review' => $roleId, // kolom ini sekarang menyimpan Id role
                             ]);
                         }
                     })
@@ -144,10 +150,14 @@ class DetailPengajuansRelationManager extends RelationManager
                     ->after(function ($livewire, $record) {
                         $pengajuan = $livewire->getOwnerRecord();
                         $pengajuan->updateTotalHarga();
+                        // $nilai = $pengajuan->updateNilai();
 
+                        $uuid = Filament::getTenant()->id;
+
+                        // dd($uuid);
                         $nilai = $pengajuan->nilai;
-
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
@@ -156,22 +166,26 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->role)->id;
+                            $roleId = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
                                 'level_id' => $level->id,
-                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                                'dalam_review' => $roleId, // kolom ini sekarang menyimpan Id role
                             ]);
                         }
                     }),
                 DeleteAction::make()
                     ->after(function ($livewire, $record) {
                         $pengajuan = $livewire->getOwnerRecord();
-                        $pengajuan->updateTotalHarga();
+                        // $pengajuan->updateTotalHarga();
+                        $nilai = $pengajuan->updateNilai();
 
-                        $nilai = $pengajuan->nilai;
+                        $uuid = Filament::getTenant()->id;
 
-                        $level = Level::where('max_nilai', '>=', $nilai)
+                        // dd($uuid);
+                        // $nilai = $pengajuan->nilai;
+                        $level = Level::where('company_id', $uuid)
+                            ->where('max_nilai', '>=', $nilai)
                             ->orderBy('max_nilai')
                             ->first();
 
@@ -180,11 +194,12 @@ class DetailPengajuansRelationManager extends RelationManager
                             $firstStep = $level->levelSteps()->orderBy('step')->first();
 
                             // Ambil nama role dari relasi role di levelStep
-                            $roleName = optional($firstStep?->role)->id;
+                            $roleId = optional($firstStep?->role)->id;
 
                             $pengajuan->update([
+                                'nilai' => $nilai,
                                 'level_id' => $level->id,
-                                'dalam_review' => $roleName, // kolom ini sekarang menyimpan nama role
+                                'dalam_review' => $roleId, // kolom ini sekarang menyimpan Id role
                             ]);
                         }
                     })

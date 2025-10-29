@@ -71,10 +71,10 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function pengajuanDanas(): HasMany
-    {
-        return $this->hasMany(PengajuanDana::class);
-    }
+    // public function pengajuanDanas(): HasMany
+    // {
+    //     return $this->hasMany(PengajuanDana::class);
+    // }
     public function Sewa()
     {
         return $this->belongsTo(Sewa::class);
@@ -103,5 +103,48 @@ class Project extends Model
             ->logOnly(['nama_project', 'kategori_id', 'sales_id', 'tanggal_informasi_masuk', 'sumber', 'provinsi', 'kota', 'kecamatan', 'desa', 'detail_alamat', 'nilai_project_awal', 'dikenakan_ppn', 'nilai_ppn', 'nilai_project', 'status', 'status_pembayaran', 'status_pekerjaan', 'corporate_id', 'sewa_id'])
             ->logOnlyDirty()
             ->useLogName('Project');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($project) {
+            $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa project yang sudah ada di tanggal ini
+            $countToday = Project::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            $project->kode_project = 'LPEM' . $tanggal .  $urutan;
+        });
+    }
+
+    public function pengajuanDanas()
+    {
+        return $this->morphMany(PengajuanDana::class, 'pengajuanable');
+    }
+
+    public function provinsiRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'provinsi', 'code');
+    }
+
+    // Relationship for kota
+    public function kotaRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'kota', 'code');
+    }
+
+    // Relationship for kecamatan
+    public function kecamatanRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'kecamatan', 'code');
+    }
+
+    // Relationship for desa
+    public function desaRegion(): BelongsTo
+    {
+        return $this->belongsTo(TrefRegion::class, 'desa', 'code');
     }
 }
