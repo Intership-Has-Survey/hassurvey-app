@@ -261,10 +261,34 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $currentPenyewa = null;
+                    $groupStartIndex = 0;
+                    $rowspanCount = 0;
+                @endphp
 
-                @forelse ($alat['riwayat'] as $r)
+                @foreach ($alat['riwayat'] as $index => $r)
+                    @php
+                        // Reset grouping jika penyewa berubah
+                        if ($currentPenyewa !== $r['penyewa']) {
+                            $currentPenyewa = $r['penyewa'];
+                            $groupStartIndex = $index;
+
+                            // Hitung berapa hari berturut-turut dengan penyewa yang sama
+                            $rowspanCount = 1;
+                            for ($i = $index + 1; $i < count($alat['riwayat']); $i++) {
+                                if ($alat['riwayat'][$i]['penyewa'] === $currentPenyewa) {
+                                    $rowspanCount++;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                    @endphp
+
                     <tr class="{{ $r['status'] == 'ada sewa' ? 'table-success' : 'table-danger' }}">
                         <td>{{ \Carbon\Carbon::Parse($r['tanggal'])->format('j F Y') }}</td>
+
                         @if ($r['status'] == 'ada sewa')
                             <td class="text-capitalize hijau"></td>
                         @else
@@ -276,18 +300,34 @@
                         @else
                             <td class="text-capitalize"></td>
                         @endif
+
                         <td>
-                            {{-- Tampilkan nama penyewa kalau ada, atau tanda "-" --}}
                             {{ $r['penyewa'] }}
                         </td>
-                        <td></td>
-                        <td></td>
+
+                        {{-- Hanya tampilkan di baris pertama setiap group --}}
+                        @if ($index === $groupStartIndex)
+                            @if ($r['status'] == 'ada sewa')
+                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">✓
+                                </td>
+                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">
+                                </td>
+                            @else
+                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">
+                                </td>
+                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">✓
+                                </td>
+                            @endif
+                        @endif
                     </tr>
-                @empty
+                @endforeach
+
+                @if (count($alat['riwayat']) === 0)
                     <tr>
-                        <td colspan="3" class="text-muted fst-italic">Tidak ada data riwayat</td>
+                        <td colspan="6" class="text-muted fst-italic">Tidak ada data riwayat</td>
                     </tr>
-                @endforelse
+                @endif
+
             </tbody>
         </table>
     @endforeach

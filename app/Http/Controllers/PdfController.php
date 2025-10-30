@@ -37,9 +37,15 @@ class PdfController extends Controller
 
         $alatData = [];
 
+
+        $groupedRiwayat = [];
+        $currentGroup = [];
+        $previousPenyewa = null;
+
         foreach ($pemilik->daftarAlat as $alat) {
             $period = CarbonPeriod::create($start_date, $end_date);
             $riwayat = [];
+            $groupedRecords = []; // Untuk grouping periode sewa
 
             foreach ($period as $tanggal) {
                 $penyewaNama = null;
@@ -52,7 +58,6 @@ class PdfController extends Controller
                         return false;
                     }
 
-                    // Jika tgl_masuk null → masih disewa
                     $masihSewa = is_null($tglMasuk)
                         ? $tanggal->greaterThanOrEqualTo($tglKeluar)
                         : $tanggal->between($tglKeluar, $tglMasuk, true);
@@ -69,12 +74,46 @@ class PdfController extends Controller
                     'status' => $adaSewa ? 'ada sewa' : 'tidak ada sewa',
                     'status_invers' => $adaSewa ? 'kosong' : 'merah',
                     'penyewa' => $adaSewa ? $penyewaNama : '',
+                    'carbon_tanggal' => $tanggal, // Simpan objek Carbon untuk grouping
                 ];
+            }
+
+            // Grouping berdasarkan periode sewa yang berurutan
+            $groupedRiwayat = [];
+            $currentGroup = [];
+            $previousPenyewa = null;
+
+            foreach ($riwayat as $index => $day) {
+                // Jika penyewa berbeda atau status berbeda, buat group baru
+                if ($day['penyewa'] !== $previousPenyewa || empty($currentGroup)) {
+                    if (!empty($currentGroup)) {
+                        $groupedRiwayat[] = $currentGroup;
+                    }
+                    $currentGroup = [
+                        'start_date' => $day['carbon_tanggal'],
+                        'end_date' => $day['carbon_tanggal'],
+                        'penyewa' => $day['penyewa'],
+                        'status' => $day['status'],
+                        'days' => [$day]
+                    ];
+                } else {
+                    // Masukkan ke group yang sama
+                    $currentGroup['end_date'] = $day['carbon_tanggal'];
+                    $currentGroup['days'][] = $day;
+                }
+
+                $previousPenyewa = $day['penyewa'];
+
+                // Untuk hari terakhir
+                if ($index === count($riwayat) - 1 && !empty($currentGroup)) {
+                    $groupedRiwayat[] = $currentGroup;
+                }
             }
 
             $alatData[] = [
                 'alat' => $alat,
                 'riwayat' => $riwayat,
+                'grouped_riwayat' => $groupedRiwayat, // Data yang sudah dikelompokkan
             ];
         }
 
