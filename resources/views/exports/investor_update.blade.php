@@ -5,12 +5,12 @@
     {{-- biru muda has : c5d9f0 --}}
     {{-- kuning has : ffc000 --}}
     {{-- abu has : ddd9c4 --}}
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">s
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
         rel="stylesheet">
-    <title>Pengajuan PDF</title>
+    <title>Generate Laporan Investor</title>
     <style>
         body {
             font-family: "Open Sans", sans-serif;
@@ -38,7 +38,7 @@
             text-align: center;
             line-height: 100%;
             flex: 3;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .kalender {
@@ -67,6 +67,7 @@
 
         table tr td {
             border: 2;
+            font-size: 12px;
         }
 
         .status-ada {
@@ -98,7 +99,7 @@
             {{-- Simpan gambar di public --}}
             <img src="{{ asset('logo_pthas.jpg') }}" alt="Logo PTHAS" width="150">
             {{-- Jika untuk ekspor ke PDF, PDF tiidak bisa akses directory relatif public --}}
-            {{-- <img src="{{ public_path('logo_pthas.jpg') }}" width="150" alt="Logo PTHAS"0> --}}
+            {{-- <img src="{{ public_path('logo_pthas.jpg') }}" width="125"> --}}
 
         </div>
         <div class="kepala-tengah">
@@ -124,7 +125,30 @@
                     {{-- mengubah format date dari string jadi carbon lalu ubah format dari Y-m-d jadi j F Y --}}
                     <td>{{ \Carbon\Carbon::parse($item->tgl_keluar)->format('j F Y') }}</td>
 
-                    <td> {{ Illuminate\Support\Str::title(optional($item->sewa->corporate)->nama) ?? Illuminate\Support\Str::title(optional($item->sewa->perorangan->first())->nama ?? 'HAS Survey') }}
+                    <?php
+                    // @dump($item->sewa->perorangan->first()->nama);
+                    // @dump($item->sewa->perorangan->first())->nama;
+                    ?>
+                    <td>
+                        {{-- {{ Illuminate\Support\Str::title(
+                            $item->sewa->corporate->nama ?? (optional($item->sewa->perorangan->first())->nama ?? 'HAS Survey'),
+                        ) }} --}}
+
+
+
+                        {{-- {{ Illuminate\Support\Str::title(
+                            $item->sewa->corporate->nama ?? (optional($item->sewa->perorangan)??->first()->nama ?? 'HAS Survey'),
+                        ) }} --}}
+                        {{-- {{ $item->sewa->corporate->nama ?? ($item->sewa->perorangan ?? 'HAS Survey') }} --}}
+                        {{-- {{ $item->sewa->perorangan ?? 'HAS Survey' }} --}}
+
+                        {{-- {{ Illuminate\Support\Str::title(
+                            optional($item->sewa->corporate)->nama ??
+                                (optional(optional($item->sewa->perorangan)->first())->nama ?? 'HAS Survey'),
+                        ) }} --}}
+                        {{ Illuminate\Support\Str::title(
+                            $item->sewa?->corporate?->nama ?? ($item->sewa?->perorangan?->first()?->nama ?? 'HAS'),
+                        ) }}
                         sewa
                         {{ Illuminate\Support\Str::title($item->daftarAlat->jenisAlat->nama) }}
                         {{ $item->daftarAlat->nomor_seri }}
@@ -186,6 +210,7 @@
         </tbody>
     </table>
     <br>
+    <br>
     <table border="2" cellpadding="4" cellspacing="0" style="border-collapse: collapse; width: 80%;">
         <thead style="background-color: #c5d9f0;">
             <tr style="background-color: #ffc000">
@@ -231,25 +256,15 @@
                     <th style="width: 10%">ADA SEWA</th>
                     <th style="width: 10%">TIDAK ADA SEWA</th>
                     <th style="width: 20%">PENYEWA</th>
-                    {{-- <th style="width: 20%">YANG SUDAH DIBAYAR</th> --}}
-                    {{-- <th style="width: 20%">YANG BELUM DIBAYAR</th> --}}
+                    <th style="width: 20%">SUDAH DIBAYAR</th>
+                    <th style="width: 20%">BELUM DIBAYAR</th>
                 </tr>
             </thead>
             <tbody>
-                {{-- @php
-                    // Tanggal mulai: 28 bulan ini
-                    $startDate = \Carbon\Carbon::now()->day(28)->startOfDay();
-
-                    // Tanggal akhir: 27 bulan depan
-                    $endDate = $startDate->copy()->addMonthNoOverflow()->day(27);
-
-                    // Inisialisasi tanggal iterator
-                    $currentDate = $startDate->copy();
-                @endphp --}}
 
                 @forelse ($alat['riwayat'] as $r)
                     <tr class="{{ $r['status'] == 'ada sewa' ? 'table-success' : 'table-danger' }}">
-                        <td>{{ $r['tanggal'] }}</td>
+                        <td>{{ \Carbon\Carbon::Parse($r['tanggal'])->format('j F Y') }}</td>
                         @if ($r['status'] == 'ada sewa')
                             <td class="text-capitalize hijau"></td>
                         @else
@@ -265,6 +280,8 @@
                             {{-- Tampilkan nama penyewa kalau ada, atau tanda "-" --}}
                             {{ $r['penyewa'] }}
                         </td>
+                        <td></td>
+                        <td></td>
                     </tr>
                 @empty
                     <tr>

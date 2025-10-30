@@ -9,6 +9,7 @@ use App\Livewire\Settings\Password;
 use App\Http\Controllers\Controller;
 use App\Livewire\Settings\Appearance;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -190,5 +191,14 @@ Route::get('/admin/e703370f-5ac6-4c4f-9b04-3a360bd529f7/investorupdate/preview',
     //COmpact untuk mengirim data ke blade
     return view('exports.investor_update', compact(['investors', 'record', 'items', 'alatData', 'pemilik', 'start_date', 'end_date']));
 });
+
+// Route::get('/admin/{company}/investorupdate/preview/{investor}', [PdfController::class, 'preview'])
+//     ->name('pdf.preview');
+
+Route::get('/admin/{company}/investorupdate/download/{investor}', [PdfController::class, 'download'])
+    ->name('pdf.download');
+
+Route::get('/admin/{company}/investorupdate/preview/{investor}', [PdfController::class, 'preview'])
+    ->name('pdf.preview');
 
 require __DIR__ . '/auth.php';

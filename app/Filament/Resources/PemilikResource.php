@@ -186,6 +186,27 @@ class PemilikResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                Tables\Actions\Action::make('downloadPdf')
+                    ->label('Download PDF')
+                    ->color('success')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function (Model $record) {
+                        return redirect()->route('pdf.download', [
+                            'company' => 'e703370f-5ac6-4c4f-9b04-3a360bd529f7',
+                            'investor' => $record->id
+                        ]);
+                    }),
+
+                Tables\Actions\Action::make('previewPdf')
+                    ->label('Preview PDF')
+                    ->color('info')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn(Model $record): string => route('pdf.preview', [
+                        'company' => 'e703370f-5ac6-4c4f-9b04-3a360bd529f7',
+                        'investor' => $record->id
+                    ]))
+                    ->openUrlInNewTab(),
+
                 Action::make('export_pdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
