@@ -79,7 +79,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
     {
         $pivotData = $record->pivot;
 
-        // Get all alat related to this sewa with tgl_masuk not null
+        // Get all alat relat ed to this sewa with tgl_masuk not null
         $allAlat = $sewa->daftarAlat()->wherePivotNotNull('tgl_masuk')->get();
 
         // Calculate total biaya_sewa_alat from all alat
@@ -334,6 +334,40 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             ]);
                         }
                     }),
+                Tables\Actions\EditAction::make('Final Harga')
+                    ->label('Harga dan Bayar')
+                    ->form([
+                        Forms\Components\TextInput::make('harga_final')
+                            ->label('Finalisasi Harga')
+                            ->nullable()
+                            ->minValue(0)
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->placeholder('Harga sewa alat ini')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->live(),
+                        Forms\Components\TextInput::make('sudah_dibayar')
+                            ->label('Terbayarkan')
+                            ->nullable()
+                            ->minValue(0)
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->placeholder('Harga sewa alat ini')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->live(),
+                    ])->action(function (Model $record, array $data) {
+                        // Update melalui relasi riwayatSewa
+                        // @dump($data);
+                        if ($record->pivot) {
+                            $record->pivot->update([
+                                'harga_final' => $data['harga_final'],
+                                'sudah_dibayar' => $data['sudah_dibayar'],
+                            ]);
+                        }
+                    }),
+                // ->fillForm(fn(Model $record): array => ['harga_final' => $record->pivot->harga_final, 'sudah_dibayar' => $record->pivot->sudah_dibayar]),
                 Tables\Actions\EditAction::make('edit_diskon')
                     ->label('Edit Diskon')
                     ->icon('heroicon-o-pencil-square')

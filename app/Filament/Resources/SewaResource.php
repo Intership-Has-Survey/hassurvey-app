@@ -253,7 +253,7 @@ class SewaResource extends Resource
 
                         TextInput::make('harga_fix')
                             ->label('Harga Final (Harga Setelah Negosiasi)')
-                            ->hiddenOn('create')
+                            // ->hiddenOn('create')
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(',')
                             ->placeholder('Masukkan harga akhir setelah negosiasi')
@@ -292,6 +292,7 @@ class SewaResource extends Resource
                         }
                         return $record->perorangan->first()?->nama ?? 'HAS Survey';
                     })
+                    // ->searchable(),
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query
                             ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
