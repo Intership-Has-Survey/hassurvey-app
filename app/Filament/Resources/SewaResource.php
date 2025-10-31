@@ -253,7 +253,7 @@ class SewaResource extends Resource
 
                         TextInput::make('harga_fix')
                             ->label('Harga Final (Harga Setelah Negosiasi)')
-                            // ->hiddenOn('create')
+                            ->hiddenOn('create')
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(',')
                             ->placeholder('Masukkan harga akhir setelah negosiasi')

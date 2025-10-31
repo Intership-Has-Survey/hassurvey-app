@@ -2,9 +2,7 @@
 <html>
 
 <head>
-    {{-- biru muda has : c5d9f0 --}}
-    {{-- kuning has : ffc000 --}}
-    {{-- abu has : ddd9c4 --}}
+    {{-- CSS tetap sama --}}
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,18 +25,16 @@
             align-items: center;
         }
 
-        /* mengambil dua kelas dan menjadikannya 1 flex */
         .kepala-kanan,
         .kepala-kiri {
             flex: 1;
         }
 
-        /* lebih besar dari yang di atas */
         .kepala-tengah {
             text-align: center;
             line-height: 100%;
             flex: 3;
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .kalender {
@@ -62,7 +58,6 @@
             flex: 1;
             display: flex;
             justify-content: space-around;
-            /* background-color: yellow; */
         }
 
         table tr td {
@@ -72,13 +67,11 @@
 
         .status-ada {
             background-color: #90EE90;
-            /* Hijau muda */
             text-align: center;
         }
 
         .status-tidak {
             background-color: #FFB6C1;
-            /* Merah muda */
             text-align: center;
         }
 
@@ -89,18 +82,22 @@
         .merah {
             background-color: red;
         }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
+    {{-- Halaman pertama (tetap sama) --}}
     <div class="kepala">
         <div class="kepala-kiri">
-
-            {{-- Simpan gambar di public --}}
             <img src="{{ asset('logo_pthas.jpg') }}" alt="Logo PTHAS" width="150">
-            {{-- Jika untuk ekspor ke PDF, PDF tiidak bisa akses directory relatif public --}}
-            {{-- <img src="{{ public_path('logo_pthas.jpg') }}" width="125"> --}}
-
         </div>
         <div class="kepala-tengah">
             <h2>BAGI HASIL SEWA ALAT</h2>
@@ -110,6 +107,7 @@
         </div>
         <div class="kepala-kanan"></div>
     </div>
+
     <table border="1" cellpadding="4" cellspacing="0" style="border-collapse: collapse; width: 100%;">
         <thead style="background-color: #c5d9f0;">
             <tr>
@@ -122,30 +120,8 @@
         <tbody>
             @foreach ($items as $item)
                 <tr>
-                    {{-- mengubah format date dari string jadi carbon lalu ubah format dari Y-m-d jadi j F Y --}}
                     <td>{{ \Carbon\Carbon::parse($item->tgl_keluar)->format('j F Y') }}</td>
-
-                    <?php
-                    // @dump($item->sewa->perorangan->first()->nama);
-                    // @dump($item->sewa->perorangan->first())->nama;
-                    ?>
                     <td>
-                        {{-- {{ Illuminate\Support\Str::title(
-                            $item->sewa->corporate->nama ?? (optional($item->sewa->perorangan->first())->nama ?? 'HAS Survey'),
-                        ) }} --}}
-
-
-
-                        {{-- {{ Illuminate\Support\Str::title(
-                            $item->sewa->corporate->nama ?? (optional($item->sewa->perorangan)??->first()->nama ?? 'HAS Survey'),
-                        ) }} --}}
-                        {{-- {{ $item->sewa->corporate->nama ?? ($item->sewa->perorangan ?? 'HAS Survey') }} --}}
-                        {{-- {{ $item->sewa->perorangan ?? 'HAS Survey' }} --}}
-
-                        {{-- {{ Illuminate\Support\Str::title(
-                            optional($item->sewa->corporate)->nama ??
-                                (optional(optional($item->sewa->perorangan)->first())->nama ?? 'HAS Survey'),
-                        ) }} --}}
                         {{ Illuminate\Support\Str::title(
                             $item->sewa?->corporate?->nama ?? ($item->sewa?->perorangan?->first()?->nama ?? 'HAS'),
                         ) }}
@@ -159,26 +135,22 @@
                             (belum selesai)
                         @endif
                     </td>
-                    {{-- argumen 1: variabel/data; arg 2: jenis currency; arg 3 local bisa en bisa id, dll.;arg 4:precision 0 koma --}}
                     <td style="text-align: right"> <span style="float: left;">Rp</span>
-                        {{ number_format($item->biaya_sewa_alat_final, 0, ',', ',') }}
+                        {{ number_format($item->sudah_dibayar, 0, ',', ',') }}
                     </td>
-                    {{-- bisa juga pake yang bawah --}}
-                    {{-- <td >{{ Illuminate\Support\Number::currency($item->biaya_sewa_alat_final, 'IDR', 'id', 0) }}</td> --}}
-
                 </tr>
             @endforeach
-            {{-- menambahkan satu baris baru setelah melooping semua data --}}
             <tr style="background-color: #c5d9f0;">
                 <th colspan="3">Total Pemasukan</th>
-                {{-- pake $items untuk menjumlahkan semuanya bukan $item, karena $item hanya satu --}}
                 <th style="text-align: right">
                     <span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('biaya_sewa_alat_final'), 0, ',', ',') }}
-
+                    {{ number_format($items->sum('sudah_dibayar'), 0, ',', ',') }}
+                </th>
             </tr>
         </tbody>
     </table>
+
+    {{-- Bagian bagi hasil (tetap sama) --}}
     <br>
     <table border="2" cellpadding="4" cellspacing="0" style="border-collapse: collapse; width: 80%;">
         <thead style="background-color: #c5d9f0;">
@@ -198,18 +170,15 @@
         <tbody>
             <tr>
                 <td style="text-align: right"><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('biaya_sewa_alat_final'), 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar'), 0, ',', ',') }}</td>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('pendapatanhas_final'), 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * 0.8, 0, ',', ',') }}</td>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('pendapataninv_final'), 0, ',', ',') }}</td>
-
-                {{-- <td style="background-color:#ddd9c4 ">32432</td> --}}
-
+                    {{ number_format($items->sum('sudah_dibayar') * 0.2, 0, ',', ',') }}</td>
             </tr>
         </tbody>
     </table>
-    <br>
+
     <br>
     <table border="2" cellpadding="4" cellspacing="0" style="border-collapse: collapse; width: 80%;">
         <thead style="background-color: #c5d9f0;">
@@ -220,11 +189,12 @@
         <tbody>
             <tr>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('pendapataninv_final'), 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * 0.2, 0, ',', ',') }}</td>
             </tr>
         </tbody>
     </table>
 
+    {{-- Halaman detail alat (diperbaiki) --}}
     @foreach ($alatData as $alat)
         <div class="page-break"></div>
         <div class="kalender">
@@ -234,15 +204,11 @@
         </div>
         <div class="infoalat">
             <div class="infoalat-jenis">
-                <h2>
-                    {{ $alat['alat']->jenisAlat->nama }}
-                </h2>
+                <h2>{{ $alat['alat']->jenisAlat->nama }}</h2>
             </div>
             <div class="infoalat-kode">
                 <h2>SERIAL NUMBER : </h2>
-                <h2>
-                    {{ $alat['alat']->nomor_seri }}
-                </h2>
+                <h2>{{ $alat['alat']->nomor_seri }}</h2>
             </div>
         </div>
 
@@ -290,32 +256,50 @@
                         <td>{{ \Carbon\Carbon::Parse($r['tanggal'])->format('j F Y') }}</td>
 
                         @if ($r['status'] == 'ada sewa')
-                            <td class="text-capitalize hijau"></td>
+                            <td class="hijau"></td>
                         @else
-                            <td class="text-capitalize"></td>
+                            <td></td>
                         @endif
 
                         @if ($r['status_invers'] == 'merah')
-                            <td class="text-capitalize merah"></td>
+                            <td class="merah"></td>
                         @else
-                            <td class="text-capitalize"></td>
+                            <td></td>
                         @endif
 
-                        <td>
-                            {{ $r['penyewa'] }}
-                        </td>
+                        <td>{{ $r['penyewa'] }}</td>
 
-                        {{-- Hanya tampilkan di baris pertama setiap group --}}
+                        {{-- Kolom SUDAH DIBAYAR dan BELUM DIBAYAR --}}
                         @if ($index === $groupStartIndex)
                             @if ($r['status'] == 'ada sewa')
-                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">✓
+                                <td rowspan="{{ $rowspanCount }}"
+                                    style="vertical-align: middle; text-align: right; padding: 0 10px;font-size:12px;">
+                                    {{-- @if ($r['sudah_dibayar'] > 0)
+                                        <span style="float: left;">Rp</span>
+                                        {{ number_format($r['sudah_dibayar'], 0, ',', '.') }}
+                                        @else
+                                        -
+                                        @endif --}}
+                                    <span style="float: left;">Rp</span>
+                                    {{ number_format($r['sudah_dibayar'], 0, ',', '.') }}
                                 </td>
-                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">
+                                <td rowspan="{{ $rowspanCount }}"
+                                    style="vertical-align: middle; text-align: right; padding: 0 10px; font-size:12px;">
+                                    @if ($r['sudah_dibayar'] >= 1 && $r['sudah_dibayar'] > $r['harga_final'])
+                                        LUNAS
+                                    @else
+                                        <span style="float: left;">Rp</span>
+                                        {{ number_format($r['harga_final'] - $r['sudah_dibayar'], 0, ',', '.') }}
+                                    @endif
                                 </td>
                             @else
-                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">
+                                <td rowspan="{{ $rowspanCount }}"
+                                    style="vertical-align: middle; text-align: right; padding: 0 10px">
+                                    -
                                 </td>
-                                <td rowspan="{{ $rowspanCount }}" style="vertical-align: middle; text-align: center;">✓
+                                <td rowspan="{{ $rowspanCount }}"
+                                    style="vertical-align: middle; text-align: right; padding: 0 10px">
+                                    -
                                 </td>
                             @endif
                         @endif
@@ -327,11 +311,9 @@
                         <td colspan="6" class="text-muted fst-italic">Tidak ada data riwayat</td>
                     </tr>
                 @endif
-
             </tbody>
         </table>
     @endforeach
-
 </body>
 
 </html>
