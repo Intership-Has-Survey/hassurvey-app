@@ -79,7 +79,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
     {
         $pivotData = $record->pivot;
 
-        // Get all alat related to this sewa with tgl_masuk not null
+        // Get all alat relat ed to this sewa with tgl_masuk not null
         $allAlat = $sewa->daftarAlat()->wherePivotNotNull('tgl_masuk')->get();
 
         // Calculate total biaya_sewa_alat from all alat
@@ -124,7 +124,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('jenisAlat.nama')->label('Jenis Alat')->searchable(),
                 TextColumn::make('nomor_seri')->searchable(),
-                BadgeColumn::make('kondisi')->label('Kondisi Alat')->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Rusak')->color(fn(bool $state) => $state ? 'success' : 'danger'),
+                // BadgeColumn::make('kondisi')->label('Kondisi Alat')->formatStateUsing(fn(bool $state): string => $state ? 'Baik' : 'Rusak')->color(fn(bool $state) => $state ? 'success' : 'danger'),
                 TextColumn::make('tgl_keluar')->date('d-m-Y'),
                 TextColumn::make('tgl_masuk')->date('d-m-Y')->placeholder('Belum Kembali'),
                 TextColumn::make('harga_perhari')->money('IDR')->sortable(),
@@ -144,12 +144,18 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         }
                         return 0;
                     }),
-                TextColumn::make('biaya_sewa_alat')->label('Biaya Realisasi')->money('IDR')->placeholder('Belum Kembali')->sortable(),
+                // TextColumn::make('biaya_sewa_alat')->label('Biaya Realisasi')->money('IDR')->placeholder('Belum Kembali')->sortable(),
                 TextColumn::make('biaya_sewa_alat_final')
                     ->label('Harga Final Alat')
                     ->money('IDR')
                     ->visible(fn(): bool => $this->getSewaRecord()->is_locked === true) // Hanya tampil jika is_locked true
                     ->state(fn(Model $record): float => $record->biaya_sewa_alat_final ?? 0),
+                TextColumn::make('harga_final')
+                    ->money('IDR')
+                    ->label('Harga Final'),
+                TextColumn::make('sudah_dibayar')
+                    ->money('IDR')
+                    ->label('Sudah Dibayar'),
             ])
             ->filters([])
             ->headerActions([
@@ -334,6 +340,81 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             ]);
                         }
                     }),
+                Tables\Actions\EditAction::make('Final Harga')
+                    ->label('Harga dan Bayar')
+                    ->form([
+                        Forms\Components\TextInput::make('harga_final')
+                            ->label('Finalisasi Harga')
+                            ->nullable()
+                            ->minValue(0)
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->placeholder('Harga sewa alat ini')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->live()
+                            // ->disabled(),
+                            ->disabled(fn($get, $record) => !empty($record?->pivot?->harga_final)),
+                        // ->helperText(function ($get, $record) {
+                        //     $existingPayment = $record?->pivot?->harga_final;
+                        //     // dd($record);
+
+                        //     if (!empty($existingPayment)) {
+                        //         return "Harga Final sebe " .  'RP ' . number_format($existingPayment, 0, ',', '.');
+                        //     }
+
+                        //     return "Isikan jumlah yang sudah dibayar";
+                        // }),
+                        Forms\Components\TextInput::make('sudah_dibayar')
+                            ->label('Total yang sudah dibayar')
+                            ->nullable()
+                            ->minValue(0)
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->placeholder('Harga sewa alat ini')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->live()
+                            ->helperText(function ($get, $record) {
+                                $existingPayment = $record?->pivot?->sudah_dibayar;
+                                $finalPrice = $record?->pivot?->harga_final;
+
+                                if (!empty($existingPayment)) {
+                                    $formattedPayment = 'Rp ' . number_format($existingPayment, 0, ',', '.');
+
+                                    // Cek apakah sudah LUNAS
+                                    if (!empty($finalPrice) && $existingPayment == $finalPrice) {
+                                        return "🎉 LUNAS - Sudah dibayar sejumlah " . $formattedPayment;
+                                    }
+                                    // Cek apakah pembayaran melebihi harga final
+                                    else if (!empty($finalPrice) && $existingPayment > $finalPrice) {
+                                        $kelebihan = $existingPayment - $finalPrice;
+                                        return "✅ LUNAS - Sudah dibayar sejumlah " . $formattedPayment . " (Kelebihan: Rp " . number_format($kelebihan, 0, ',', '.') . ")";
+                                    }
+                                    // Cek apakah masih ada sisa
+                                    // else if (!empty($finalPrice)) {
+                                    //     return "⏳ Sudah dibayar sejumlah " . $formattedPayment . " (Sisa: Rp " . number_format($sisa, 0, ',', '.') . ")";
+                                    // }
+                                    $sisa = $finalPrice - $existingPayment;
+                                    return "⏳ Sudah dibayar sejumlah " . $formattedPayment . " (Sisa: Rp " . number_format($sisa, 0, ',', '.') . ")";
+
+                                    // return "✅ Sudah dibayar sejumlah " . $formattedPayment;
+                                }
+
+                                return "Isikan jumlah yang sudah dibayar";
+                            })
+                    ])->action(function (Model $record, array $data) {
+                        // Update melalui relasi riwayatSewa
+                        // @dump($data);
+                        if ($record->pivot) {
+                            $record->pivot->update([
+                                // 'harga_final' => $data['harga_final'],
+                                'harga_final' => $data['harga_final'] ?? $record->pivot->harga_final,
+                                'sudah_dibayar' => $data['sudah_dibayar'],
+                            ]);
+                        }
+                    }),
+                // ->fillForm(fn(Model $record): array => ['harga_final' => $record->pivot->harga_final, 'sudah_dibayar' => $record->pivot->sudah_dibayar]),
                 Tables\Actions\EditAction::make('edit_diskon')
                     ->label('Edit Diskon')
                     ->icon('heroicon-o-pencil-square')

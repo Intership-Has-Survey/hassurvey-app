@@ -34,7 +34,15 @@ class Sewa extends Model
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'sewa_id', 'daftar_alat_id')
             ->using(AlatSewa::class)
-            ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
+            ->withPivot([
+                'tgl_keluar',
+                'tgl_masuk',
+                'harga_perhari',
+                'biaya_sewa_alat',
+                'harga_final',
+                'sudah_dibayar',
+                'user_id'
+            ])
             ->withTimestamps();
     }
 

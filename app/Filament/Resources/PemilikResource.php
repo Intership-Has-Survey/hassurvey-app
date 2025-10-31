@@ -186,42 +186,52 @@ class PemilikResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
-                Action::make('export_pdf')
+                // Tables\Actions\Action::make('downloadPdf')
+                //     ->label('Download PDF')
+                //     ->color('success')
+                //     ->icon('heroicon-o-arrow-down-tray')
+                //     ->action(function (Model $record) {
+                //         return redirect()->route('pdf.download', [
+                //             'company' => 'e703370f-5ac6-4c4f-9b04-3a360bd529f7',
+                //             'investor' => $record->id
+                //         ]);
+                //     }),
+
+                Tables\Actions\Action::make('previewPdf')
                     ->label('Export PDF')
+                    // ->color('info')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->action(function ($record) {
-                        // Tentukan rentang tanggal dinamis
-                        $now = Carbon::now();
+                    // ->icon('heroicon-o-eye')
+                    ->url(fn(Model $record): string => route('pdf.preview', [
+                        'company' => 'e703370f-5ac6-4c4f-9b04-3a360bd529f7',
+                        'investor' => $record->id
+                    ]))
+                    ->openUrlInNewTab(),
 
-                        // if ($now->day >= 28) {
-                        //     $startDate = $now->copy()->day(28);
-                        //     $endDate = $now->copy()->addMonth()->day(27);
-                        // } else {
-                        //     $startDate = $now->copy()->subMonth()->day(28);
-                        //     $endDate = $now->copy()->day(27);
-                        // }
+                // Action::make('export_pdf')
+                //     ->label('Export PDF')
+                //     ->icon('heroicon-o-document-arrow-down')
+                //     ->action(function ($record) {
+                //         // Tentukan rentang tanggal dinamis
+                //         $now = Carbon::now();
+                //         // Ambil data dalam rentang
+                //         $filteredItems = $record->riwayatSewaAlat()
+                //             // ->whereBetween('tgl_keluar', [$startDate, $endDate])
+                //             // ->whereBetween('tgl_masuk', [$startDate, $endDate])
+                //             ->get();
 
-                        // Ambil data dalam rentang
-                        $filteredItems = $record->riwayatSewaAlat()
-                            // ->whereBetween('tgl_keluar', [$startDate, $endDate])
-                            // ->whereBetween('tgl_masuk', [$startDate, $endDate])
-                            ->get();
+                //         // Generate PDF
+                //         $pdf = Pdf::loadView('exports.investor', [
+                //             'record' => $record,
+                //             'items' => $filteredItems,
+                //             // 'startDate' => $startDate,
+                //             // 'endDate' => $endDate,
+                //         ]);
 
-                        // Debug dulu kalau mau
-                        // dd($filteredItems);
-
-                        // Generate PDF
-                        $pdf = Pdf::loadView('exports.investor', [
-                            'record' => $record,
-                            'items' => $filteredItems,
-                            // 'startDate' => $startDate,
-                            // 'endDate' => $endDate,
-                        ]);
-
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->stream();
-                        }, 'laporan-' . $record->id . '.pdf');
-                    }),
+                //         return response()->streamDownload(function () use ($pdf) {
+                //             echo $pdf->stream();
+                //         }, 'laporan-' . $record->id . '.pdf');
+                //     }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

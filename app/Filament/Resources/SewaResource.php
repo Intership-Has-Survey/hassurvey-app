@@ -292,6 +292,7 @@ class SewaResource extends Resource
                         }
                         return $record->perorangan->first()?->nama ?? 'HAS Survey';
                     })
+                    // ->searchable(),
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query
                             ->whereHas('corporate', fn($q) => $q->where('nama', 'like', "%{$search}%"))
