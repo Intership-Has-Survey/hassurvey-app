@@ -408,7 +408,8 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         // @dump($data);
                         if ($record->pivot) {
                             $record->pivot->update([
-                                'harga_final' => $data['harga_final'],
+                                // 'harga_final' => $data['harga_final'],
+                                'harga_final' => $data['harga_final'] ?? $record->pivot->harga_final,
                                 'sudah_dibayar' => $data['sudah_dibayar'],
                             ]);
                         }
