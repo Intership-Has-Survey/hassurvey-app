@@ -163,8 +163,8 @@
                 <th>Investor</th>
             </tr>
             <tr>
-                <th>80%</th>
-                <th>20%</th>
+                <th> {{ 100 - $record->persen_bagihasil }} %</th>
+                <th>{{ $record->persen_bagihasil }} %</th>
             </tr>
         </thead>
         <tbody>
@@ -172,9 +172,11 @@
                 <td style="text-align: right"><span style="float: left;">Rp</span>
                     {{ number_format($items->sum('sudah_dibayar'), 0, ',', ',') }}</td>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('sudah_dibayar') * 0.8, 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * ((100 - $record->persen_bagihasil) / 100), 0, ',', ',') }}
+                </td>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('sudah_dibayar') * 0.2, 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * ($record->persen_bagihasil / 100), 0, ',', ',') }}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -189,7 +191,7 @@
         <tbody>
             <tr>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('sudah_dibayar') * 0.2, 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * $record->persen_bagihasil, 0, ',', ',') }}</td>
             </tr>
         </tbody>
     </table>

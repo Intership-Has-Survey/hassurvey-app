@@ -145,9 +145,7 @@ class PemilikResource extends Resource
                             ->maxValue(100)
                             ->default(20)
                             ->postfix('%')
-                            ->required(),
-                    ])->columns(1)
-                    ->visibleOn('edit'),
+                    ])->columns(1),
 
                 Hidden::make('company_id')
                     ->default($uuid),
