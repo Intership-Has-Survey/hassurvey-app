@@ -63,7 +63,7 @@ class StatusPekerjaanRelationManager extends RelationManager
                 FileUpload::make('bukti_pekerjaan_path')
                     ->label('Bukti Pekerjaan')
                     ->image()
-                    ->maxSize(1024)
+                    ->maxSize(5120)
                     ->disk('public')
                     ->directory('bukti-pekerjaan')
                     ->columnSpanFull(),

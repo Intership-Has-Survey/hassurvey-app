@@ -85,7 +85,7 @@ class StatusPembayaranRelationManager extends RelationManager
                 FileUpload::make('bukti_pembayaran_path')
                     ->label('Bukti Pembayaran')
                     ->image()
-                    ->maxSize(1024)
+                    ->maxSize(5120)
                     ->required()
                     ->disk('public')
                     ->directory('bukti-pembayaran')
