@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Models\Sewa;
 use App\Models\Sales;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -323,6 +325,30 @@ class SewaResource extends Resource
             ->filters([
                 TrashedFilter::make(),
             ])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                Column::make('kode_sewa'),
+                                Column::make('judul'),
+                                Column::make('sumber'),
+                                Column::make('sales.nama')->heading('Sales'),
+                                Column::make('tgl_mulai'),
+                                Column::make('tgl_selesai'),
+                                Column::make('provinsiRegion.name')->heading('Provinsi'),
+                                Column::make('kotaRegion.name')->heading('Kota'),
+                                Column::make('kecamatanRegion.name')->heading('Kecamatan'),
+                                Column::make('desaRegion.name')->heading('Desa'),
+                                Column::make('detail_alamat'),
+                                Column::make('harga_fix')->heading('Harga'),
+                                Column::make('status'),
+                                Column::make('corporate_id'),
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - sewa-export')
+                    ])
+            ])
             ->actions([
                 ViewAction::make(),
                 // EditAction::make()
@@ -332,6 +358,41 @@ class SewaResource extends Resource
                 ForceDeleteAction::make(),
 
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()
+                    ->exports([
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make('form')
+                            ->fromTable()
+                            ->modifyQueryUsing(function ($query, $livewire) {
+                                return \App\Models\Sewa::with(['daftarAlat', 'statusPembayaran', 'pengajuanDanas'])
+                                    ->where('id', $livewire->mountedTableActionRecord);
+                            })
+                            ->withColumns([
+                                Column::make('statusPembayaran')
+                                    ->heading('pendapatan')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nilai')->sum();
+                                    }),
+                                Column::make('pengajuanDanas')
+                                    ->heading('pengeluaran')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        $totalPengajuanDana = $state->pluck('dibayar')->sum();
+                                        // return $totalPengajuanDana + $totalPembayaranPersonel;
+                                        return $totalPengajuanDana;
+                                    }),
+                                Column::make('daftarAlat')
+                                    ->heading('Daftar Alat')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        return $state->pluck('nomor_seri')->implode(', ');
+                                    }),
+                            ])
+                            ->withFilename(function ($livewire) {
+                                $sewa = \App\Models\Sewa::find($livewire->mountedTableActionRecord);
+
+                                return ($sewa->kode_sewa ?: 'sewa')
+                                    . '-' . date('Y-m-d');
+                            })
+                    ])
+
             ])
             ->bulkActions([
                 BulkActionGroup::make([
