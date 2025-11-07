@@ -266,4 +266,11 @@ class PenjualanResource extends Resource
             Actions\RestoreAction::make(),
         ];
     }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PenjualanResource\Widgets\PenjualanOverview::class,
+        ];
+    }
 }

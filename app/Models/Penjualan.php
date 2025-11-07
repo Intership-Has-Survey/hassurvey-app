@@ -49,9 +49,9 @@ class Penjualan extends Model
         return $this->belongsTo(Sales::class);
     }
 
-    public function pengajuanDanas(): HasMany
+    public function pengajuanDanas()
     {
-        return $this->hasMany(PengajuanDana::class);
+        return $this->morphMany(PengajuanDana::class, 'pengajuanable');
     }
 
     public function user(): BelongsTo

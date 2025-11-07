@@ -16,4 +16,11 @@ class ListPenjualans extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PenjualanResource\Widgets\PenjualanOverview::class,
+        ];
+    }
 }

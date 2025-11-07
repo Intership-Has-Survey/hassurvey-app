@@ -259,4 +259,11 @@ class KalibrasiResource extends Resource
             Actions\RestoreAction::make(),
         ];
     }
+
+    public static function getWidgets(): array
+    {
+        return [
+            KalibrasiResource\Widgets\KalibrasiOverview::class,
+        ];
+    }
 }

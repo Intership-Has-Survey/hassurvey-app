@@ -16,4 +16,11 @@ class ListKalibrasis extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            KalibrasiResource\Widgets\KalibrasiOverview::class,
+        ];
+    }
 }

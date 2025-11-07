@@ -99,9 +99,9 @@ class Sewa extends Model
             ->withTimestamps();
     }
 
-    public function pengajuanDanas(): HasMany
+    public function pengajuanDanas()
     {
-        return $this->hasMany(PengajuanDana::class);
+        return $this->morphMany(PengajuanDana::class, 'pengajuanable');
     }
 
     public function statusPembayaran()
