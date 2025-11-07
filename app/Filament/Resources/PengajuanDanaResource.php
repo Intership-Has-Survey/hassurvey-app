@@ -11,7 +11,9 @@ use App\Models\PengajuanDana;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -20,6 +22,8 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,6 +34,7 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
@@ -43,6 +48,8 @@ use App\Filament\Resources\PengajuanDanaResource\RelationManagers\ConcreteTransa
 
 class PengajuanDanaResource extends Resource
 {
+    use HasFiltersForm;
+
     protected static ?string $model = PengajuanDana::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
     protected static ?string $navigationGroup = 'Keuangan';
@@ -147,12 +154,17 @@ class PengajuanDanaResource extends Resource
                             }
                         }
                         return 'Untuk: In-House (Internal)';
-                    }),
-                TextColumn::make('total')
-                    ->state(function (PengajuanDana $record): float {
-                        return $record->detailPengajuans->sum('total');
                     })
+                    ->searchable(),
+                TextColumn::make('nilai')
+                    ->sortable()
                     ->money('IDR'),
+                // TextColumn::make('total')
+                //     ->state(function (PengajuanDana $record): float {
+                //         return $record->detailPengajuans->sum('total');
+                //     })
+                //     ->sortable()
+                //     ->money('IDR'),
                 // TextColumn::make('total')
                 //     ->state(function (PengajuanDana $record): float {
                 //         return $record->detailPengajuans->reduce(function ($carry, $item) {
@@ -160,7 +172,9 @@ class PengajuanDanaResource extends Resource
                 //         }, 0);
                 //     })
                 //     ->money('IDR'),
-                TextColumn::make('level.nama')->label('Level'),
+                TextColumn::make('level.nama')
+                    ->label('Level')
+                    ->toggleable(),
                 TextColumn::make('roles.name')
                     ->badge()
                     ->label('Dalam Review')
@@ -180,9 +194,16 @@ class PengajuanDanaResource extends Resource
                         'direktur' => 'info',
                         'approved' => 'success',
                         default => 'gray',
-                    }),
-                TextColumn::make('disetujui')->label('Disetujui'),
-                TextColumn::make('ditolak')->label('Ditolak'),
+                    })
+                    ->toggleable(),
+                TextColumn::make('disetujui')
+                    ->label('Disetujui')
+                    ->toggleable()
+                    ->default('-'),
+                TextColumn::make('ditolak')
+                    ->label('Ditolak')
+                    ->default('-')
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(function ($record) {
@@ -223,16 +244,31 @@ class PengajuanDanaResource extends Resource
                         'success' => fn($state) => $state === 'Lunas',
                         'danger' => fn($state) => $state === 'Belum Bayar',
                         'warning' => fn($state) => $state === 'Lebih Bayar',
-                    ]),
-
-                TextColumn::make('user.name')->label('Dibuat oleh'),
-                TextColumn::make('created_at')->dateTime('d M Y')->sortable(),
+                    ])
+                    ->toggleable(),
+                TextColumn::make('user.name')
+                    ->label('Dibuat oleh')
+                    ->toggleable(),
+                TextColumn::make('created_at')
+                    ->dateTime('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->emptyStateHeading('Belum Ada Pengajuan Dana Terdaftar')
             ->emptyStateDescription('Silahkan buat pengajuan dana untuk memulai.')
             ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('pengajuanable_type')
+                    ->options([
+                        'App\Models\Project' => 'Project',
+                        'App\Models\Sewa' => 'Sewa',
+                        'App\Models\Kalibrasi' => 'Kalibrasi',
+                        'App\Models\Penjualan' => 'Penjualan',
+                        'App\Models\PengajuanDana' => 'In-House',
+                    ])
+                    ->label('Jenis Pengajuan')
+                    ->multiple(),
                 SelectFilter::make('status')
                     ->options([
                         '0' => 'Belum Bayar',
@@ -241,28 +277,43 @@ class PengajuanDanaResource extends Resource
                         '3' => 'Belum Ada Tagihan',
                     ])
                     ->label('Status'),
-            ])
+
+                SelectFilter::make('dalam_review')
+                    ->options([
+                        '0' => '-',
+                        '4' => 'Direktur Keuangan',
+                        '6' => 'Direktur Utama',
+                    ])
+                    ->label('Dalam Review'),
+
+                Filter::make('created_at')
+                    ->form([
+                        Grid::make()->schema([
+                            DatePicker::make('created_from'),
+                            DatePicker::make('created_until')
+                        ])
+                    ])
+                    ->columnSpan(2)
+
+                    //parameter pertama query, kedua data dari objeck ini
+                    //mengembalikan query menggunakan arrow function
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
+            ], layout: FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(2)
+            ->deferFilters()
             ->actions([
                 ViewAction::make(),
-                // EditAction::make()
-                //     ->after(function ($livewire, $record) {
-                //         // Hitung total harga dulu
-                //         $record->updateTotalHarga();
-                //         // Refresh record agar data terbaru terbaca
-                //         $record->refresh();
-                //         $nilai = $record->nilai;
-                //         $level = Level::where('max_nilai', '>=', $nilai)
-                //             ->orderBy('max_nilai')
-                //             ->first();
-                //         if ($level) {
-                //             $firstStep = $level->levelSteps()->orderBy('step')->first();
-                //             $roleId = optional($firstStep?->roles)->id;
-                //             $record->update([
-                //                 'level_id' => $level->id,
-                //                 'dalam_review' => $roleId,
-                //             ]);
-                //         }
-                //     }),
                 Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-o-check-circle')
@@ -351,5 +402,12 @@ class PengajuanDanaResource extends Resource
                 'pengajuanable_type' => \App\Models\PengajuanDana::class,
             ]);
         }
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PengajuanDanaResource\Widgets\PengajuanDanaOverview::class,
+        ];
     }
 }

@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Models\Sales;
 use Filament\Tables;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -88,7 +91,7 @@ class KalibrasiResource extends Resource
                                 'dalam_proses' => 'Dalam proses',
                                 'selesai' => 'Selesai'
                             ])
-                            ->visibleOn('edit')
+                            ->visibleOn(['edit', 'view'])
                             ->default('dalam_proses')
                             ->native(false),
                     ]),
@@ -156,6 +159,23 @@ class KalibrasiResource extends Resource
             ->filters([
                 TrashedFilter::make(),
             ])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                Column::make('kode_kalibrasi'),
+                                Column::make('nama'),
+                                Column::make('sumber'),
+                                Column::make('sales.nama')->heading('Sales'),
+                                Column::make('corporate.nama')->heading('Klien'),
+                                Column::make('harga'),
+                                Column::make('status'),
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - kalibrasi-export')
+                    ])
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 // Tables\Actions\EditAction::make(),
@@ -163,6 +183,36 @@ class KalibrasiResource extends Resource
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()
+                    ->exports([
+                        Excelexport::make('form')
+                            ->fromTable()
+                            ->modifyQueryUsing(function ($query, $livewire) {
+                                return \App\Models\Kalibrasi::with(['alatCustomers', 'pengajuanDanas', 'statusPembayaran'])
+                                    ->where('id', $livewire->mountedTableActionRecord);
+                            })
+                            ->withColumns([
+                                Column::make('alatCustomers')
+                                    ->heading('Alat')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nomor_seri')->implode(', ');
+                                    }),
+                                Column::make('pengajuanDanas')
+                                    ->heading('Pengeluaran')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('dibayar')->sum();
+                                    }),
+                                Column::make('statusPembayaran')
+                                    ->heading('Pendapatan')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nilai')->sum();
+                                    }),
+                            ])
+                            ->withFilename(function ($livewire) {
+                                $kalibrasi = \App\Models\Kalibrasi::find($livewire->mountedTableActionRecord);
+                                return $kalibrasi->kode_kalibrasi ?: 'kalibrasi' . '-' . date('Y-m-d');
+                            })
+                    ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -207,6 +257,13 @@ class KalibrasiResource extends Resource
             Actions\DeleteAction::make(),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            KalibrasiResource\Widgets\KalibrasiOverview::class,
         ];
     }
 }

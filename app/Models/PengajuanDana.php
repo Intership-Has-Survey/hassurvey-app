@@ -163,6 +163,11 @@ class PengajuanDana extends Model
         return $this->morphTo();
     }
 
+    public function pengajuanDanas()
+    {
+        return $this->morphMany(PengajuanDana::class, 'pengajuanable');
+    }
+
     public function getTargetLabelAttribute(): string
     {
         if (! $this->pengajuanable) {

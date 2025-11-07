@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use App\Models\Sales;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -154,6 +157,23 @@ class PenjualanResource extends Resource
             ->filters([
                 TrashedFilter::make(),
             ])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                Column::make('kode_penjualan'),
+                                Column::make('nama_penjualan'),
+                                Column::make('sumber'),
+                                Column::make('sales.nama')->heading('Sales'),
+                                Column::make('corporate.nama')->heading('Klien'),
+                                Column::make('catatan'),
+                                Column::make('total_items'),
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - penjualans-export')
+                    ])
+            ])
             ->actions([
                 ViewAction::make(),
                 // EditAction::make(),
@@ -161,6 +181,49 @@ class PenjualanResource extends Resource
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
                 ActivityLogTimelineTableAction::make('Log'),
+                ExportAction::make()
+                    ->exports([
+                        // $var = 1,
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make('form')
+                            ->fromTable()
+                            ->except(['total_items'])
+                            ->modifyQueryUsing(function ($query, $livewire) {
+                                return \App\Models\Penjualan::with(['statusPembayaran', 'pengajuanDanas', 'detailPenjualan'])
+                                    ->where('id', $livewire->mountedTableActionRecord);
+                            })
+                            ->withColumns([
+                                Column::make('statusPembayaran')
+                                    ->heading('pendapatan')
+                                    ->formatStateUsing(function ($state) {
+                                        return $state->pluck('nilai')->sum();
+                                    }),
+                                Column::make('pengajuanDanas')
+                                    ->heading('pengeluaran')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        $totalPengajuanDana = $state->pluck('dibayar')->sum();
+                                        return $totalPengajuanDana;
+                                    }),
+                                Column::make('detailPenjualan')
+                                    ->heading('Daftar Alat')
+                                    ->formatStateUsing(function ($state, $record) {
+                                        $daftarAlat = $state->map(function ($alat) {
+                                            // @dump($alat);
+                                            return ($alat->jenisAlat->nama . ' ' . $alat->daftarAlat->nomor_seri);
+                                        })->implode(', ');
+                                        return $daftarAlat;
+                                    }),
+                                // ->formatStateUsing(function ($state, $record) {
+                                //     $daftarAlat = $state->pluck('nomor_seri')->implode(', ');
+                                //     return $daftarAlat;
+                                // }),
+                            ])
+                            ->withFilename(function ($livewire) {
+                                $penjualan = \App\Models\Penjualan::find($livewire->mountedTableActionRecord);
+
+                                return ($penjualan->kode_penjualan ?: 'penjualan')
+                                    . '-' . date('Y-m-d');
+                            })
+                    ])
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -201,6 +264,13 @@ class PenjualanResource extends Resource
             Actions\DeleteAction::make(),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PenjualanResource\Widgets\PenjualanOverview::class,
         ];
     }
 }
