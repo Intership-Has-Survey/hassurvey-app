@@ -68,4 +68,9 @@ class PengajuanDanaOverview extends BaseWidget
     {
         return ListPengajuanDanas::class;
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

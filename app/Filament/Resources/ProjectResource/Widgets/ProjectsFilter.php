@@ -44,4 +44,9 @@ class ProjectsFilter extends Widget implements HasForms
             ])->columns(1)
             ->statePath('filters'); // ini penting, supaya nyambung ke $filters page
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

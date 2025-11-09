@@ -139,4 +139,9 @@ class ProjectStatsOverview extends BaseWidget
                 ])
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

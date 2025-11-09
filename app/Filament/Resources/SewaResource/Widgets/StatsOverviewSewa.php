@@ -141,4 +141,9 @@ class StatsOverviewSewa extends BaseWidget
                 ->color('gray'),
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

@@ -139,4 +139,9 @@ class ProjectStatusChart extends ChartWidget
 
         return parent::render();
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }

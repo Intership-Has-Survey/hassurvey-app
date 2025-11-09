@@ -21,4 +21,9 @@ class KalibrasiOverview extends BaseWidget
             Stat::make('Pengeluaran', 'Rp ' . number_format($pengeluaran, 0, ',', '.'))
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->can('View Dashboard');
+    }
 }
