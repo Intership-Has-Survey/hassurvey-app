@@ -34,6 +34,11 @@ class Project extends Model
             ->withTimestamps();
     }
 
+    public function personelProjects()
+    {
+        return $this->hasMany(PersonelProject::class);
+    }
+
     public function kategori(): BelongsTo
     {
         return $this->belongsTo(Kategori::class);
