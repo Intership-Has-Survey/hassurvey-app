@@ -24,6 +24,7 @@ class Personel extends Model
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'personel_project')
+            ->using(PersonelProject::class)
             ->withPivot('user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
             ->withTimestamps();
     }
@@ -33,6 +34,8 @@ class Personel extends Model
         return $this->belongsTo(User::class);
     }
 
+
+    //membuat kolom baru tanpa tersimpan di database, bisa dipanggil di resources
     public function getStatusAttribute()
     {
 

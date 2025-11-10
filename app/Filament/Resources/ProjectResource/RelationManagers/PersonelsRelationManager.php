@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProjectResource\RelationManagers;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
+use App\Models\Personel;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
@@ -84,12 +85,28 @@ class PersonelsRelationManager extends RelationManager
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         Forms\Components\Placeholder::make('label_personel')
                             ->label('Pilih Personel'),
-                        $action
-                            ->getRecordSelect()
+                        // Forms\Components\Placeholder::make('label_personel')
+                        //     ->label('Pilih Personel'),
+                        Forms\Components\Select::make('recordId') // Gunakan recordId langsung
+                            ->label('Personel')
+                            ->options(function () {
+                                $project = $this->getOwnerRecord();
+
+                                return \App\Models\Personel::where('company_id', $project->company_id)
+                                    ->get()
+                                    ->mapWithKeys(function ($personel) {
+                                        return [
+                                            $personel->id => "{$personel->nama} (" . ($personel->status === 'Tersedia' ? 'Tersedia' : 'Dalam Proyek') . ")"
+
+                                        ];
+                                    });
+                            })
+                            ->searchable()
                             ->required()
                             ->validationMessages([
                                 'required' => 'Personel tidak boleh kosong',
-                            ]),
+                            ])
+                            ->native(false),
                         Forms\Components\Select::make('peran')
                             ->options([
                                 'surveyor' => 'Surveyor',
