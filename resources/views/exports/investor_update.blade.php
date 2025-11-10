@@ -122,9 +122,13 @@
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($item->tgl_keluar)->format('j F Y') }}</td>
                     <td>
-                        {{ Illuminate\Support\Str::title(
-                            $item->sewa?->corporate?->nama ?? ($item->sewa?->perorangan?->first()?->nama ?? 'HAS'),
-                        ) }}
+                        @if ($item->sewa?->projects?->isNotEmpty())
+                            HAS SURVEY
+                        @else
+                            {{ Illuminate\Support\Str::title(
+                                $item->sewa?->corporate?->nama ?? ($item->sewa?->perorangan?->first()?->nama ?? 'Tidak Ada Data'),
+                            ) }}
+                        @endif
                         sewa
                         {{ Illuminate\Support\Str::title($item->daftarAlat->jenisAlat->nama) }}
                         {{ $item->daftarAlat->nomor_seri }}

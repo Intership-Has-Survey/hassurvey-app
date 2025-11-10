@@ -263,6 +263,19 @@ class SewaResource extends Resource
                             ->prefix('Rp')
                             ->live(),
 
+                        // Info ketika terkunci
+                        Placeholder::make('locked_warning')
+                            ->content(
+                                fn(?Sewa $record) =>
+                                $record?->is_locked
+                                    ? '🔒 **TRANSAKSI TELAH DIKUNCI** - Data tidak dapat diubah'
+                                    : '✏️ Transaksi dapat diedit'
+                            )
+                            // ->color(fn(?Sewa $record) => $record?->is_locked ? 'danger' : 'success')
+                            ->visible(fn(?Sewa $record) => filled($record)),
+
+
+
                         Toggle::make('is_locked')
                             ->label('Tutup dan Kunci Transaksi Sewa')
                             ->helperText('Aktifkan untuk menyelesaikan sewa. Data tidak akan bisa diubah lagi.')
