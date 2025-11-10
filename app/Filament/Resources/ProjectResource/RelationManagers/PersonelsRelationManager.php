@@ -17,7 +17,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class PersonelsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'personelProjects';
+    protected static string $relationship = 'personels';
     protected static ?string $title = 'Tim Personel Proyek';
     public function form(Form $form): Form
     {
@@ -56,7 +56,7 @@ class PersonelsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('personel.nama'),
+                Tables\Columns\TextColumn::make('nama'),
                 Tables\Columns\TextColumn::make('peran')
                     ->label('Peran di Proyek')
                     ->badge(),
@@ -102,17 +102,25 @@ class PersonelsRelationManager extends RelationManager
                     ->preloadRecordSelect()
                     ->recordSelectOptionsQuery(function ($query) {
                         $project = $this->getOwnerRecord();
-                        return $query->where('company_id', $project->company_id);
+                        // dd($query->where('company_id', $project->company_id));
+                        return $query->where('company_id', $project->company_id)->distinct(false);
                     })
                     ->form(fn(Tables\Actions\AttachAction $action): array => [
                         Forms\Components\Placeholder::make('label_personel')
                             ->label('Pilih Personel'),
-                        $action
-                            ->getRecordSelect()
+                        Forms\Components\Select::make('recordId') // Gunakan recordId langsung
+                            ->label('Personel')
+                            ->options(function () {
+                                $project = $this->getOwnerRecord();
+                                return Personel::where('company_id', $project->company_id)
+                                    ->get()
+                                    ->pluck('nama', 'id'); // Ganti 'name' dengan kolom yang sesuai
+                            })
                             ->required()
                             ->validationMessages([
                                 'required' => 'Personel tidak boleh kosong',
-                            ]),
+                            ])
+                            ->native(false),
                         Forms\Components\Select::make('peran')
                             ->options([
                                 'surveyor' => 'Surveyor',
