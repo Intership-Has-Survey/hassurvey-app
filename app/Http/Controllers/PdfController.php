@@ -25,7 +25,18 @@ class PdfController extends Controller
     //         abort(404, 'Pemilik tidak ditemukan');
     //     }
 
-    //     $items = $record->riwayatSewaAlat;
+    //     // Tentukan periode
+    //     $today = Carbon::now();
+    //     $start_date = Carbon::create($today->year, $today->month, 28)->subMonth();
+    //     $end_date = (clone $start_date)->addMonth()->subDay();
+
+    //     // Filter items berdasarkan periode
+    //     $items = $record->riwayatSewaAlat->filter(function ($item) use ($start_date, $end_date) {
+    //         $tglKeluar = Carbon::parse($item->tgl_keluar);
+
+    //         // Cek apakah tgl_keluar berada dalam periode
+    //         return $tglKeluar->between($start_date, $end_date);
+    //     })->sortBy('tgl_keluar'); // Urutkan berdasarkan tanggal
 
     //     // Eager load sampai corporate dengan relasi yang diperlukan untuk pembayaran
     //     $pemilik = Pemilik::with([
@@ -33,11 +44,6 @@ class PdfController extends Controller
     //         'daftarAlat.sewa.perorangan',
     //         'daftarAlat.sewa'
     //     ])->findOrFail($id);
-
-    //     // Tentukan periode
-    //     $today = Carbon::now();
-    //     $start_date = Carbon::create($today->year, $today->month, 28)->subMonth();
-    //     $end_date = (clone $start_date)->addMonth()->subDay();
 
     //     $alatData = [];
 
@@ -140,8 +146,28 @@ class PdfController extends Controller
     //     ]));
     // }
 
-    public function preview($company, $investorId)
+
+    public function preview($company, $investorId, Request $request)
     {
+        // Validasi input
+        $request->validate([
+            'tahun' => 'required|integer|min:2020|max:' . (date('Y') + 1),
+            'periode' => 'required|integer|min:1|max:12'
+        ]);
+
+        $tahun = $request->input('tahun');
+        $periode = $request->input('periode');
+
+        // Tentukan periode berdasarkan pilihan user
+        $start_date = Carbon::create($tahun, $periode, 28);
+
+        // Jika periode 12 (Desember-Januari), end_date di tahun berikutnya
+        if ($periode == 12) {
+            $end_date = Carbon::create($tahun + 1, 1, 27);
+        } else {
+            $end_date = (clone $start_date)->addMonth()->subDay();
+        }
+
         // Gunakan investorId dari parameter route
         $id = $investorId;
 
@@ -153,18 +179,11 @@ class PdfController extends Controller
             abort(404, 'Pemilik tidak ditemukan');
         }
 
-        // Tentukan periode
-        $today = Carbon::now();
-        $start_date = Carbon::create($today->year, $today->month, 28)->subMonth();
-        $end_date = (clone $start_date)->addMonth()->subDay();
-
         // Filter items berdasarkan periode
         $items = $record->riwayatSewaAlat->filter(function ($item) use ($start_date, $end_date) {
             $tglKeluar = Carbon::parse($item->tgl_keluar);
-
-            // Cek apakah tgl_keluar berada dalam periode
             return $tglKeluar->between($start_date, $end_date);
-        })->sortBy('tgl_keluar'); // Urutkan berdasarkan tanggal
+        })->sortBy('tgl_keluar');
 
         // Eager load sampai corporate dengan relasi yang diperlukan untuk pembayaran
         $pemilik = Pemilik::with([
@@ -227,7 +246,6 @@ class PdfController extends Controller
             $previousPenyewa = null;
 
             foreach ($riwayat as $index => $day) {
-                // Jika penyewa berbeda atau status berbeda, buat group baru
                 if ($day['penyewa'] !== $previousPenyewa || empty($currentGroup)) {
                     if (!empty($currentGroup)) {
                         $groupedRiwayat[] = $currentGroup;
@@ -243,14 +261,12 @@ class PdfController extends Controller
                         'sudah_dibayar' => $day['sudah_dibayar'],
                     ];
                 } else {
-                    // Masukkan ke group yang sama
                     $currentGroup['end_date'] = $day['carbon_tanggal'];
                     $currentGroup['days'][] = $day;
                 }
 
                 $previousPenyewa = $day['penyewa'];
 
-                // Untuk hari terakhir
                 if ($index === count($riwayat) - 1 && !empty($currentGroup)) {
                     $groupedRiwayat[] = $currentGroup;
                 }
@@ -273,7 +289,6 @@ class PdfController extends Controller
             'end_date'
         ]));
     }
-
     // Optional: Method untuk generate PDF file langsung
     public function download($company, $investorId)
     {
@@ -282,5 +297,10 @@ class PdfController extends Controller
         $pdf = PDF::loadView('exports.investor_update', $data);
 
         return $pdf->download("investor-update-{$investorId}.pdf");
+    }
+
+    public function selectPeriod($company, $investorId)
+    {
+        return view('exports.investor_select', compact('company', 'investorId'));
     }
 }

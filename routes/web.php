@@ -201,4 +201,6 @@ Route::get('/admin/{company}/investorupdate/download/{investor}', [PdfController
 Route::get('/admin/{company}/investorupdate/preview/{investor}', [PdfController::class, 'preview'])
     ->name('pdf.preview');
 
+Route::get('/admin/{company}/investorupdate/select/{investor}', [PdfController::class, 'selectPeriod'])
+    ->name('pdf.select');
 require __DIR__ . '/auth.php';
