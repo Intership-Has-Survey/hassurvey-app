@@ -42,7 +42,6 @@
             color: #555;
         }
 
-        select,
         input {
             width: 100%;
             padding: 10px;
@@ -52,7 +51,6 @@
             font-family: "Open Sans", sans-serif;
         }
 
-        select:focus,
         input:focus {
             outline: none;
             border-color: #4A90E2;
@@ -82,6 +80,33 @@
             margin-top: 20px;
             font-size: 14px;
         }
+
+        .date-range-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .date-range-container .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .date-separator {
+            font-weight: bold;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .date-range-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .date-separator {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -89,47 +114,22 @@
     <div class="container">
         <h1>Generate Laporan Investor</h1>
 
-        <form action="{{ route('pdf.preview', ['company' => $company, 'investorId' => $investorId]) }}" method="GET">
+        <form action="{{ route('pdf.preview', ['company' => $company, 'investor' => $investor]) }}" method="GET">
             @csrf
 
-            <div class="form-group">
-                <label for="tahun">Tahun:</label>
-                <select name="tahun" id="tahun" required>
-                    <option value="">Pilih Tahun</option>
-                    @for ($year = date('Y'); $year >= 2020; $year--)
-                        <option value="{{ $year }}" {{ request('tahun') == $year ? 'selected' : '' }}>
-                            {{ $year }}
-                        </option>
-                    @endfor
-                </select>
-            </div>
+            <div class="date-range-container">
+                <div class="form-group">
+                    <label for="start_date">Tanggal Mulai:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}"
+                        required>
+                </div>
 
-            <div class="form-group">
-                <label for="periode">Periode:</label>
-                <select name="periode" id="periode" required>
-                    <option value="">Pilih Periode</option>
-                    <option value="1" {{ request('periode') == '1' ? 'selected' : '' }}>28 Januari - 27 Februari
-                    </option>
-                    <option value="2" {{ request('periode') == '2' ? 'selected' : '' }}>28 Februari - 27 Maret
-                    </option>
-                    <option value="3" {{ request('periode') == '3' ? 'selected' : '' }}>28 Maret - 27 April
-                    </option>
-                    <option value="4" {{ request('periode') == '4' ? 'selected' : '' }}>28 April - 27 Mei</option>
-                    <option value="5" {{ request('periode') == '5' ? 'selected' : '' }}>28 Mei - 27 Juni</option>
-                    <option value="6" {{ request('periode') == '6' ? 'selected' : '' }}>28 Juni - 27 Juli</option>
-                    <option value="7" {{ request('periode') == '7' ? 'selected' : '' }}>28 Juli - 27 Agustus
-                    </option>
-                    <option value="8" {{ request('periode') == '8' ? 'selected' : '' }}>28 Agustus - 27 September
-                    </option>
-                    <option value="9" {{ request('periode') == '9' ? 'selected' : '' }}>28 September - 27 Oktober
-                    </option>
-                    <option value="10" {{ request('periode') == '10' ? 'selected' : '' }}>28 Oktober - 27 November
-                    </option>
-                    <option value="11" {{ request('periode') == '11' ? 'selected' : '' }}>28 November - 27 Desember
-                    </option>
-                    <option value="12" {{ request('periode') == '12' ? 'selected' : '' }}>28 Desember - 27 Januari
-                    </option>
-                </select>
+                <div class="date-separator">s/d</div>
+
+                <div class="form-group">
+                    <label for="end_date">Tanggal Selesai:</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}" required>
+                </div>
             </div>
 
             <button type="submit" class="btn">Generate Laporan</button>
@@ -137,18 +137,38 @@
 
         <div class="info-box">
             <strong>Informasi:</strong><br>
-            Sistem periode menggunakan format 28 Bulan A sampai 27 Bulan B.
-            Contoh: Periode 1 = 28 Januari sampai 27 Februari
+            Pilih rentang tanggal sesuai kebutuhan laporan. Pastikan tanggal selesai tidak lebih awal dari tanggal
+            mulai.
         </div>
     </div>
 
     <script>
-        // Auto-select tahun berjalan jika belum dipilih
         document.addEventListener('DOMContentLoaded', function() {
-            const tahunSelect = document.getElementById('tahun');
-            if (!tahunSelect.value) {
-                tahunSelect.value = new Date().getFullYear();
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+
+            // Set default values jika belum ada (1 bulan terakhir)
+            if (!startDateInput.value) {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 30);
+
+                startDateInput.value = startDate.toISOString().split('T')[0];
+                endDateInput.value = endDate.toISOString().split('T')[0];
             }
+
+            // Validasi: end date tidak boleh sebelum start date
+            startDateInput.addEventListener('change', function() {
+                if (endDateInput.value && startDateInput.value > endDateInput.value) {
+                    endDateInput.value = startDateInput.value;
+                }
+            });
+
+            endDateInput.addEventListener('change', function() {
+                if (startDateInput.value && endDateInput.value < startDateInput.value) {
+                    startDateInput.value = endDateInput.value;
+                }
+            });
         });
     </script>
 </body>

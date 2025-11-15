@@ -122,7 +122,7 @@
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($item->tgl_keluar)->format('j F Y') }}</td>
                     <td>
-                        @if ($item->sewa?->projects?->isNotEmpty())
+                        @if ($item->sewa?->project)
                             HAS SURVEY
                         @else
                             {{ Illuminate\Support\Str::title(
@@ -131,7 +131,16 @@
                         @endif
                         sewa
                         {{ Illuminate\Support\Str::title($item->daftarAlat->jenisAlat->nama) }}
-                        {{ $item->daftarAlat->nomor_seri }}
+                        {{ $item->daftarAlat->nomor_seri }},
+                        @if ($item->sewa?->project)
+                            {{-- {{ $item->sewa->projects->first()->nama_project ?? 'hi' }} --}}
+                            {{ $item->sewa->project->nama_project }} [{{ $item->sewa->project->kode_project }}]
+
+                            {{-- [{{ $item->sewa->projects->kode_project }}] --}}
+                        @else
+                            {{ $item->sewa->judul }} [{{ $item->sewa->kode_sewa }}]
+                        @endif
+
                     </td>
                     <td>{{ round(\Carbon\Carbon::parse($item->tgl_masuk)->diffInDays(\Carbon\Carbon::parse($item->tgl_keluar), true)) + 1 }}
                         hari
@@ -227,9 +236,9 @@
                     <th style="width: 20%">TANGGAL</th>
                     <th style="width: 10%">ADA SEWA</th>
                     <th style="width: 10%">TIDAK ADA SEWA</th>
-                    <th style="width: 20%">PENYEWA</th>
-                    <th style="width: 20%">SUDAH DIBAYAR</th>
-                    <th style="width: 20%">BELUM DIBAYAR</th>
+                    <th style="width: 30%">PENYEWA</th>
+                    <th style="width: 15%">SUDAH DIBAYAR</th>
+                    <th style="width: 15%">BELUM DIBAYAR</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,6 +249,7 @@
                 @endphp
 
                 @foreach ($alat['riwayat'] as $index => $r)
+                    {{-- @dd($r['sewa_data']['kode_sewa']); --}}
                     @php
                         // Reset grouping jika penyewa berubah
                         if ($currentPenyewa !== $r['penyewa']) {
