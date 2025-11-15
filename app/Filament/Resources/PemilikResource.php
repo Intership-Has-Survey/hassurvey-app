@@ -200,7 +200,7 @@ class PemilikResource extends Resource
                     // ->color('info')
                     ->icon('heroicon-o-document-arrow-down')
                     // ->icon('heroicon-o-eye')
-                    ->url(fn(Model $record): string => route('pdf.preview', [
+                    ->url(fn(Model $record): string => route('pdf.select', [
                         'company' => 'e703370f-5ac6-4c4f-9b04-3a360bd529f7',
                         'investor' => $record->id
                     ]))

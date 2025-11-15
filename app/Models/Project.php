@@ -27,12 +27,20 @@ class Project extends Model
         'id'
     ];
 
-    public function personels()
+    public function personel()
     {
         return $this->belongsToMany(Personel::class, 'personel_project')
             ->using(PersonelProject::class)
-            ->withPivot('user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
+            ->withPivot('id', 'user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
             ->withTimestamps();
+    }
+
+    public function personels()
+    {
+        return $this->hasMany(PersonelProject::class);
+        // ->using(PersonelProject::class)
+        // ->withPivot('id', 'user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
+        // ->withTimestamps();
     }
 
     public function kategori(): BelongsTo
@@ -76,16 +84,18 @@ class Project extends Model
     // {
     //     return $this->hasMany(PengajuanDana::class);
     // }
-    public function Sewa()
-    {
-        return $this->belongsTo(Sewa::class);
-    }
+
     public function daftarAlat()
     {
         return $this->belongsToMany(DaftarAlat::class, 'riwayat_sewa', 'project_id', 'daftar_alat_id')
             ->using(AlatSewa::class)
             ->withPivot(['tgl_keluar', 'tgl_masuk', 'harga_perhari', 'biaya_sewa_alat', 'user_id'])
             ->withTimestamps();
+    }
+
+    public function sewa()
+    {
+        return $this->belongsTo(Sewa::class, 'sewa_id');
     }
 
     public function company()

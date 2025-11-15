@@ -82,10 +82,11 @@ class Sewa extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function projects()
+    public function project()
     {
-        return $this->hasMany(Project::class, 'sewa_id');
+        return $this->hasOne(Project::class);
     }
+
 
     public function corporate(): BelongsTo
     {

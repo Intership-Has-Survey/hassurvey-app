@@ -472,9 +472,9 @@ class SewaResource extends Resource
             ->withTrashed()
             ->where(function (Builder $query) {
                 // Tampilkan sewa yang bukan dari project
-                $query->whereDoesntHave('projects')
+                $query->whereDoesntHave('project')
                     // Atau sewa dari project yang sudah memiliki alat
-                    ->orWhereHas('projects', function (Builder $projectQuery) {
+                    ->orWhereHas('project', function (Builder $projectQuery) {
                         $projectQuery->whereHas('daftarAlat');
                     });
             });

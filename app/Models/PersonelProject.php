@@ -19,4 +19,9 @@ class PersonelProject extends Pivot
 
     // Jika Anda menggunakan custom table name
     protected $table = 'personel_project';
+
+    public function personel()
+    {
+        return $this->belongsTo(Personel::class);
+    }
 }
