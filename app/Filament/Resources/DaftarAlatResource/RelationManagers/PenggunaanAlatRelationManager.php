@@ -48,20 +48,29 @@ class PenggunaanAlatRelationManager extends RelationManager
                     ->date('d M Y')
                     ->placeholder('Belum Kembali'),
 
-                Tables\Columns\TextColumn::make('daftarAlat.status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        0 => 'Dipakai',
-                        1 => 'Selesai',
-                        2 => 'Terjual',
-                        default => '-',
+                    ->formatStateUsing(function ($state, $record) {
+                        // Jika ada tgl_keluar, status = Selesai
+                        // dd($record);
+                        if (!empty($record->tgl_masuk)) {
+                            return 'Selesai';
+                        }
+                        // Jika tidak ada tgl_keluar, status = Terpakai
+                        else {
+                            return 'Terpakai';
+                        }
                     })
-                    ->color(fn($state) => match ($state) {
-                        0 => 'warning',   // Dipakai
-                        1 => 'success',   // Tersedia
-                        2 => 'danger',    // Terjual
-                        default => 'gray',
+                    ->color(function ($state, $record) {
+                        // Jika ada tgl_keluar, warna hijau (Selesai)
+                        if (!empty($record->tgl_masuk)) {
+                            return 'success';
+                        }
+                        // Jika tidak ada tgl_keluar, warna kuning/orange (Terpakai)
+                        else {
+                            return 'warning';
+                        }
                     })
 
 
