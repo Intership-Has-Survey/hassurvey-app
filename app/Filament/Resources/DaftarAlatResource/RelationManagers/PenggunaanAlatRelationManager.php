@@ -3,13 +3,15 @@
 namespace App\Filament\Resources\DaftarAlatResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Pages\Actions;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Pages\Actions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use Filament\Resources\RelationManagers\RelationManager;
+use pxlrbt\FilamentExcel\Columns\Column;
 
 class PenggunaanAlatRelationManager extends RelationManager
 {
@@ -65,7 +67,18 @@ class PenggunaanAlatRelationManager extends RelationManager
 
 
             ])
-            ->headerActions([])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
+                            ->fromTable()
+                            ->withColumns([
+                                // Column::make('kategori.nama')->heading('Kategori'),
+
+                            ])
+                            ->withFilename(date('Y-m-d') . ' - projects-export')
+                    ])
+            ])
             ->actions([])
             ->bulkActions([]);
     }

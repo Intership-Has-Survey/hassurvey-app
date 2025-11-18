@@ -248,7 +248,7 @@ class ProjectResource extends Resource
                     }),
                 TextColumn::make('status_pekerjaan')->label('Pekerjaan')->badge()
                     ->icon(fn(string $state): ?string => match ($state) {
-                        'Sekesai' => 'heroicon-o-check-circle',
+                        'Selesai' => 'heroicon-o-check-circle',
                         'Belum Dikerjakan' => 'heroicon-o-minus-circle',
                         default => 'heroicon-o-clock',
                     })

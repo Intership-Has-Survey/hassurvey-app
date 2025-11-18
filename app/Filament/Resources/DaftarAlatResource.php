@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,12 +34,13 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\DaftarAlatResource\Pages;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
-use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
-use App\Filament\Resources\DaftarAlatResource\RelationManagers\PenggunaanAlatRelationManager;
 use App\Filament\Resources\DaftarAlatResource\Pages\EditDaftarAlat;
 use App\Filament\Resources\DaftarAlatResource\Pages\ListDaftarAlats;
 use App\Filament\Resources\DaftarAlatResource\Pages\CreateDaftarAlat;
+use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
+use App\Filament\Resources\DaftarAlatResource\RelationManagers\PenggunaanAlatRelationManager;
 
 
 class DaftarAlatResource extends Resource
@@ -238,6 +240,14 @@ class DaftarAlatResource extends Resource
                     ->trueLabel('Tersedia')
                     ->falseLabel('Tidak Tersedia'),
                 TrashedFilter::make(),
+            ])
+            ->headerActions([
+                ExportAction::make('semua')
+                    ->exports([
+                        \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
+                            ->fromTable()
+                            ->withFilename(date('Y-m-d') . ' - daftarAlat-export')
+                    ])
             ])
             ->actions([
                 ViewAction::make(),
