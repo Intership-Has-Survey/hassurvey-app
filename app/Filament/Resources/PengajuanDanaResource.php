@@ -23,6 +23,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\FiltersLayout;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
@@ -31,10 +32,12 @@ use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use App\Filament\Resources\PengajuanDanaResource\Pages;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
@@ -159,12 +162,6 @@ class PengajuanDanaResource extends Resource
                 TextColumn::make('nilai')
                     ->sortable()
                     ->money('IDR'),
-                // TextColumn::make('total')
-                //     ->state(function (PengajuanDana $record): float {
-                //         return $record->detailPengajuans->sum('total');
-                //     })
-                //     ->sortable()
-                //     ->money('IDR'),
                 // TextColumn::make('total')
                 //     ->state(function (PengajuanDana $record): float {
                 //         return $record->detailPengajuans->reduce(function ($carry, $item) {
@@ -358,6 +355,31 @@ class PengajuanDanaResource extends Resource
                     RestoreBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                ExportAction::make('export')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->except([
+                                'user.name',
+                            ])
+                            ->withFilename('Export-Pengajuan-' . date('Y-m-d'))
+                            ->withColumns([
+                                Column::make('pengajuanable_type')
+                                    ->heading('Jenis Pengajuan')
+                                    ->formatStateUsing(fn($state) => match ($state) {
+                                        'App\Models\Project' => 'Project',
+                                        'App\Models\Sewa' => 'Sewa',
+                                        'App\Models\Penjualan' => 'Penjualan',
+                                        'App\Models\Kalibrasi' => 'Kalibrasi',
+                                        'App\Models\PengajuanDana' => 'In-House (Internal)',
+                                        default => $state,
+                                    }),
+                                Column::make('judul_pengajuan'),
+                                Column::make('deskripsi_pengajuan'),
+                            ]),
+                    ])
             ]);
     }
 

@@ -22,6 +22,29 @@ class PersonelsRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('personel_id')
+                    ->options(
+                        // Memuat hanya personel dari company yang sama dengan project
+                        function () {
+                            $project = $this->getOwnerRecord();
+                            return Personel::where('company_id', $project->company_id)
+                                ->get()
+                                ->mapWithKeys(function ($personel) {
+                                    return [
+                                        $personel->id => "{$personel->nama} (" . ($personel->status === 'Tersedia' ? 'Tersedia' : 'Dalam Proyek') . ")"
+
+                                    ];
+                                });
+                        }
+                    )
+                    ->label('Pilih Personel')
+                    ->searchable()
+                    ->disabledOn('edit')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Personel tidak boleh kosong',
+                    ]),
+
                 Forms\Components\Select::make('peran')
                     ->options([
                         'surveyor' => 'Surveyor',
@@ -41,21 +64,17 @@ class PersonelsRelationManager extends RelationManager
                         'required' => 'Tanggal mulai tidak boleh kosong',
                     ])
                     ->default(now())
+                    ->disabledOn('edit')
                     ->native(false),
                 Forms\Components\DatePicker::make('tanggal_berakhir')
                     ->label('Tanggal Berakhir')
-                    ->required()
                     ->validationMessages([
                         'required' => 'Tanggal berakhir tidak boleh kosong',
                     ])
-                    ->disabledOn('create')
-                    // ->default(now())
+                    ->visibleOn('edit')
                     ->native(false),
-
                 Hidden::make('user_id')
                     ->default(auth()->id()),
-                // Form ini tidak lagi digunakan secara langsung.
-                // Logika form dipindahkan ke AttachAction dan EditAction.
             ]);
     }
 
@@ -142,28 +161,6 @@ class PersonelsRelationManager extends RelationManager
                 //                 'required' => 'Personel tidak boleh kosong',
                 //             ])
                 //             ->native(false),
-                //         Forms\Components\Select::make('peran')
-                //             ->options([
-                //                 'surveyor' => 'Surveyor',
-                //                 'asisten surveyor' => 'Asisten Surveyor',
-                //                 'driver' => 'Driver',
-                //                 'drafter' => 'Drafter',
-                //             ])
-                //             ->required()
-                //             ->validationMessages([
-                //                 'required' => 'Peran tidak boleh kosong',
-                //             ])
-                //             ->native(false),
-                //         Forms\Components\DatePicker::make('tanggal_mulai')
-                //             ->label('Tanggal Mulai')
-                //             ->required()
-                //             ->validationMessages([
-                //                 'required' => 'Tanggal mulai tidak boleh kosong',
-                //             ])
-                //             ->default(now())
-                //             ->native(false),
-                //         Hidden::make('user_id')
-                //             ->default(auth()->id()),
                 //     ])
                 //     ->successNotificationTitle('Personel berhasil ditambahkan.')
                 //     ->label('Tambah Personel')
