@@ -204,7 +204,8 @@
         <tbody>
             <tr>
                 <td style="text-align: right;background-color:#ddd9c4  "><span style="float: left;">Rp</span>
-                    {{ number_format($items->sum('sudah_dibayar') * $record->persen_bagihasil, 0, ',', ',') }}</td>
+                    {{ number_format($items->sum('sudah_dibayar') * ($record->persen_bagihasil / 100), 0, ',', ',') }}
+                </td>
             </tr>
         </tbody>
     </table>
