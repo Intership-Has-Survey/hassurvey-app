@@ -412,8 +412,14 @@ class PengajuanDanaResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
+
+        if (auth()->user()->can('View Dashboard')) {
+            return parent::getEloquentQuery()->withTrashed();;
+        }
+
         return parent::getEloquentQuery()
-            ->withTrashed();
+            ->withTrashed()
+            ->where('user_id', auth()->id());
     }
 
     public static function afterCreate($record): void
