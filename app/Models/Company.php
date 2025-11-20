@@ -22,6 +22,11 @@ class Company extends Model
         return $this->hasMany(DaftarAlat::class);
     }
 
+    public function produks()
+    {
+        return $this->hasMany(Produk::class);
+    }
+
     public function Levels()
     {
         return $this->hasMany(Level::class);

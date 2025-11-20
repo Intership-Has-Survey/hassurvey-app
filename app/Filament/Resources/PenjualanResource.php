@@ -152,7 +152,7 @@ class PenjualanResource extends Resource
                     default => 'info',
                 }),
                 TextColumn::make('total_items')
-                    ->label('Total Item'),
+                    ->label('Nilai'),
             ])
             ->filters([
                 TrashedFilter::make(),
