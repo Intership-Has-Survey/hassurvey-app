@@ -168,46 +168,8 @@ class PersonelsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('editPivot')
-                        ->label('Edit Peran')
-                        ->form([
-                            Forms\Components\Select::make('peran')
-                                ->options([
-                                    'surveyor' => 'Surveyor',
-                                    'asisten surveyor' => 'Asisten Surveyor',
-                                    'driver' => 'Driver',
-                                    'drafter' => 'Drafter',
-                                ])
-                                ->required()
-                                ->default(fn(Get $get, Personel $record) => $record->pivot->peran)
-                                ->native(false),
-                            Forms\Components\DatePicker::make('tanggal_berakhir')
-                                ->label('Tanggal Berakhir')
-                                ->default(fn(Get $get, Personel $record) => $record->pivot->tanggal_berakhir)
-                                ->native(false),
-                        ])
-                        ->action(function (array $data, Personel $record): void {
-                            $project = $this->getOwnerRecord();
-                            // dd([$record->pivot->id]);
+                Tables\Actions\DeleteAction::make(),
 
-                            // Update pivot record spesifik
-                            $project->personels()->updateExistingPivot($record->pivot->id, [
-                                'peran' => $data['peran'],
-                                'tanggal_berakhir' => $data['tanggal_berakhir'],
-                            ]);
-                        })
-                        ->icon('heroicon-o-pencil'),
-
-                    Tables\Actions\DetachAction::make()
-                        ->label('Lepaskan')
-                        ->action(function (Personel $record): void {
-                            $project = $this->getOwnerRecord();
-
-                            // Detach hanya personel spesifik ini
-                            $project->personels()->detach($record->id);
-                        }),
-                ]),
                 // Tables\Actions\ViewAction::make(),
                 // Tables\Actions\Action::make('sudah_dibayar')
                 //     ->label('Terbayar')
