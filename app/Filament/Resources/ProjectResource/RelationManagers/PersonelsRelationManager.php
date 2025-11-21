@@ -5,10 +5,12 @@ namespace App\Filament\Resources\ProjectResource\RelationManagers;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use App\Models\Personel;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
+use Livewire\Component as Livewire;
 use Filament\Forms\Components\Hidden;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -29,18 +31,31 @@ class PersonelsRelationManager extends RelationManager
                             $project = $this->getOwnerRecord();
                             return Personel::where('company_id', $project->company_id)
                                 ->get()
+                                ->filter(function ($personel) {
+                                    // Sekarang projects sudah di-load, tidak perlu query tambahan
+                                    return $personel->status === 'Tersedia';
+                                })
                                 ->mapWithKeys(function ($personel) {
                                     return [
-                                        $personel->id => "{$personel->nama} (" . ($personel->status === 'Tersedia' ? 'Tersedia' : 'Dalam Proyek') . ")"
+                                        $personel->id => $personel->nama
 
                                     ];
                                 });
                         }
                     )
+                    ->reactive()
+                    ->getOptionLabelUsing(function ($value) {
+                        // Ini akan handle display saat edit form
+                        $personel = Personel::find($value);
+                        return $personel ? $personel->nama : $value;
+                    })
                     ->label('Pilih Personel')
                     ->searchable()
                     ->disabledOn('edit')
                     ->required()
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        $set('tanggal_mulai', null);
+                    })
                     ->validationMessages([
                         'required' => 'Personel tidak boleh kosong',
                     ]),
@@ -62,8 +77,22 @@ class PersonelsRelationManager extends RelationManager
                     ->required()
                     ->validationMessages([
                         'required' => 'Tanggal mulai tidak boleh kosong',
+                        'after_or_equal' => 'Tanggal mulai harus setelah tanggal berakhir project sebelumnya',
                     ])
+                    ->reactive()
                     ->default(now())
+                    ->minDate(function (Get $get) {
+                        $query = $this->getOwnerRecord();
+                        // dd([$query->personels(), $this, $livewire->getOwnerRecord(), $livewire]);
+                        $q = $query->personels()
+                            ->where('personel_id', $get('personel_id'))
+                            ->orderBy('tanggal_berakhir', 'desc')
+                            ->first();
+
+                        // dd($q);
+
+                        return $q?->tanggal_berakhir ? \Carbon\Carbon::parse($q->tanggal_berakhir)->addDay() : null;
+                    })
                     ->disabledOn('edit')
                     ->native(false),
                 Forms\Components\DatePicker::make('tanggal_berakhir')
@@ -72,6 +101,7 @@ class PersonelsRelationManager extends RelationManager
                         'required' => 'Tanggal berakhir tidak boleh kosong',
                     ])
                     ->visibleOn('edit')
+                    // ->minDate(fn(Get $get) => $get('tgl_mulai'))
                     ->native(false),
                 Hidden::make('user_id')
                     ->default(auth()->id()),
