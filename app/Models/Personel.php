@@ -44,7 +44,7 @@ class Personel extends Model
     public function getStatusAttribute()
     {
 
-        $activeProject = $this->projects()->wherePivotNull('tanggal_berakhir')->first();
+        $activeProject = $this->project()->wherePivotNull('tanggal_berakhir')->first();
 
         if ($activeProject) {
             return 'Dalam Proyek: ' . $activeProject->nama_project;
