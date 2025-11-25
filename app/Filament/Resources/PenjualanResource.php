@@ -146,11 +146,22 @@ class PenjualanResource extends Resource
                     ->listWithLineBreaks()
                     ->limitList(2),
                 TextColumn::make('sales.nama')->label('Sales'),
-                TextColumn::make('status_pembayaran')->label('Pembayaran')->badge()->color(fn(string $state): string => match ($state) {
-                    'Lunas' => 'success',
-                    'Belum Lunas' => 'danger',
-                    default => 'info',
-                }),
+                TextColumn::make('total_pembayaran')
+                    ->label('Status Pembayaran')
+                    ->state(function (Penjualan $record): string {
+                        $totalPembayaran = $record->total_pembayaran;
+                        $totalItems = $record->totall_items;
+                        if ($totalPembayaran >= $totalItems) {
+                            return 'Lunas';
+                        }
+                        return 'Belum Lunas';
+                    })
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Lunas' => 'success',
+                        'Belum Lunas' => 'danger',
+                        default => 'info',
+                    }),
                 TextColumn::make('total_items')
                     ->label('Nilai'),
             ])
@@ -176,7 +187,11 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                // EditAction::make(),
+                EditAction::make('hi')
+                    ->before(function (Model $record) {
+                        dd($record->statusPembayaran);
+                        $action->halt();
+                    }),
                 // DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
@@ -239,6 +254,7 @@ class PenjualanResource extends Resource
         return [
             RelationManagers\DetailPenjualanRelationManager::class,
             RelationManagers\StatusPembayaranRelationManager::class,
+            RelationManagers\PengajuanDanasRelationManager::class,
 
         ];
     }

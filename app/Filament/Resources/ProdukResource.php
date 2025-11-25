@@ -22,6 +22,11 @@ class ProdukResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Produk Jual';
+    protected static ?string $navigationGroup = 'Manajemen Data Master';
+    protected static ?string $pluralModelLabel = 'Produk jual';
+    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationGroupSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -32,12 +37,28 @@ class ProdukResource extends Resource
                     ->label('Jenis Alat')
                     ->relationship('jenisAlat', 'nama')
                     ->required()
-                    ->validationMessages(['required' => 'Jenis Alat wajib diisi']),
+                    ->searchable()
+                    ->preload()
+                    ->validationMessages(['required' => 'Jenis Alat wajib diisi'])
+                    ->createOptionForm([
+                        TextInput::make('nama')
+                            ->label('Nama Jenis Alat')
+                            ->required(),
+                        TextInput::make('keterangan')
+                            ->label('Keterangan')
+                            ->nullable(),
+                    ]),
                 Select::make('merk_id')
                     ->label('Merk')
                     ->relationship('merk', 'nama')
                     ->required()
-                    ->validationMessages(['required' => 'Merk wajib diisi']),
+                    ->native(false)
+                    ->validationMessages(['required' => 'Merk wajib diisi'])
+                    ->createOptionForm([
+                        TextInput::make('nama')
+                            ->label('Nama Merk')
+                            ->required(),
+                    ]),
                 TextInput::make('nomor_seri')
                     ->label('Nomor Seri')
                     ->required()
@@ -61,7 +82,15 @@ class ProdukResource extends Resource
                 Tables\Columns\TextColumn::make('merk.nama')->label('Merk')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('nomor_seri')->label('Nomor Seri')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('keterangan')->label('Keterangan')->limit(50)->sortable(),
-                Tables\Columns\TextColumn::make('status')->label('Status'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Tersedia' : 'Terjual')
+                    ->badge()
+                    ->color(fn(bool $state): string => match ($state) {
+                        true => 'success',
+                        false => 'danger',
+                        default => 'info',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')->label('Dibuat Pada')->dateTime()->sortable(),
             ])
             ->filters([

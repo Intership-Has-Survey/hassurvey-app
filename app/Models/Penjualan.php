@@ -28,6 +28,11 @@ class Penjualan extends Model
         return 'Rp ' . number_format($this->detailPenjualan->sum('harga'), 0, ',', '.');
     }
 
+    public function getTotallItemsAttribute(): string
+    {
+        return $this->detailPenjualan->sum('harga');
+    }
+
     protected $casts = [
         'tanggal_penjualan' => 'date',
     ];
@@ -63,6 +68,12 @@ class Penjualan extends Model
     {
         return $this->morphMany(StatusPembayaran::class, 'payable');
     }
+
+    public function getTotalPembayaranAttribute()
+    {
+        return $this->statusPembayaran()->sum('nilai');
+    }
+
 
     public function detailPenjualan(): HasMany
     {

@@ -182,4 +182,9 @@ class PengajuanDana extends Model
         $this->dibayar = $this->transaksiPembayarans()->sum('nilai');
         $this->save();
     }
+
+    public function kategoriPengajuan()
+    {
+        return $this->belongsTo(KategoriPengajuan::class, 'katpengajuan_id', 'code');
+    }
 }

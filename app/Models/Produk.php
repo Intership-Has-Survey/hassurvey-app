@@ -14,6 +14,7 @@ class Produk extends Model
     use HasUuids, SoftDeletes, logsActivity;
 
     protected $guarded = ['id'];
+    protected $table = 'produks';
 
     public function user()
     {
@@ -38,5 +39,12 @@ class Produk extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    protected function afterCreate(): void
+    {
+        dd($this->record);
+        $produkId = $this->record->produk_id;
+        Produk::where('id', $produkId)->update(['status' => 0]);
     }
 }

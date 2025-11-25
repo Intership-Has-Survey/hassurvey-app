@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Models\Level;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
@@ -10,6 +12,8 @@ use Filament\Pages\Actions;
 use App\Models\PengajuanDana;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
+use App\Models\KategoriPengajuan;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
@@ -74,6 +78,85 @@ class PengajuanDanaResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
+
+                        // Select untuk Kategori Induk
+                        Select::make('hi')
+                            ->label('Kategori Induk')
+                            ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code'))
+                            ->required()
+                            ->reactive()
+                            // ->dehydrated(false)
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->live()
+                            // ->dehydrated(false)
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Kategori Induk')
+                                    ->required()
+                                    ->maxLength(100),
+                            ])
+                            ->createOptionUsing(function (array $data) {
+                                // Create kategori induk baru
+                                $kategori = KategoriPengajuan::create([
+                                    'nama' => $data['nama'],
+                                    // Code akan di-generate otomatis oleh creating event (11, 12, 13, dst)
+                                ]);
+
+                                return $kategori->code;
+                            })
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('katpengajuan_id', null); // Reset subkategori ketika induk berubah
+                            }),
+
+                        // Select untuk Sub Kategori
+                        Select::make('katpengajuan_id')
+                            ->label('Sub Kategori')
+                            ->options(function (Get $get) {
+                                $parentCode = $get('hi');
+                                if (!$parentCode) return [];
+
+                                return KategoriPengajuan::where('code', 'like', $parentCode . '.%')
+                                    ->pluck('nama', 'code');
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->live()
+                            ->visible(fn(callable $get) => !empty($get('hi')))
+                            // ->dehydrate(true)
+                            ->createOptionForm([
+                                TextInput::make('nama')
+                                    ->label('Nama Sub Kategori')
+                                    ->required()
+                                    ->maxLength(100),
+                            ])
+                            ->createOptionUsing(function (array $data, Get $get) {
+                                // Ambil parent_id dari select pertama
+                                $parentCode = $get('hi');
+
+                                if (!$parentCode) {
+                                    throw new \Exception('Silakan pilih kategori induk terlebih dahulu.');
+                                }
+
+                                // Cari parent berdasarkan code - PERBAIKAN: ambil ID-nya
+                                $parent = KategoriPengajuan::where('code', $parentCode)->first();
+
+                                if (!$parent) {
+                                    throw new \Exception('Kategori induk tidak ditemukan.');
+                                }
+
+                                // Create subkategori - PERBAIKAN: gunakan parent->id bukan parentCode
+                                $subKategori = KategoriPengajuan::create([
+                                    'parent_id' => $parentCode, // <- INI PERBAIKAN UTAMA
+                                    'nama' => $data['nama'],
+                                    // Code akan di-generate otomatis oleh creating event (11.11, 11.12, dst)
+                                ]);
+
+                                return $subKategori->code;
+                            })
+                            ->required(),
 
                         Textarea::make('deskripsi_pengajuan')
                             ->label('Deskripsi Umum')
@@ -201,6 +284,14 @@ class PengajuanDanaResource extends Resource
                     ->label('Ditolak')
                     ->default('-')
                     ->toggleable(),
+                TextColumn::make('kategoriPengajuan.nama')
+                    ->label('Sub Kategori')
+                    ->default('-')
+                    ->toggleable(),
+                TextColumn::make('kategoriPengajuan.parentKategori.nama')
+                    ->label('Kategori')
+                    ->default('-')
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(function ($record) {
@@ -282,7 +373,24 @@ class PengajuanDanaResource extends Resource
                         '6' => 'Direktur Utama',
                     ])
                     ->label('Dalam Review'),
-
+                SelectFilter::make('katpengajuan_id')
+                    ->label('Kategori Pengajuan')
+                    ->relationship('kategoriPengajuan', 'nama'),
+                SelectFilter::make('kategori_induk')
+                    ->label('Kategori Induk')
+                    ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code'))
+                    ->searchable()
+                    ->preload()
+                    ->query(function (Builder $query, $state) {
+                        if (!$state['value']) {
+                            return $query;
+                        }
+                        // dd($state);
+                        return $query->whereHas('kategoriPengajuan', function ($q) use ($state) {
+                            $q->where('parent_id', $state['value']);
+                        });
+                    }),
+                // ->multiple(),
                 Filter::make('created_at')
                     ->form([
                         Grid::make()->schema([

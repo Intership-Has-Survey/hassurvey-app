@@ -16,7 +16,7 @@ class DetailPenjualan extends Model
     protected $fillable = [
         'penjualan_id',
         'jenis_alat_id',
-        'daftar_alat_id',
+        'produk_id',
         'merk_id',
         'harga',
     ];
@@ -26,9 +26,9 @@ class DetailPenjualan extends Model
         return $this->belongsTo(Penjualan::class);
     }
 
-    public function daftarAlat(): BelongsTo
+    public function produk(): BelongsTo
     {
-        return $this->belongsTo(DaftarAlat::class);
+        return $this->belongsTo(\App\Models\Produk::class);
     }
 
     public function jenisAlat(): BelongsTo
@@ -39,5 +39,12 @@ class DetailPenjualan extends Model
     public function merk(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Merk::class);
+    }
+
+    protected function afterCreate(): void
+    {
+        dd($this->record);
+        $produkId = $this->record->produk_id;
+        Produk::where('id', $produkId)->update(['status' => 0]);
     }
 }
