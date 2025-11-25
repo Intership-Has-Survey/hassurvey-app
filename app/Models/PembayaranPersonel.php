@@ -35,4 +35,9 @@ class PembayaranPersonel extends Model
     {
         return $this->belongsTo(Project::class);
     }
+
+    public function personelProject()
+    {
+        return $this->belongsTo(PersonelProject::class);
+    }
 }

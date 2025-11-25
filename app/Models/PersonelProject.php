@@ -20,8 +20,18 @@ class PersonelProject extends Pivot
     // Jika Anda menggunakan custom table name
     protected $table = 'personel_project';
 
+    public function pembayaranPersonel()
+    {
+        //model, foreign key di model pembayaranpersonel, local key di model ini
+        return $this->hasMany(PembayaranPersonel::class, 'personel_project_id', 'id');
+    }
     public function personel()
     {
         return $this->belongsTo(Personel::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

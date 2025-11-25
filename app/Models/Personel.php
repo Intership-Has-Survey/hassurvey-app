@@ -21,12 +21,17 @@ class Personel extends Model
     //     return $this->belongsToMany(Project::class);
     // }
 
-    public function projects()
+    public function project()
     {
         return $this->belongsToMany(Project::class, 'personel_project')
             ->using(PersonelProject::class)
             ->withPivot('user_id', 'peran', 'tanggal_mulai', 'tanggal_berakhir')
             ->withTimestamps();
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(PersonelProject::class);
     }
 
     public function user()

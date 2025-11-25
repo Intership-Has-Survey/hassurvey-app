@@ -201,147 +201,150 @@ class PersonelsRelationManager extends RelationManager
                 Tables\Actions\DeleteAction::make(),
 
                 // Tables\Actions\ViewAction::make(),
-                // Tables\Actions\Action::make('sudah_dibayar')
-                //     ->label('Terbayar')
-                //     ->icon('heroicon-m-check-badge')
-                //     ->color('gray')
-                //     ->form([
-                //         Forms\Components\TextInput::make('nilai')
-                //             ->numeric()
-                //             ->mask(RawJs::make('$money($input)'))
-                //             ->disabled()
-                //             ->stripCharacters(','),
-                //         Forms\Components\FileUpload::make('bukti_pembayaran_path')
-                //             ->disk('public')
-                //             ->disabled()
-                //             ->directory('bukti-pembayaran'),
-                //         Forms\Components\DatePicker::make('tanggal_transaksi')
-                //             ->disabled()
-                //             ->required(),
-                //         Forms\Components\Hidden::make('user_id')
-                //             ->disabled()
-                //             ->default(auth()->id()),
-                //         Forms\Components\Select::make('metode_pembayaran')
-                //             ->disabled()
-                //             ->options([
-                //                 'transfer' => 'Transfer',
-                //                 'tunai' => 'Tunai',
-                //             ]),
-                //         TextInput::make('keterangan')
-                //             ->label('Keterangan')
-                //             ->maxlength(500)
-                //             ->disabled()
-                //             ->nullable(),
-                //     ])
-                //     ->visible(function ($record) {
-                //         $project = $this->getOwnerRecord();
-                //         return $record->pembayaranPersonel()
-                //             ->where('personel_id', $record->id)
-                //             ->where('project_id', $project->id)
-                //             ->exists();
-                //     })
-                //     ->mountUsing(function ($form, $record) {
-                //         $project = $this->getOwnerRecord();
-                //         $pembayaran = $record->pembayaranPersonel()
-                //             ->where('personel_id', $record->id)
-                //             ->where('project_id', $project->id)
-                //             ->latest()
-                //             ->first();
-                //         // dd($pembayaran);
-                //         if ($pembayaran) {
-                //             $form->fill([
-                //                 'nilai' => $pembayaran->nilai,
-                //                 'bukti_pembayaran_path' => $pembayaran->bukti_pembayaran_path,
-                //                 'tanggal_transaksi' => $pembayaran->tanggal_transaksi,
-                //                 'user_id' => $pembayaran->user_id,
-                //                 'metode_pembayaran' => $pembayaran->metode_pembayaran, // atau bank_account->no_rek
-                //             ]);
-                //         }
-                //     })
-                //     ->action(function ($record) {
-                //         $pembayaran = $record->pembayaranPersonel;
-                //         // dd($pembayaran); // akan dieksekusi saat tombol/icon diklik
-                //     }),
+                Tables\Actions\Action::make('sudah_dibayar')
+                    ->label('Terbayar')
+                    ->icon('heroicon-m-check-badge')
+                    ->color('gray')
+                    ->form([
+                        Forms\Components\TextInput::make('nilai')
+                            ->numeric()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->disabled()
+                            ->stripCharacters(','),
+                        Forms\Components\FileUpload::make('bukti_pembayaran_path')
+                            ->disk('public')
+                            ->disabled()
+                            ->directory('bukti-pembayaran'),
+                        Forms\Components\DatePicker::make('tanggal_transaksi')
+                            ->disabled()
+                            ->required(),
+                        Forms\Components\Hidden::make('user_id')
+                            ->disabled()
+                            ->default(auth()->id()),
+                        Forms\Components\Select::make('metode_pembayaran')
+                            ->disabled()
+                            ->options([
+                                'transfer' => 'Transfer',
+                                'tunai' => 'Tunai',
+                            ]),
+                        TextInput::make('keterangan')
+                            ->label('Keterangan')
+                            ->maxlength(500)
+                            ->disabled()
+                            ->nullable(),
+                    ])
+                    ->visible(function ($record) {
+                        $project = $this->getOwnerRecord();
+                        return $record->pembayaranPersonel()->exists();
+                    })
+                    ->mountUsing(function ($form, $record) {
+                        $project = $this->getOwnerRecord();
+                        $pembayaran = $record->pembayaranPersonel()
+                            ->where('personel_id', $record->id)
+                            ->where('project_id', $project->id)
+                            ->latest()
+                            ->first();
+                        // dd($pembayaran);
+                        if ($pembayaran) {
+                            $form->fill([
+                                'nilai' => $pembayaran->nilai,
+                                'bukti_pembayaran_path' => $pembayaran->bukti_pembayaran_path,
+                                'tanggal_transaksi' => $pembayaran->tanggal_transaksi,
+                                'user_id' => $pembayaran->user_id,
+                                'metode_pembayaran' => $pembayaran->metode_pembayaran, // atau bank_account->no_rek
+                            ]);
+                        }
+                    })
+                    ->action(function ($record) {
+                        $pembayaran = $record->pembayaranPersonel;
+                        // dd($pembayaran); // akan dieksekusi saat tombol/icon diklik
+                    }),
 
-                // Tables\Actions\Action::make('bayar')
-                //     ->visible(function ($record) {
-                //         $project = $this->getOwnerRecord();
-                //         return $record->pembayaranPersonel()
-                //             ->where('personel_id', $record->id)
-                //             ->where('project_id', $project->id)
-                //             ->doesntExist();
-                //     })
-                //     ->label('Bayar')
-                //     ->icon('heroicon-m-banknotes')
-                //     ->form([
-                //         Forms\Components\TextInput::make('nilai')
-                //             ->numeric()
-                //             ->mask(RawJs::make('$money($input)'))
-                //             ->stripCharacters(',')
-                //             ->required()
-                //             ->prefix('Rp')
-                //             ->validationMessages([
-                //                 'required' => 'Nilai harus diisi',
-                //             ]),
-                //         Forms\Components\FileUpload::make('bukti_pembayaran_path')
-                //             ->label('Bukti Pembayaran')
-                //             ->image()
-                //             ->maxSize(1024)
-                //             ->disk('public')
-                //             ->directory('bukti-pembayaran')
-                //             ->columnSpanFull()
-                //             ->validationMessages([
-                //                 'max' => 'Ukuran file maksimal 1 MB',
-                //             ]),
-                //         Forms\Components\DatePicker::make('tanggal_transaksi')
-                //             ->label('Tanggal Transaksi')
-                //             ->required()
-                //             ->validationMessages([
-                //                 'required' => 'Tanggal transaksi harus diisi',
-                //             ])
-                //             ->default(now()),
-                //         Forms\Components\Hidden::make('user_id')
-                //             ->default(auth()->id()),
-                //         Forms\Components\Select::make('metode_pembayaran')
-                //             ->label('Metode Pembayaran')
-                //             ->required()
-                //             ->options([
-                //                 'transfer' => 'Transfer',
-                //                 'tunai' => 'Tunai',
-                //             ])
-                //             ->validationMessages([
-                //                 'required' => 'Metode pembayaran harus dipilih',
-                //             ]),
-                //         TextInput::make('keterangan')
-                //             ->label('Keterangan')
-                //             ->maxlength(500)
-                //             ->nullable(),
-                //         Hidden::make('company_id')->default(fn() => $this->getOwnerRecord()->company_id),
-                //     ])
-                //     ->action(function (array $data, $record) {
-                //         // Simpan ke tabel pembayaran_personel
-                //         $project = $this->getOwnerRecord();
-                //         $pembayaran = \App\Models\PembayaranPersonel::create([
-                //             'personel_project_id' => $record->id,
-                //             'project_id' => $project->id,
-                //             'personel_id' => $record->id,
-                //             'nilai' => $data['nilai'],
-                //             'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
-                //             'tanggal_transaksi' => $data['tanggal_transaksi'],
-                //             'metode_pembayaran' => $data['metode_pembayaran'],
-                //             'user_id' => $data['user_id'],
-                //         ]);
-                //         $pembayaran->statusPengeluarans()->create([
-                //             'user_id' => $data['user_id'],
-                //             'nilai' => $data['nilai'],
-                //             'tanggal_transaksi' => $data['tanggal_transaksi'],
-                //             'metode_pembayaran' => $data['metode_pembayaran'],
-                //             'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
-                //             'company_id' => $data['company_id'] ?? $project->company_id,
-                //         ]);
-                //     })
-                //     ->color('success')
-                //     ->modalHeading('Bayar Personel'),
+                Tables\Actions\Action::make('bayar')
+                    ->visible(function ($record) {
+                        $project = $this->getOwnerRecord();
+                        // dd([$record, $project]);
+                        //ini agak bener, jika 1 personel maka benar
+                        // return $record->personel->pembayaranPersonel()->doesntExist();
+
+                        return $record->pembayaranPersonel()->doesntExist();
+                    })
+                    // ->visible(function ($record) {
+                    //     // dd($record->pembayaranPersonel());
+                    //     // return !$record->tanggal_berakhir;
+                    // })
+                    // ->visible(fn($record) => !$record->pembayaranPersonel())
+                    ->label('Bayar')
+                    ->icon('heroicon-m-banknotes')
+                    ->form([
+                        Forms\Components\TextInput::make('nilai')
+                            ->numeric()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(',')
+                            ->required()
+                            ->prefix('Rp')
+                            ->validationMessages([
+                                'required' => 'Nilai harus diisi',
+                            ]),
+                        Forms\Components\FileUpload::make('bukti_pembayaran_path')
+                            ->label('Bukti Pembayaran')
+                            ->image()
+                            ->maxSize(1024)
+                            ->disk('public')
+                            ->directory('bukti-pembayaran')
+                            ->columnSpanFull()
+                            ->validationMessages([
+                                'max' => 'Ukuran file maksimal 1 MB',
+                            ]),
+                        Forms\Components\DatePicker::make('tanggal_transaksi')
+                            ->label('Tanggal Transaksi')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Tanggal transaksi harus diisi',
+                            ])
+                            ->default(now()),
+                        Forms\Components\Hidden::make('user_id')
+                            ->default(auth()->id()),
+                        Forms\Components\Select::make('metode_pembayaran')
+                            ->label('Metode Pembayaran')
+                            ->required()
+                            ->options([
+                                'transfer' => 'Transfer',
+                                'tunai' => 'Tunai',
+                            ])
+                            ->validationMessages([
+                                'required' => 'Metode pembayaran harus dipilih',
+                            ]),
+                        TextInput::make('keterangan')
+                            ->label('Keterangan')
+                            ->maxlength(500)
+                            ->nullable(),
+                        Hidden::make('company_id')->default(fn() => $this->getOwnerRecord()->company_id),
+                    ])
+                    ->action(function (array $data, $record) {
+                        // Simpan ke tabel pembayaran_personel
+                        $project = $this->getOwnerRecord();
+                        $pembayaran = \App\Models\PembayaranPersonel::create([
+                            'personel_project_id' => $record->id,
+                            'project_id' => $project->id,
+                            'personel_id' => $record->id,
+                            'nilai' => $data['nilai'],
+                            'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
+                            'tanggal_transaksi' => $data['tanggal_transaksi'],
+                            'metode_pembayaran' => $data['metode_pembayaran'],
+                            'user_id' => $data['user_id'],
+                        ]);
+                        $pembayaran->statusPengeluarans()->create([
+                            'user_id' => $data['user_id'],
+                            'nilai' => $data['nilai'],
+                            'tanggal_transaksi' => $data['tanggal_transaksi'],
+                            'metode_pembayaran' => $data['metode_pembayaran'],
+                            'bukti_pembayaran_path' => $data['bukti_pembayaran_path'] ?? null,
+                            'company_id' => $data['company_id'] ?? $project->company_id,
+                        ]);
+                    })
+                    ->color('success')
+                    ->modalHeading('Bayar Personel'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

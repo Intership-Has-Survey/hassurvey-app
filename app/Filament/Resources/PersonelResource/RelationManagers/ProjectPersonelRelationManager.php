@@ -32,45 +32,45 @@ class ProjectPersonelRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama_project'),
-                Tables\Columns\TextColumn::make('pivot.peran')
+                Tables\Columns\TextColumn::make('project.nama_project'),
+                Tables\Columns\TextColumn::make('peran')
                     ->label('Peran di Proyek')
                     ->badge(),
-                Tables\Columns\TextColumn::make('pivot.tanggal_mulai')
+                Tables\Columns\TextColumn::make('tanggal_mulai')
                     ->label('Tanggal Mulai')
                     ->date(),
-                Tables\Columns\TextColumn::make('pivot.tanggal_berakhir')
+                Tables\Columns\TextColumn::make('tanggal_berakhir')
                     ->label('Tanggal Berakhir')
                     ->date()
                     ->placeholder('Belum Berakhir'),
             ])
             ->filters([
                 //
-                Tables\Filters\Filter::make('sudah_dibayar')
-                    ->label('Sudah terbayar')
-                    ->query(function ($query) {
-                        $personel = $this->getOwnerRecord(); // Model Personel
+                // Tables\Filters\Filter::make('sudah_dibayar')
+                //     ->label('Sudah terbayar')
+                //     ->query(function ($query) {
+                //         $personel = $this->getOwnerRecord(); // Model Personel
 
-                        return $query->whereExists(function ($subQuery) use ($personel) {
-                            $subQuery->selectRaw(1)
-                                ->from('pembayaran_personels as p')
-                                ->whereColumn('p.project_id', 'projects.id')
-                                ->where('p.personel_id', $personel->id);
-                        });
-                    }),
-                Tables\Filters\Filter::make('belum_dibayar')
-                    ->label('Belum dibayar')
-                    ->query(function ($query) {
-                        $personel = $this->getOwnerRecord(); // Model Personel
+                //         return $query->whereExists(function ($subQuery) use ($personel) {
+                //             $subQuery->selectRaw(1)
+                //                 ->from('pembayaran_personels as p')
+                //                 ->whereColumn('p.project_id', 'projects.id')
+                //                 ->where('p.personel_id', $personel->id);
+                //         });
+                //     }),
+                // Tables\Filters\Filter::make('belum_dibayar')
+                //     ->label('Belum dibayar')
+                //     ->query(function ($query) {
+                //         $personel = $this->getOwnerRecord(); // Model Personel
 
-                        return $query->whereNotExists(function ($subQuery) use ($personel) {
-                            $subQuery->selectRaw(1)
-                                ->from('pembayaran_personels as p')
-                                ->whereColumn('p.project_id', 'projects.id')
-                                ->where('p.personel_id', $personel->id);
-                        });
-                    }),
-                Tables\Filters\TrashedFilter::make(),
+                //         return $query->whereNotExists(function ($subQuery) use ($personel) {
+                //             $subQuery->selectRaw(1)
+                //                 ->from('pembayaran_personels as p')
+                //                 ->whereColumn('p.project_id', 'projects.id')
+                //                 ->where('p.personel_id', $personel->id);
+                //         });
+                //     }),
+                // Tables\Filters\TrashedFilter::make(),
 
             ])
             ->headerActions([
@@ -89,64 +89,64 @@ class ProjectPersonelRelationManager extends RelationManager
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
 
-                Tables\Actions\Action::make('bayar')
-                    ->visible(function ($record) {
-                        $personel = $this->getOwnerRecord();
-                        // dd($personel);
-                        return $personel->pembayaranPersonel()
-                            ->where('project_id', $record->id)
-                            ->where('personel_id', $personel->id)
-                            ->doesntExist();
-                    })
-                    ->label('Bayar')
-                    ->icon('heroicon-m-banknotes')
-                    ->form([
-                        Forms\Components\DatePicker::make('tanggal_transaksi')
-                            ->label('Tanggal transaksi')
-                            ->required(),
-                        Forms\Components\Select::make('metode_pembayaran')
-                            ->label('Metode Pembayaran')
-                            ->options([
-                                'transfer' => 'Transfer',
-                                'tunai' => 'Tunai',
-                            ])
-                            ->required(),
-                        Forms\Components\TextInput::make('nilai')
-                            ->numeric()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(',')
-                            ->required(),
-                        Forms\Components\FileUpload::make('bukti_bayar')
-                            ->disk('public') // sesuaikan dengan disk kamu
-                            ->directory('bukti-bayar'),
-                        Forms\Components\Hidden::make('user_id')
-                            ->default(auth()->id()),
-                    ])
-                    ->action(function (array $data, $record) {
-                        // Simpan ke tabel pembayaran_personel
-                        $personel = $this->getOwnerRecord();
-                        $pembayaran = \App\Models\PembayaranPersonel::create([
-                            'personel_project_id' => $record->id,
-                            'project_id' => $record->id,
-                            'personel_id' => $personel->id,
-                            'nilai' => $data['nilai'],
-                            'bukti_pembayaran_path' => $data['bukti_bayar'],
-                            'tanggal_transaksi' => $data['tanggal_transaksi'],
-                            'metode_pembayaran' => $data['metode_pembayaran'],
-                            // 'bank_account_id' => $data['no_rek'],
-                            'user_id' => $data['user_id'],
-                        ]);
+                // Tables\Actions\Action::make('bayar')
+                //     ->visible(function ($record) {
+                //         $personel = $this->getOwnerRecord();
+                //         // dd($personel);
+                //         return $personel->pembayaranPersonel()
+                //             ->where('project_id', $record->id)
+                //             ->where('personel_id', $personel->id)
+                //             ->doesntExist();
+                //     })
+                //     ->label('Bayar')
+                //     ->icon('heroicon-m-banknotes')
+                //     ->form([
+                //         Forms\Components\DatePicker::make('tanggal_transaksi')
+                //             ->label('Tanggal transaksi')
+                //             ->required(),
+                //         Forms\Components\Select::make('metode_pembayaran')
+                //             ->label('Metode Pembayaran')
+                //             ->options([
+                //                 'transfer' => 'Transfer',
+                //                 'tunai' => 'Tunai',
+                //             ])
+                //             ->required(),
+                //         Forms\Components\TextInput::make('nilai')
+                //             ->numeric()
+                //             ->mask(RawJs::make('$money($input)'))
+                //             ->stripCharacters(',')
+                //             ->required(),
+                //         Forms\Components\FileUpload::make('bukti_bayar')
+                //             ->disk('public') // sesuaikan dengan disk kamu
+                //             ->directory('bukti-bayar'),
+                //         Forms\Components\Hidden::make('user_id')
+                //             ->default(auth()->id()),
+                //     ])
+                //     ->action(function (array $data, $record) {
+                //         // Simpan ke tabel pembayaran_personel
+                //         $personel = $this->getOwnerRecord();
+                //         $pembayaran = \App\Models\PembayaranPersonel::create([
+                //             'personel_project_id' => $record->id,
+                //             'project_id' => $record->id,
+                //             'personel_id' => $personel->id,
+                //             'nilai' => $data['nilai'],
+                //             'bukti_pembayaran_path' => $data['bukti_bayar'],
+                //             'tanggal_transaksi' => $data['tanggal_transaksi'],
+                //             'metode_pembayaran' => $data['metode_pembayaran'],
+                //             // 'bank_account_id' => $data['no_rek'],
+                //             'user_id' => $data['user_id'],
+                //         ]);
 
-                        $pembayaran->statusPengeluarans()->create([
-                            'user_id' => $data['user_id'], // atau auth()->id()
-                            'nilai' => $data['nilai'],
-                            'tanggal_transaksi' => $data['tanggal_transaksi'],
-                            'metode_pembayaran' => $data['metode_pembayaran'], // atau bisa juga pakai enum atau TextInput
-                            'bukti_pembayaran_path' => $data['bukti_bayar'],
-                        ]);
-                    })
-                    ->color('success')
-                    ->modalHeading('Bayar Personel'),
+                //         $pembayaran->statusPengeluarans()->create([
+                //             'user_id' => $data['user_id'], // atau auth()->id()
+                //             'nilai' => $data['nilai'],
+                //             'tanggal_transaksi' => $data['tanggal_transaksi'],
+                //             'metode_pembayaran' => $data['metode_pembayaran'], // atau bisa juga pakai enum atau TextInput
+                //             'bukti_pembayaran_path' => $data['bukti_bayar'],
+                //         ]);
+                //     })
+                //     ->color('success')
+                //     ->modalHeading('Bayar Personel'),
                 // Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('sudah_dibayar')
                     ->label('Terbayar')
@@ -174,24 +174,25 @@ class ProjectPersonelRelationManager extends RelationManager
                     ])
                     ->visible(function ($record) {
                         $personel = $this->getOwnerRecord();
-                        // dd($personel);
-                        return $personel->pembayaranPersonel()
-                            ->where('project_id', $record->id)
-                            ->where('personel_id', $personel->id)
+                        // dd($record);
+                        return $record->pembayaranPersonel()
                             ->exists();
                     })
                     ->mountUsing(function ($form, $record) {
                         $personel = $this->getOwnerRecord();
-                        $pembayaran = $personel->pembayaranPersonel()
-                            ->where('personel_id', $personel->id)
-                            ->where('project_id', $record->id)
-                            ->latest()
+                        // $pembayaran = $personel->pembayaranPersonel()
+                        //     ->where('personel_id', $personel->id)
+                        //     ->where('project_id', $record->id)
+                        //     ->latest()
+                        //     ->first();
+                        $pembayaran = $record->pembayaranPersonel()
                             ->first();
                         if ($pembayaran) {
                             $form->fill([
                                 'nilai' => $pembayaran->nilai,
                                 'bukti_bayar' => $pembayaran->bukti_pembayaran,
-                                'tanggal_bayar' => $pembayaran->tanggal_bayar,
+                                'tanggal_transaksi' => $pembayaran->tanggal_transaksi,
+                                'metode_pembayaran' => $pembayaran->metode_pembayaran,
                                 'user_id' => $pembayaran->user_id,
                                 'nama_bank' => $pembayaran->bank_id, // atau ambil relasi bank->nama_bank
                                 'no_rek' => $pembayaran->bank_account_id, // atau bank_account->no_rek
