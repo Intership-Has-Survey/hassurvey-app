@@ -242,6 +242,14 @@ class PengajuanDanaResource extends Resource
                         return 'Untuk: In-House (Internal)';
                     })
                     ->searchable(),
+                TextColumn::make('kategoriPengajuan.parentKategori.nama')
+                    ->label('Kategori')
+                    ->default('-')
+                    ->toggleable(),
+                TextColumn::make('kategoriPengajuan.nama')
+                    ->label('Sub Kategori')
+                    ->default('-')
+                    ->toggleable(),
                 TextColumn::make('nilai')
                     ->sortable()
                     ->money('IDR'),
@@ -282,14 +290,6 @@ class PengajuanDanaResource extends Resource
                     ->default('-'),
                 TextColumn::make('ditolak')
                     ->label('Ditolak')
-                    ->default('-')
-                    ->toggleable(),
-                TextColumn::make('kategoriPengajuan.nama')
-                    ->label('Sub Kategori')
-                    ->default('-')
-                    ->toggleable(),
-                TextColumn::make('kategoriPengajuan.parentKategori.nama')
-                    ->label('Kategori')
                     ->default('-')
                     ->toggleable(),
                 TextColumn::make('status')
@@ -373,23 +373,56 @@ class PengajuanDanaResource extends Resource
                         '6' => 'Direktur Utama',
                     ])
                     ->label('Dalam Review'),
-                SelectFilter::make('katpengajuan_id')
+                Filter::make('kaka')
+                    ->form([
+                        Grid::make()->schema([
+                            Select::make('kategori_induk')
+                                ->label('Kategori Induk')
+                                ->reactive()
+                                ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code')),
+                            Select::make('kategori_sub')
+                                ->label('Sub Kategori')
+                                ->options(function (Get $get) {
+                                    $parentCode = $get('kategori_induk');
+                                    if (!$parentCode) {
+                                        return [];
+                                    }
+
+                                    return KategoriPengajuan::where('parent_id', $parentCode)
+                                        ->pluck('nama', 'code');
+                                }),
+                        ])
+                    ])
                     ->label('Kategori Pengajuan')
-                    ->relationship('kategoriPengajuan', 'nama'),
-                SelectFilter::make('kategori_induk')
-                    ->label('Kategori Induk')
-                    ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code'))
-                    ->searchable()
-                    ->preload()
-                    ->query(function (Builder $query, $state) {
-                        if (!$state['value']) {
-                            return $query;
-                        }
-                        // dd($state);
-                        return $query->whereHas('kategoriPengajuan', function ($q) use ($state) {
-                            $q->where('parent_id', $state['value']);
-                        });
+                    ->columnSpan(2)
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['kategori_induk'],
+                                fn(Builder $query, $katInduk): Builder => $query->whereHas(
+                                    'kategoriPengajuan',
+                                    fn(Builder $query) => $query->where('parent_id', $katInduk)
+                                ),
+                            )
+                            ->when(
+                                $data['kategori_sub'],
+                                fn(Builder $query, $katSub): Builder => $query->where('katpengajuan_id', $katSub),
+                            );
                     }),
+
+                // SelectFilter::make('katpengajuan_id')
+                //     ->label('Sub Kategori')
+                //     ->options(function ($get) {
+                //         $parentCode = $get('kategori_induk');
+                //         if (!$parentCode) {
+                //             return [];
+                //         }
+
+                //         return KategoriPengajuan::where('parent_id', $parentCode)
+                //             ->pluck('nama', 'code');
+                //     })
+                //     ->searchable()
+                //     ->preload(),
                 // ->multiple(),
                 Filter::make('created_at')
                     ->form([

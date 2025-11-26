@@ -6,6 +6,8 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\TrefRegion;
 use Filament\Support\RawJs;
+use Filament\Facades\Filament;
+use App\Models\KategoriPengajuan;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -13,9 +15,8 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Facades\Filament;
 use Illuminate\Validation\Rules\Unique;
+use Filament\Forms\Components\TextInput;
 
 trait GlobalForms
 {
@@ -329,6 +330,83 @@ trait GlobalForms
                         ->label('Deskripsi Umum')
                         ->columnSpanFull()
                         ->maxLength(5000),
+                    Select::make('hi')
+                        ->label('Kategori Induk')
+                        ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code'))
+                        ->required()
+                        ->reactive()
+                        // ->dehydrated(false)
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->live()
+                        // ->dehydrated(false)
+                        ->createOptionForm([
+                            TextInput::make('nama')
+                                ->label('Nama Kategori Induk')
+                                ->required()
+                                ->maxLength(100),
+                        ])
+                        ->createOptionUsing(function (array $data) {
+                            // Create kategori induk baru
+                            $kategori = KategoriPengajuan::create([
+                                'nama' => $data['nama'],
+                                // Code akan di-generate otomatis oleh creating event (11, 12, 13, dst)
+                            ]);
+
+                            return $kategori->code;
+                        })
+                        ->afterStateUpdated(function (Set $set) {
+                            $set('katpengajuan_id', null); // Reset subkategori ketika induk berubah
+                        }),
+
+                    // Select untuk Sub Kategori
+                    Select::make('katpengajuan_id')
+                        ->label('Sub Kategori')
+                        ->options(function (Get $get) {
+                            $parentCode = $get('hi');
+                            if (!$parentCode) return [];
+
+                            return KategoriPengajuan::where('code', 'like', $parentCode . '.%')
+                                ->pluck('nama', 'code');
+                        })
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->live()
+                        ->visible(fn(callable $get) => !empty($get('hi')))
+                        // ->dehydrate(true)
+                        ->createOptionForm([
+                            TextInput::make('nama')
+                                ->label('Nama Sub Kategori')
+                                ->required()
+                                ->maxLength(100),
+                        ])
+                        ->createOptionUsing(function (array $data, Get $get) {
+                            // Ambil parent_id dari select pertama
+                            $parentCode = $get('hi');
+
+                            if (!$parentCode) {
+                                throw new \Exception('Silakan pilih kategori induk terlebih dahulu.');
+                            }
+
+                            // Cari parent berdasarkan code - PERBAIKAN: ambil ID-nya
+                            $parent = KategoriPengajuan::where('code', $parentCode)->first();
+
+                            if (!$parent) {
+                                throw new \Exception('Kategori induk tidak ditemukan.');
+                            }
+
+                            // Create subkategori - PERBAIKAN: gunakan parent->id bukan parentCode
+                            $subKategori = KategoriPengajuan::create([
+                                'parent_id' => $parentCode, // <- INI PERBAIKAN UTAMA
+                                'nama' => $data['nama'],
+                                // Code akan di-generate otomatis oleh creating event (11.11, 11.12, dst)
+                            ]);
+
+                            return $subKategori->code;
+                        })
+                        ->required(),
                     Hidden::make('nilai')
                         ->default('0'),
                     Hidden::make('user_id')
