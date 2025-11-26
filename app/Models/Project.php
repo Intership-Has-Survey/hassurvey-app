@@ -158,4 +158,9 @@ class Project extends Model
     {
         return $this->belongsTo(TrefRegion::class, 'desa', 'code');
     }
+
+    public function picInternal(): BelongsTo
+    {
+        return $this->belongsTo(PicInternal::class, 'pic_internal_id');
+    }
 }

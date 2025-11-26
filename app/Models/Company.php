@@ -114,4 +114,9 @@ class Company extends Model
     {
         return $this->belongsToMany(User::class);
     }
+
+    public function picInternals()
+    {
+        return $this->hasMany(PicInternal::class);
+    }
 }

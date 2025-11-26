@@ -85,7 +85,8 @@ class ProjectResource extends Resource
                     TextInput::make('nama_project')
                         ->required()
                         ->label('Nama Proyek')
-                        ->placeholder('Masukkan Nama Proyek'),
+                        ->placeholder('Masukkan Nama Proyek')
+                        ->columnSpan(2),
                     Select::make('status')
                         ->label('Status Proyek')
                         ->options([
@@ -100,6 +101,30 @@ class ProjectResource extends Resource
                         ->native(false)
                         ->validationMessages([
                             'required' => 'Status proyek tidak boleh kosong',
+                        ]),
+                    Select::make('pic_internal_id')
+                        ->relationship('picInternal', 'nama')
+                        ->label('PIC Internal')
+                        ->placeholder('Pilih PIC Internal')
+                        ->searchable()
+                        ->preload()
+                        ->createOptionForm([
+                            TextInput::make('nama')
+                                ->label('Nama PIC Internal')
+                                ->required(),
+                            TextInput::make('nik')
+                                ->label('NIK')
+                                ->maxLength(16),
+                            TextInput::make('nomor_wa')
+                                ->label('Nomor WA')
+                                ->maxLength(15),
+                            TextInput::make('email')
+                                ->label('Email')
+                                ->email(),
+                            Hidden::make('user_id')
+                                ->default(auth()->id()),
+                            Hidden::make('company_id')
+                                ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
                         ]),
                     Select::make('kategori_id')->relationship('kategori', 'nama')->searchable()->preload()
                         ->createOptionForm(self::getKategoriForm()),
