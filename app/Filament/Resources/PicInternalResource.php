@@ -23,7 +23,7 @@ class PicInternalResource extends Resource
     use GlobalForms;
     protected static ?string $model = PicInternal::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-phone';
     protected static ?string $navigationGroup = 'Manajemen Data Master';
     protected static ?int $navigationSort = 6;
     protected static ?string $pluralModelLabel = 'PIC Internal';
