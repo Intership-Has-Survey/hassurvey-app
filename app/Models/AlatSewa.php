@@ -42,4 +42,18 @@ class AlatSewa extends Pivot
     {
         return $this->belongsTo(Sewa::class, 'sewa_id');
     }
+
+    public function getApakahAttribute()
+    {
+        // Jika ada tgl_masuk, alat sudah dikembalikan (Tersedia)
+        if (!empty($this->tgl_masuk)) {
+            return 'Tersedia';
+        }
+        // Jika tidak ada tgl_masuk tapi ada tgl_keluar, alat masih dipinjam
+        else if (!empty($this->tgl_keluar)) {
+            return 'Terpakai';
+        }
+        // Default status
+        return 'Menunggu';
+    }
 }
