@@ -31,6 +31,21 @@ class AlatSewa extends Pivot
                 $pivot->user_id = Auth::id();
             }
         });
+
+        static::saved(function ($pivot) {
+            $alat = DaftarAlat::find($pivot->daftar_alat_id);
+            // dd([$alat, $pivot]);
+
+            if ($pivot->tgl_masuk !== null) {
+                // alat sudah dikembalikan
+                $alat->status = 1;
+            } else {
+                // alat sedang disewa
+                $alat->status = 0;
+            }
+
+            $alat->save();
+        });
     }
 
     public function daftarAlat()
