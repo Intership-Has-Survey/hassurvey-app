@@ -168,15 +168,15 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         $recordId = $data['recordId'];
                         $data['sewa_id'] = $sewa->id;
                         $livewire->getRelationship()->attach($recordId, $data);
-                        $alat = DaftarAlat::find($recordId);
-                        if ($alat) {
-                            $alat->update(['status' => false]);
-                        }
-                        // If need_replacement is true (1), set it to false (0) when adding a new alat
-                        if ($sewa->need_replacement == 1) {
-                            $sewa->need_replacement = 0;
-                            $sewa->save();
-                        }
+                        // $alat = DaftarAlat::find($recordId);
+                        // if ($alat) {
+                        //     $alat->update(['status' => false]);
+                        // }
+                        // // If need_replacement is true (1), set it to false (0) when adding a new alat
+                        // if ($sewa->need_replacement == 1) {
+                        //     $sewa->need_replacement = 0;
+                        //     $sewa->save();
+                        // }
                     })
                     ->form(function (): array {
                         $sewa = $this->getSewaRecord();
@@ -325,21 +325,21 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                             $record->pivot->save();
                         }
                         return $record;
-                    })
-                    ->after(function (Model $record, array $data): void {
-                        if (empty($data['tgl_masuk'])) {
-                            return;
-                        }
-
-                        $alat = DaftarAlat::find($record->id);
-                        if ($alat) {
-                            $isGoodCondition = ($data['kondisi_kembali'] === 'Baik');
-                            $alat->update([
-                                'kondisi' => $isGoodCondition,
-                                'status' => true, // Always set status to 'Tersedia' upon return
-                            ]);
-                        }
                     }),
+                // ->after(function (Model $record, array $data): void {
+                //     if (empty($data['tgl_masuk'])) {
+                //         return;
+                //     }
+
+                //     $alat = DaftarAlat::find($record->id);
+                //     if ($alat) {
+                //         $isGoodCondition = ($data['kondisi_kembali'] === 'Baik');
+                //         $alat->update([
+                //             'kondisi' => $isGoodCondition,
+                //             'status' => true, // Always set status to 'Tersedia' upon return
+                //         ]);
+                //     }
+                // }),
                 Tables\Actions\EditAction::make('Final Harga')
                     ->label('Harga dan Bayar')
                     ->form([
@@ -453,10 +453,10 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                         }
                         $cancellationDeadline = Carbon::parse($record->pivot->created_at)->addHours(12);
                         return now()->lte($cancellationDeadline);
-                    })
-                    ->after(function (Model $record) {
-                        $record->update(['status' => true]);
                     }),
+                // ->after(function (Model $record) {
+                //     $record->update(['status' => true]);
+                // }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
