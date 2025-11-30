@@ -15,7 +15,8 @@ use pxlrbt\FilamentExcel\Columns\Column;
 
 class PenggunaanAlatRelationManager extends RelationManager
 {
-    protected static string $relationship = 'sewa';
+    //jika sewa dia meurujuk ke sewa dan jika sewar merujuk ke riwayat_sewa
+    protected static string $relationship = 'sewar';
     protected static ?string $recordTitleAttribute = 'id';
     protected static ?string $title = 'Riwayat Penggunaan Alat';
     public function form(Form $form): Form
@@ -34,8 +35,19 @@ class PenggunaanAlatRelationManager extends RelationManager
             ->columns([
                 // Tampilkan info alat dari relasi
 
+                // ->sortable(false),
                 // Tampilkan info sewa dari relasi
-                Tables\Columns\TextColumn::make('judul')
+                Tables\Columns\TextColumn::make('sewa.kode_sewa')
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->sewa->project) {
+                            return $record->sewa->project->kode_project;
+                        }
+                        return $state ?? 'Kode Sewa Tidak Ada';
+                    })
+                    ->label('Kode Sewa/Proyek')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('sewa.judul')
                     ->label('Digunakan di Proyek/Sewa')
                     ->searchable(),
 
@@ -48,19 +60,21 @@ class PenggunaanAlatRelationManager extends RelationManager
                     ->date('d M Y')
                     ->placeholder('Belum Kembali'),
 
-                Tables\Columns\TextColumn::make('status')
+                //jika tidak punya kolom di databse maka perlu getStatusAtributr
+                Tables\Columns\TextColumn::make('apakah')
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(function ($state, $record) {
-                        // Jika ada tgl_keluar, status = Selesai
-                        // dd($record);
+                        // Jika ada tgl_masuk, status = Tersedia
                         if (!empty($record->tgl_masuk)) {
-                            return 'Selesai';
+                            return 'Tersedia';
                         }
-                        // Jika tidak ada tgl_keluar, status = Terpakai
-                        else {
+                        // Jika tidak ada tgl_masuk tapi ada tgl_keluar, status = Terpakai
+                        else if (!empty($record->tgl_keluar)) {
                             return 'Terpakai';
                         }
+                        // Default status
+                        return 'Menunggu';
                     })
                     ->color(function ($state, $record) {
                         // Jika ada tgl_keluar, warna hijau (Selesai)
@@ -82,7 +96,10 @@ class PenggunaanAlatRelationManager extends RelationManager
                         \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
                             ->fromTable()
                             ->withColumns([
-                                // Column::make('kategori.nama')->heading('Kategori'),
+                                Column::make('daftarAlat.jenisAlat.nama')->heading('Jenis Alat'),
+                                Column::make('daftarAlat.merk.nama')->heading('Merk'),
+                                Column::make('daftarAlat.nomor_seri')->heading('Nomor Seri'),
+                                Column::make('daftarAlat.pemilik.nama')->heading('Pemilik'),
 
                             ])
                             ->withFilename(date('Y-m-d') . ' - projects-export')
