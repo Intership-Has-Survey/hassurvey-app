@@ -206,4 +206,9 @@ Route::get('/admin/{company}/investorupdate/select/{investor}', [PdfController::
     ->name('pdf.select');
 Route::get('/admin/{company}/berita-acara/{project}', [AcaraController::class, 'preview'])
     ->name('acara');
+Route::get(
+    '/admin/{company}/berita-acara/{project}/download',
+    [AcaraController::class, 'download']
+)->name('acara.download');
+
 require __DIR__ . '/auth.php';

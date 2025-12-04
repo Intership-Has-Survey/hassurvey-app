@@ -148,7 +148,7 @@
         <!-- TITLE -->
         <h1>BERITA ACARA PEKERJAAN SELESAI</h1>
         <div class="subtitle">
-            Nomor: {{ $project->kode_ba ?? '____/BAPS/____/' . now()->format('m') . '/' . now()->format('Y') }}
+            Nomor: {{ $nomor ?? '____/BAPS/____/' . now()->format('m') . '/' . now()->format('Y') }}
         </div>
 
         <!-- DESCRIPTION -->
@@ -224,6 +224,10 @@
         </div>
 
     </div>
+
+    {{-- <a href="{{ route('acara.download', [$project->company_id, $project->id]) }}" class="btn btn-primary">
+        Download Berita Acara
+    </a> --}}
 </body>
 
 </html>
