@@ -11,6 +11,7 @@ use App\Livewire\Settings\Appearance;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\AcaraController;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -206,4 +207,8 @@ Route::get('/admin/{company}/investorupdate/select/{investor}', [PdfController::
     ->name('pdf.select');
 Route::get('/admin/{company}/berita-acara/{project}', [AcaraController::class, 'preview'])
     ->name('acara');
+Route::get('/admin/invoice', [InvoiceController::class, 'preview'])
+    ->name('invoicepreview');
+Route::get('/admin/{company}/invoice/{invoice}', [InvoiceController::class, 'preview'])
+    ->name('invoice');
 require __DIR__ . '/auth.php';
