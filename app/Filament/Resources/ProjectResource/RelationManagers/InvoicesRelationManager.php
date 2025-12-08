@@ -35,17 +35,8 @@ class InvoicesRelationManager extends RelationManager
                         })
                         ->disabled()
                         ->dehydrated()
-                        ->required(),
-                    Select::make('status')
-                        ->label('Status')
-                        ->options([
-                            'draft' => 'draft',
-                            'terkirim' => 'terkirim',
-                            'dibayar' => 'dibayar',
-                            'lunas' => 'lunas',
-                            'batal' => 'batal',
-                        ])
-                        ->required(),
+                        ->required()
+                        ->columnSpan(2),
                     Select::make('jenis')
                         ->label('Jenis Pembayaran')
                         ->options([
@@ -61,10 +52,20 @@ class InvoicesRelationManager extends RelationManager
                         ->required()
                         ->minValue(0),
                     TextInput::make('ppn')
-                        ->label('PPN (%)')
+                        ->label('PPN (%), beri 0 jika tidak ada')
                         ->numeric()
                         ->required()
                         ->minValue(0),
+                    Select::make('status')
+                        ->label('Status')
+                        ->options([
+                            'draft' => 'draft',
+                            'terkirim' => 'terkirim',
+                            'dibayar' => 'dibayar',
+                            'lunas' => 'lunas',
+                            'batal' => 'batal',
+                        ])
+                        ->required(),
                     DatePicker::make('tanggal_mulai')
                         ->label('Tanggal Invoice dibuat')
                         ->native(false)
@@ -89,6 +90,13 @@ class InvoicesRelationManager extends RelationManager
                         ->required()
                         ->disableToolbarButtons([
                             'attachFiles',
+                            'blockquote',
+                            'codeBlock',
+                            'h2',
+                            'h3',
+                            'link',
+                            'strike',
+                            'underline',
                         ])
                         ->columnSpan(4),
                     TextInput::make('satuan')
@@ -129,7 +137,7 @@ class InvoicesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('total_harga')->label('Total Harga')->money('idr', true),
                 // Tables\Columns\TextColumn::make('project.kode_project')->label('Kode Project'),
                 Tables\Columns\TextColumn::make('invoiceable')
-                    ->label('Kode Project')
+                    ->label('Kode Sewa')
                     ->formatStateUsing(function ($record) {
                         if ($record->customer_type === \App\Models\Project::class) {
                             return $record->invoiceable->kode_project;

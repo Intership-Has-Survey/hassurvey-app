@@ -44,19 +44,16 @@ class InvoiceResource extends Resource
         return $form->schema([
             Section::make('Informasi Invoice')
                 ->schema([
-                    TextInput::make('kode_invoice')
+                    Forms\Components\TextInput::make('kode_invoice')
                         ->label('Kode Invoice')
+                        ->default(function ($livewire) {
+                            $parent = $livewire->ownerRecord;
+                            return \App\Models\Invoice::generateKodeInvoiceFromModel($parent);
+                        })
+                        ->disabled()
+                        ->dehydrated()
+                        ->required()
                         ->columnSpan(2),
-                    Select::make('status')
-                        ->label('Status')
-                        ->options([
-                            'draft' => 'draft',
-                            'terkirim' => 'terkirim',
-                            'dibayar' => 'dibayar',
-                            'lunas' => 'lunas',
-                            'batal' => 'batal',
-                        ])
-                        ->required(),
                     Select::make('jenis')
                         ->label('Jenis Pembayaran')
                         ->options([
@@ -72,10 +69,20 @@ class InvoiceResource extends Resource
                         ->required()
                         ->minValue(0),
                     TextInput::make('ppn')
-                        ->label('PPN (%)')
+                        ->label('PPN (%), beri 0 jika tidak ada')
                         ->numeric()
                         ->required()
                         ->minValue(0),
+                    Select::make('status')
+                        ->label('Status')
+                        ->options([
+                            'draft' => 'draft',
+                            'terkirim' => 'terkirim',
+                            'dibayar' => 'dibayar',
+                            'lunas' => 'lunas',
+                            'batal' => 'batal',
+                        ])
+                        ->required(),
                     DatePicker::make('tanggal_mulai')
                         ->label('Tanggal Invoice dibuat')
                         ->native(false)
@@ -88,32 +95,6 @@ class InvoiceResource extends Resource
                         ->live(),
                 ])
                 ->columns(2),
-            // Section::make('Informasi Customer')
-            //     ->schema(self::getCustomerForm()),
-            Section::make('Informasi Pelanggan')
-                ->schema([
-                    Select::make('customer')
-                        ->label('Pelangan')
-                        ->options(function () {
-                            // Ambil data corporate
-                            $corporate = DB::table('corporate')
-                                ->select('id', 'nama')
-                                ->get()
-                                ->mapWithKeys(fn($item) => [$item->id => "Corporate: {$item->nama}"]);
-
-                            // Ambil data perorangan
-                            $perorangan = DB::table('perorangan')
-                                ->select('id', 'nama')
-                                ->get()
-                                ->mapWithKeys(fn($item) => [$item->id => "Perorangan: {$item->nama}"]);
-
-                            // Gabungkan
-                            return $corporate->merge($perorangan)->toArray();
-                        })
-                        ->required(),
-                    TextInput::make('telepon'),
-                    TextInput::make('email'),
-                ]),
             Repeater::make('detailInvoices')
                 ->relationship()
                 ->columnSpanFull()
@@ -124,40 +105,36 @@ class InvoiceResource extends Resource
                         ->required()
                         ->disableToolbarButtons([
                             'attachFiles',
+                            'blockquote',
+                            'codeBlock',
+                            'h2',
+                            'h3',
+                            'link',
+                            'strike',
+                            'underline',
                         ])
                         ->columnSpan(4),
+                    TextInput::make('satuan')
+                        ->label('Satuan')
+                        ->dehydrated(true)
+                        ->reactive(),
 
                     TextInput::make('jumlah')
                         ->label('Jumlah')
-                        ->numeric()
-                        ->prefix('Rp ')
-                        ->stripCharacters(',')
-
-                        ->required()
-                        ->minValue(0)
-                        ->validationMessages([
-                            'required' => 'Harga Satuan wajib diisi',
-                            'max_digits' => 'Tidak boleh lebih dari 9 digit',
-                            'min_value' => 'Tidak boleh kurang dari Rp 0'
-                        ]),
+                        ->numeric(),
 
                     TextInput::make('harga')
                         ->dehydrated(true)
                         ->reactive(),
-                    TextInput::make('diskon')
-                        ->dehydrated(true)
-                        ->reactive(),
-                    TextInput::make('pajak')
-                        ->dehydrated(true)
-                        ->reactive()
+
+                    // TextInput::make('pajak')
+                    //     ->dehydrated(true)
+                    //     ->reactive()
 
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
                 ->columns(4),
-
-            // ])->columns(2),
-            // Hidden::make('user_id')->default(auth()->id()),
             Hidden::make('company_id')
                 ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
         ]);
@@ -185,7 +162,7 @@ class InvoiceResource extends Resource
                         'dibayar' => 'success',
                         'draft' => 'primary',
                         'terkirim' => 'info',
-                        'batal' => 'batal',
+                        'batal' => 'danger',
                         default => 'secondary',
                     }),
                 Tables\Columns\TextColumn::make('customer_type')

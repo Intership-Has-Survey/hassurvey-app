@@ -34,17 +34,8 @@ class InvoiceRelationManager extends RelationManager
                         })
                         ->disabled()
                         ->dehydrated()
-                        ->required(),
-                    Select::make('status')
-                        ->label('Status')
-                        ->options([
-                            'draft' => 'draft',
-                            'terkirim' => 'terkirim',
-                            'dibayar' => 'dibayar',
-                            'lunas' => 'lunas',
-                            'batal' => 'batal',
-                        ])
-                        ->required(),
+                        ->required()
+                        ->columnSpan(2),
                     Select::make('jenis')
                         ->label('Jenis Pembayaran')
                         ->options([
@@ -60,10 +51,20 @@ class InvoiceRelationManager extends RelationManager
                         ->required()
                         ->minValue(0),
                     TextInput::make('ppn')
-                        ->label('PPN (%)')
+                        ->label('PPN (%), beri 0 jika tidak ada')
                         ->numeric()
                         ->required()
                         ->minValue(0),
+                    Select::make('status')
+                        ->label('Status')
+                        ->options([
+                            'draft' => 'draft',
+                            'terkirim' => 'terkirim',
+                            'dibayar' => 'dibayar',
+                            'lunas' => 'lunas',
+                            'batal' => 'batal',
+                        ])
+                        ->required(),
                     DatePicker::make('tanggal_mulai')
                         ->label('Tanggal Invoice dibuat')
                         ->native(false)
@@ -88,6 +89,13 @@ class InvoiceRelationManager extends RelationManager
                         ->required()
                         ->disableToolbarButtons([
                             'attachFiles',
+                            'blockquote',
+                            'codeBlock',
+                            'h2',
+                            'h3',
+                            'link',
+                            'strike',
+                            'underline',
                         ])
                         ->columnSpan(4),
                     TextInput::make('satuan')
@@ -127,21 +135,21 @@ class InvoiceRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('jenis')->label('Tipe Invoice'),
                 Tables\Columns\TextColumn::make('total_harga')->label('Total Harga')->money('idr', true),
                 // Tables\Columns\TextColumn::make('project.kode_project')->label('Kode Project'),
-                Tables\Columns\TextColumn::make('invoiceable')
-                    ->label('Kode Project')
-                    ->formatStateUsing(function ($record) {
-                        if ($record->customer_type === \App\Models\Project::class) {
-                            return $record->invoiceable->kode_project;
-                        } else if ($record->customer_type === \App\Models\Sewa::class) {
-                            return $record->invoiceable->kode_sewa;
-                        } elseif ($record->customer_type === \App\Models\Kalibrasi::class) {
-                            return $record->invoiceable->kode_kalibrasi;
-                        } else {
-                            return $record->invoiceable->kode_penjualan;
-                        }
+                // Tables\Columns\TextColumn::make('invoiceable')
+                //     ->label('Kode Kalibrasi')
+                //     ->formatStateUsing(function ($record) {
+                //         if ($record->customer_type === \App\Models\Project::class) {
+                //             return $record->invoiceable->kode_project;
+                //         } else if ($record->customer_type === \App\Models\Sewa::class) {
+                //             return $record->invoiceable->kode_sewa;
+                //         } elseif ($record->customer_type === \App\Models\Kalibrasi::class) {
+                //             return $record->invoiceable->kode_kalibrasi;
+                //         } else {
+                //             return $record->invoiceable->kode_penjualan;
+                //         }
 
-                        return '-';
-                    }),
+                //         return '-';
+                //     }),
             ])
             ->filters([
                 //
