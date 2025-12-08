@@ -114,4 +114,9 @@ class Kalibrasi extends Model
             $kalibrasi->kode_kalibrasi = 'LKAL' .  $tanggal .  $urutan;
         });
     }
+
+    public function invoices()
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable', 'customer_type', 'customer_id');
+    }
 }

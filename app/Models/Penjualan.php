@@ -117,4 +117,9 @@ class Penjualan extends Model
             $penjualan->kode_penjualan = 'LPEN'  . $tanggal  . $urutan;
         });
     }
+
+    public function invoices()
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable', 'customer_type', 'customer_id');
+    }
 }

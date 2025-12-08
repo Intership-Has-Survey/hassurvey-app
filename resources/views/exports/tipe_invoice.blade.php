@@ -28,7 +28,6 @@
             padding-bottom: 10px;
             /* margin-bottom: 10px; */
             align-items: center;
-            background-color: #ccc;
         }
 
         .invoice-title {
@@ -56,7 +55,7 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 1px;
         }
 
         .table th,
@@ -143,23 +142,24 @@
     <div class="info-invoice">
         <div class="tujuan">
             <strong>Kepada :</strong><br>
-            PT. Menara Selular Nusantara<br>
-            Graha Aruna lantai 2, Jalan Antara No. 47 Kel. Pasar Baru, Sawah Besar, Jakarta Pusat
+            {{ $invoice->invoiceable->corporate?->nama ?? $invoice->invoiceable->perorangan?->first()->nama }}<br>
+            {{ $invoice->invoiceable->corporate?->detail_alamat ?? $invoice->invoiceable->perorangan?->first()->detail_alamat }}<br>
+            <br>
         </div>
         <div class="nomor">
             <table>
                 <tr>
                     <td><strong>Nomor Invoice</strong></td>
-                    <td>: 092/HAS-P/MSN/XI/2025</td>
+                    <td>: {{ $invoice->kode_invoice }}</td>
                 </tr>
                 <tr>
                     <td><strong>Tanggal Invoice</strong></td>
-                    <td>: 27 November 2025</td>
+                    <td>:{{ \Carbon\Carbon::parse($invoice->tanggal_mulai)->format('d F Y') }}</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <td><strong>Nomor PO</strong></td>
                     <td>: 021/PM/MSN/11.2025</td>
-                </tr>
+                </tr> --}}
             </table>
         </div>
     </div>
@@ -216,26 +216,37 @@
     {{-- TOTAL --}}
     <table class="totals">
         <tr>
-            <td>Sub Total</td>
+            <td style="background-color: #d9ede1">Sub Total</td>
             <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
         </tr>
 
         <tr>
-            <td>Term I DP 50%</td>
-            <td>Rp {{ number_format($dp, 0, ',', '.') }}</td>
+            <td style="background-color: #d9ede1">{{ $invoice->jenis }} ({{ $invoice->jumlah_pembayaran }}%)</td>
+            <td>Rp {{ number_format($subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td>
         </tr>
 
         <tr>
-            <td class="green">Pelunasan</td>
-            <td class="green">Rp {{ number_format($pelunasan, 0, ',', '.') }}</td>
+            <td style="background-color: #d9ede1">PPN</td>
+            <td>
+                {{ $invoice->ppn == 0 ? 'Tidak ada' : $invoice->ppn . '%' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="green">Total Tagihan</td>
+            <td class="green">Rp
+                {{ number_format($subtotal * (1 + $invoice->ppn / 100) * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}
+                {{-- {{ number_format($subtotal - $subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
         </tr>
     </table>
+
+    {{-- baris baru --}}
 
     <div style="clear:both;"></div>
 
     {{-- BANK TRANSFER INFO --}}
     <div class="bank-info">
-        <strong>Pembayaran melalui Transfer Bank:</strong><br><br>
+        <strong>Pembayaran melalui Transfer Bank:</strong><br>
         Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
         Nomor Rekening : 8721427811 <br>
         Nama Bank : BANK CENTRAL ASIA (BCA) <br><br>

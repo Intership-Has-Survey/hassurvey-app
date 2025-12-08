@@ -9,7 +9,7 @@ class StringHelper
     public static function htmlToTextWithNewlines($html)
     {
         $text = preg_replace('/<br\s*\/?>/i', "\n", $html);
-        $text = preg_replace('/<\/p>/i', "\n\n", $text);
+        $text = preg_replace('/<\/p>/i', "\n", $text);
         $text = preg_replace('/<p>/i', "", $text);
 
         // li

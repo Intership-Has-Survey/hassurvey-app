@@ -4,8 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Models\Sewa;
 use App\Models\Sales;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
-use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -38,6 +36,7 @@ use function Livewire\Volt\placeholder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
+use pxlrbt\FilamentExcel\Columns\Column;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\DeleteAction;
@@ -52,6 +51,7 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use App\Filament\Resources\SewaResource\Pages\EditSewa;
 use App\Filament\Resources\SewaResource\Pages\ListSewa;
 use App\Filament\Resources\SewaResource\Pages\CreateSewa;
@@ -62,6 +62,7 @@ use Filament\Notifications\Notification; // Tambahkan ini di atas
 use App\Filament\Resources\SewaResource\Widgets\StatsOverviewSewa;
 use Illuminate\Database\Eloquent\Collection; // Tambahkan ini di atas
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use App\Filament\Resources\SewaResource\RelationManagers\InvoiceRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\RiwayatSewasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\PengajuanDanasRelationManager;
 use App\Filament\Resources\SewaResource\RelationManagers\StatusPembyaranRelationManager;
@@ -437,6 +438,7 @@ class SewaResource extends Resource
             RiwayatSewasRelationManager::class,
             StatusPembyaranRelationManager::class,
             PengajuanDanasRelationManager::class,
+            InvoiceRelationManager::class,
             ActivitylogRelationManager::class,
 
         ];

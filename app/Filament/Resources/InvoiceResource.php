@@ -29,7 +29,15 @@ class InvoiceResource extends Resource
     use GlobalForms;
     protected static ?string $model = Invoice::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
+    protected static ?string $navigationGroup = 'Keuangan';
+    protected static ?string $navigationLabel = 'Invoice';
+
+    protected static ?string $tenantRelationshipName = 'invoices';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static ?string $pluralModelLabel = 'Invoice';
 
     public static function form(Form $form): Form
     {
@@ -180,6 +188,36 @@ class InvoiceResource extends Resource
                         'batal' => 'batal',
                         default => 'secondary',
                     }),
+                Tables\Columns\TextColumn::make('customer_type')
+                    ->label('Kode Layanan')
+                    ->formatStateUsing(function ($record) {
+                        if ($record->customer_type === \App\Models\Project::class) {
+                            return $record->invoiceable->kode_project;
+                        } else if ($record->customer_type === \App\Models\Sewa::class) {
+                            return $record->invoiceable->kode_sewa;
+                        } elseif ($record->customer_type === \App\Models\Kalibrasi::class) {
+                            return $record->invoiceable->kode_kalibrasi;
+                        } else {
+                            return $record->invoiceable->kode_penjualan;
+                        }
+
+                        return '-';
+                    })
+                    ->url(function ($record) {
+                        // $model = $record->invoiceable;
+
+                        if (!$record) return null; // hindari error jika data tidak ada
+
+                        // Tentukan resource berdasarkan model
+                        return match ($record->customer_type) {
+                            \App\Models\Project::class   => \App\Filament\Resources\ProjectResource::getUrl('view', ['record' => $record->invoiceable->id]),
+                            \App\Models\Sewa::class      => \App\Filament\Resources\SewaResource::getUrl('view', ['record' => $record->invoiceable->id]),
+                            \App\Models\Kalibrasi::class => \App\Filament\Resources\KalibrasiResource::getUrl('view', ['record' => $record->invoiceable->id]),
+                            \App\Models\Penjualan::class => \App\Filament\Resources\PenjualanResource::getUrl('view', ['record' => $record->invoiceable->id]),
+                            default => null,
+                        };
+                    })
+                    ->openUrlInNewTab(),
             ])
             ->filters([
                 //
@@ -188,7 +226,7 @@ class InvoiceResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('invoicepreview')
-                    ->label('Preview Invoice')
+                    ->label('Print')
                     ->url(fn($record) => route('invoice', [
                         'company' => $record->company_id,
                         'invoice' => $record->id,

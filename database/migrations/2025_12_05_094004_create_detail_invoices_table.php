@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('detail_invoices', function (Blueprint $table) {
             $table->uuid('id');
-            $table->uuid('invoice_id');
-            $table->string('nama', 50);
-            $table->integer('jumlah');
-            $table->integer('harga');
-            $table->integer('diskon')->nulllable();
-            $table->integer('pajak')->nulllable();
+            $table->uuid('invoice_id', 36)->nullable();
+            $table->text('nama')->nullable();
+            $table->integer('jumlah')->nullable();
+            $table->integer('harga')->nullable();
+            $table->string('satuan', 20)->nullable();
             $table->timestamps();
         });
     }

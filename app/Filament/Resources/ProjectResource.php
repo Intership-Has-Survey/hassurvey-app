@@ -58,6 +58,7 @@ use App\Filament\Resources\ProjectResource\RelationManagers\PengajuanDanasRelati
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPekerjaanRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\StatusPembayaranRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\DaftarAlatProjectRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\InvoicesRelationManager;
 
 
 class ProjectResource extends Resource
@@ -424,6 +425,7 @@ class ProjectResource extends Resource
             DaftarAlatProjectRelationManager::class,
             StatusPekerjaanRelationManager::class,
             PengajuanDanasRelationManager::class,
+            InvoicesRelationManager::class,
 
         ];
     }
