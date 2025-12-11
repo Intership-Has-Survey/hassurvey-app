@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
 use Filament\Pages\Actions;
+use Filament\Support\RawJs;
 use App\Models\PengajuanDana;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
@@ -21,6 +22,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
@@ -52,10 +54,12 @@ use App\Filament\Resources\PengajuanDanaResource\Pages\CreatePengajuanDana;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\TransaksiPembayaransRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\ConcreteTransaksiPembayaransRelationManager;
+use App\Traits\GlobalForms;
 
 class PengajuanDanaResource extends Resource
 {
     use HasFiltersForm;
+    use GlobalForms;
 
     protected static ?string $model = PengajuanDana::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
@@ -71,153 +75,19 @@ class PengajuanDanaResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Section::make('Informasi Pengajuan')
-                    ->schema([
-                        TextInput::make('judul_pengajuan')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+            ->schema(
+                self::getPengajuanDanaForm(),
 
-                        // Select untuk Kategori Induk
-                        Select::make('hi')
-                            ->label('Kategori Induk')
-                            ->options(KategoriPengajuan::whereNull('parent_id')->pluck('nama', 'code'))
-                            ->required()
-                            ->reactive()
-                            // ->dehydrated(false)
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            ->live()
-                            // ->dehydrated(false)
-                            ->createOptionForm([
-                                TextInput::make('nama')
-                                    ->label('Nama Kategori Induk')
-                                    ->required()
-                                    ->maxLength(100),
-                            ])
-                            ->createOptionUsing(function (array $data) {
-                                // Create kategori induk baru
-                                $kategori = KategoriPengajuan::create([
-                                    'nama' => $data['nama'],
-                                    // Code akan di-generate otomatis oleh creating event (11, 12, 13, dst)
-                                ]);
-
-                                return $kategori->code;
-                            })
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('katpengajuan_id', null); // Reset subkategori ketika induk berubah
-                            }),
-
-                        // Select untuk Sub Kategori
-                        Select::make('katpengajuan_id')
-                            ->label('Sub Kategori')
-                            ->options(function (Get $get) {
-                                $parentCode = $get('hi');
-                                if (!$parentCode) return [];
-
-                                return KategoriPengajuan::where('code', 'like', $parentCode . '.%')
-                                    ->pluck('nama', 'code');
-                            })
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            ->live()
-                            ->visible(fn(callable $get) => !empty($get('hi')))
-                            // ->dehydrate(true)
-                            ->createOptionForm([
-                                TextInput::make('nama')
-                                    ->label('Nama Sub Kategori')
-                                    ->required()
-                                    ->maxLength(100),
-                            ])
-                            ->createOptionUsing(function (array $data, Get $get) {
-                                // Ambil parent_id dari select pertama
-                                $parentCode = $get('hi');
-
-                                if (!$parentCode) {
-                                    throw new \Exception('Silakan pilih kategori induk terlebih dahulu.');
-                                }
-
-                                // Cari parent berdasarkan code - PERBAIKAN: ambil ID-nya
-                                $parent = KategoriPengajuan::where('code', $parentCode)->first();
-
-                                if (!$parent) {
-                                    throw new \Exception('Kategori induk tidak ditemukan.');
-                                }
-
-                                // Create subkategori - PERBAIKAN: gunakan parent->id bukan parentCode
-                                $subKategori = KategoriPengajuan::create([
-                                    'parent_id' => $parentCode, // <- INI PERBAIKAN UTAMA
-                                    'nama' => $data['nama'],
-                                    // Code akan di-generate otomatis oleh creating event (11.11, 11.12, dst)
-                                ]);
-
-                                return $subKategori->code;
-                            })
-                            ->required(),
-
-                        Textarea::make('deskripsi_pengajuan')
-                            ->label('Deskripsi Umum')
-                            ->columnSpanFull(),
-
-                        Select::make('bank_id')
-                            ->relationship('bank', 'nama_bank')
-                            ->placeholder('Pilih Bank')
-                            ->searchable()
-                            ->preload()
-                            ->label('Daftar Bank')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Nama bank wajib diisi.',
-                            ])
-                            ->reactive()
-                            ->live()
-                            ->native(false)
-                            ->afterStateUpdated(fn(callable $set) => $set('bank_account_id', null)),
-
-                        Select::make('bank_account_id')
-                            ->label('Nomor Rekening')
-                            ->options(function (callable $get) {
-                                $bankId = $get('bank_id');
-                                if (!$bankId) {
-                                    return [];
-                                }
-                                return BankAccount::where('bank_id', $bankId)
-                                    ->get()
-                                    ->mapWithKeys(function ($account) {
-                                        return [$account->id => "{$account->no_rek} ({$account->nama_pemilik})"];
-                                    });
-                            })
-                            ->reactive()
-                            ->validationMessages([
-                                'required' => 'Nomor Rekening wajib diisi.',
-                            ])
-                            ->searchable()
-                            ->native(false)
-                            ->placeholder('Pilih Nomor Rekening')
-                            ->createOptionForm([
-                                TextInput::make('no_rek')
-                                    ->label('Nomor Rekening')
-                                    ->required()
-                                    ->numeric(),
-                                TextInput::make('nama_pemilik')
-                                    ->label('Nama Pemilik')
-                                    ->required(),
-                                Hidden::make('user_id')
-                                    ->default(auth()->id()),
-                            ])
-                            ->createOptionUsing(function (array $data, callable $get): string {
-                                $data['bank_id'] = $get('bank_id');
-                                $account = BankAccount::create($data);
-                                return $account->id;
-                            })
-                            ->required(),
-                    ])->columns(2),
-                Hidden::make('user_id')
-                    ->default(auth()->id()),
-            ]);
+                // Hidden::make('nilai')
+                //     ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                //         // Ambil data dari repeater, bukan dari field total
+                //         $rincianData = $get('detailPengajuans') ?? [];
+                //         $totalNilai = collect($rincianData)->sum('total');
+                //         $set('nilai', $totalNilai);
+                //     })
+                //     ->dehydrated(true)
+                //     ->default(0),
+            );
     }
 
     public static function table(Table $table): Table
@@ -578,5 +448,17 @@ class PengajuanDanaResource extends Resource
         return [
             PengajuanDanaResource\Widgets\PengajuanDanaOverview::class,
         ];
+    }
+
+    protected static function parseMoney($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        // ambil hanya digit (buang Rp, spasi, titik, koma, dll)
+        $clean = preg_replace('/[^\d]/', '', (string) $value);
+
+        return (int) ($clean ?: 0);
     }
 }
