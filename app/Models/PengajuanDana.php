@@ -187,4 +187,16 @@ class PengajuanDana extends Model
     {
         return $this->belongsTo(KategoriPengajuan::class, 'katpengajuan_id', 'code');
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (PengajuanDana $pengajuan) {
+            $totalNilai = $pengajuan->detailPengajuans()->sum('total');
+            $pengajuan->updateQuietly(['nilai' => $totalNilai]);
+        });
+
+        static::deleting(function (PengajuanDana $pengajuan) {
+            $pengajuan->detailPengajuans()->delete();
+        });
+    }
 }

@@ -163,4 +163,19 @@ class Project extends Model
     {
         return $this->belongsTo(PicInternal::class, 'pic_internal_id');
     }
+
+    // public function invoices()
+    // {
+    //     return $this->hasMany(Invoice::class, 'customer');
+    // }
+
+    // public function invoices()
+    // {
+    //     return $this->morphMany(Invoice::class, 'invoiceable');
+    // }
+
+    public function invoices()
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable', 'customer_type', 'customer_id');
+    }
 }

@@ -164,6 +164,11 @@ class Sewa extends Model
         return $this->belongsTo(Sales::class);
     }
 
+    public function invoices()
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable', 'customer_type', 'customer_id');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
