@@ -25,6 +25,9 @@ class PersonelsRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('personel_id')
+                    ->helperText(
+                        'Untuk memilih personel yang sama, isi terlebih dahulu tanggal_berakhir di project sebelumnya.'
+                    )
                     ->options(
                         // Memuat hanya personel dari company yang sama dengan project
                         function () {

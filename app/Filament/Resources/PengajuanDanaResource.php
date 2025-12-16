@@ -8,6 +8,7 @@ use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\BankAccount;
+use App\Traits\GlobalForms;
 use Filament\Pages\Actions;
 use Filament\Support\RawJs;
 use App\Models\PengajuanDana;
@@ -15,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Resources\Resource;
 use App\Models\KategoriPengajuan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
@@ -54,7 +56,6 @@ use App\Filament\Resources\PengajuanDanaResource\Pages\CreatePengajuanDana;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\DetailPengajuansRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\TransaksiPembayaransRelationManager;
 use App\Filament\Resources\PengajuanDanaResource\RelationManagers\ConcreteTransaksiPembayaransRelationManager;
-use App\Traits\GlobalForms;
 
 class PengajuanDanaResource extends Resource
 {
@@ -96,21 +97,25 @@ class PengajuanDanaResource extends Resource
             ->columns([
                 TextColumn::make('judul_pengajuan')
                     // ->searchable()
-                    ->description(function (PengajuanDana $record): string {
-                        if ($record->pengajuanable) {
-                            switch (class_basename($record->pengajuanable_type)) {
-                                case 'Project':
-                                    return 'Untuk Proyek: ' . $record->pengajuanable->nama_project;
-                                case 'Sewa':
-                                    return 'Untuk Sewa: ' . $record->pengajuanable->judul;
-                                case 'Penjualan':
-                                    return 'Untuk Penjualan: ' . $record->pengajuanable->nama;
-                                case 'Kalibrasi':
-                                    return 'Untuk Kalibrasi: ' . $record->pengajuanable->nama;
-                            }
-                        }
-                        return 'Untuk: In-House (Internal)';
-                    })
+                    // ->description(function (PengajuanDana $record): string {
+                    //     if ($record->pengajuanable) {
+                    //         switch (class_basename($record->pengajuanable_type)) {
+                    //             case 'Project':
+                    //                 return 'Untuk Proyek: ' . $record->pengajuanable->nama_project;
+                    //             case 'Sewa':
+                    //                 return 'Untuk Sewa: ' . $record->pengajuanable->judul;
+                    //             case 'Penjualan':
+                    //                 return 'Untuk Penjualan: ' . $record->pengajuanable->nama;
+                    //             case 'Kalibrasi':
+                    //                 return 'Untuk Kalibrasi: ' . $record->pengajuanable->nama;
+                    //         }
+                    //     }
+                    //     return 'Untuk: In-House (Internal)';
+                    // })
+                    // ->wrap()
+                    // ->extraAttributes([
+                    //     'class' => 'min-w-[24rem] max-w-[40rem] whitespace-normal',
+                    // ])
                     ->searchable(),
                 TextColumn::make('kategoriPengajuan.parentKategori.nama')
                     ->label('Kategori')
@@ -123,6 +128,74 @@ class PengajuanDanaResource extends Resource
                 TextColumn::make('nilai')
                     ->sortable()
                     ->money('IDR'),
+                TextColumn::make('pengajuanable')
+                    ->label('Kode')
+                    ->formatStateUsing(function ($record) {
+                        $model = $record->pengajuanable;
+
+                        switch (class_basename($record->pengajuanable_type)) {
+                            case 'Project':
+                                return $record->pengajuanable->kode_project;
+                            case 'Sewa':
+                                return $record->pengajuanable->kode_sewa;
+                            case 'Penjualan':
+                                return $record->pengajuanable->kode_penjualan;
+                            case 'Kalibrasi':
+                                return  $record->pengajuanable->kode_kalibrasi;
+                        }
+                        return 'In-House';
+                    })
+                    ->url(function ($record) {
+                        return match (class_basename($record->pengajuanable_type)) {
+                            'Project'     => ProjectResource::getUrl('view', ['record' => $record->pengajuanable]),
+                            'Sewa'        => SewaResource::getUrl('view', ['record' => $record->pengajuanable]),
+                            'Penjualan'   => PenjualanResource::getUrl('view', ['record' => $record->pengajuanable]),
+                            'Kalibrasi'   => KalibrasiResource::getUrl('view', ['record' => $record->pengajuanable]),
+                            default       => null,
+                        };
+                    })
+                    ->description(function ($record) {
+                        $model = $record->pengajuanable;
+
+                        $customer = $model->corporate->nama ?? $model->perorangan?->first()->nama;
+                        $nilai    = number_format($model->nilai ?? 0, 0, ',', '.');
+                        $cek = null;
+
+                        switch (class_basename($model)) {
+                            case 'Project':
+                                $cek = 'Project: ' . $record->pengajuanable->nama_project;
+                                break;
+                            case 'Sewa':
+                                $cek = 'Sewa: ' . $record->pengajuanable->judul_penyewaan;
+                                break;
+                            case 'Penjualan':
+                                $cek = 'Penjualan: ' . $record->pengajuanable->nama_penjualan;
+                                break;
+                            case 'Kalibrasi':
+                                $cek = 'Kalibrasi: ' . $record->pengajuanable->nama;
+                                break;
+                            default:
+                                $cek = '(Internal)';
+                                break;
+                        }
+
+                        //                     return new HtmlString("
+                        //     <p>{$customer}</p>
+                        //     <p>Nilai: Rp {$cek}</p>
+                        // ");
+                        // return [
+                        //     $customer,
+                        //     "Nilai: Rp {$cek}",
+                        // ];
+                        return new HtmlString("
+                        <div class='text-xs text-gray-500'>{$cek}</div>
+        <div class='text-xs text-gray-500'>Customer: {$customer}</div>
+    ");
+                    })
+                    // ->listWithLineBreaks()
+                    ->html()
+                    ->openUrlInNewTab()
+                    ->toggleable(),
                 // TextColumn::make('total')
                 //     ->state(function (PengajuanDana $record): float {
                 //         return $record->detailPengajuans->reduce(function ($carry, $item) {
