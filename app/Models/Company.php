@@ -124,4 +124,9 @@ class Company extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    public function penawarans()
+    {
+        return $this->hasMany(Penawaran::class);
+    }
 }

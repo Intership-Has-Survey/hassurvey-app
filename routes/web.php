@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\AcaraController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PenawaranController;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -211,4 +212,6 @@ Route::get('/admin/invoice', [InvoiceController::class, 'preview'])
     ->name('invoicepreview');
 Route::get('/admin/{company}/invoice/{invoice}', [InvoiceController::class, 'preview'])
     ->name('invoice');
+Route::get('/admin/{company}/penawaran/{penawaran}', [PenawaranController::class, 'preview'])
+    ->name('penawaran');
 require __DIR__ . '/auth.php';
