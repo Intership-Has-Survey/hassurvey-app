@@ -46,7 +46,7 @@ class Penawaran extends Model
     }
 
     //start generate code
-    public static function getPrefixFromModel($model)
+    public static function getPrefixFromModel()
     {
         return 'HSGI-QTN';
     }
@@ -70,17 +70,16 @@ class Penawaran extends Model
         return $romawi[$bulan];
     }
 
-    public static function generateKodePenawaranFromModel($penawaranable)
+    public static function generateKodePenawaranFromModel()
     {
-        $prefix = self::getPrefixFromModel($penawaranable);
+        $prefix = self::getPrefixFromModel();
 
         $tahun = date('Y');
         $bulan = date('n');
         $bulanRomawi = self::bulanRomawi($bulan);
 
         // Cari invoice sebelumnya berdasarkan bulan + tahun + tipe invoiceable
-        $lastInvoice = self::where('customer_type', get_class($penawaranable))
-            ->whereYear('created_at', $tahun)
+        $lastInvoice = self::whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->orderBy('created_at', 'desc')
             ->first();
@@ -93,8 +92,23 @@ class Penawaran extends Model
             $next = '001';
         }
 
-        return "INV/{$prefix}/{$tahun}/{$bulanRomawi}/{$next}";
+        return "{$prefix}/{$tahun}/{$bulanRomawi}/{$next}";
     }
 
     //END GENERATE CODE
+
+    protected static function booted()
+    {
+        static::creating(function ($project) {
+            // $tanggal = today()->format('Ymd');
+
+            // Hi-tung berapa project yang sudah ada di tanggal ini
+            // $countToday = Project::whereDate('created_at', today()->toDateString())->count() + 1;
+
+            // Format dengan 3 digit (001, 002, dst)
+            // $urutan = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+
+            // $project->kode_project = 'LPEM' . $tanggal .  $urutan;
+        });
+    }
 }

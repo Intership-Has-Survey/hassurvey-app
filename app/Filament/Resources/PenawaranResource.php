@@ -38,23 +38,15 @@ class PenawaranResource extends Resource
             ->schema([
                 //
                 Section::make('Informasi Penawaran')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('kode_penawaran')
                             ->label('Kode Penawaran')
                             ->default(function (callable $get) {
-                                $customerType = $get('customer_type');
-
-                                if (! $customerType) {
-                                    return null;
-                                }
-
-                                return \App\Models\Penawaran::generateKodePenawaranFromCustomerType($customerType);
+                                return \App\Models\Penawaran::generateKodePenawaranFromModel();
                             })
-                            ->disabled()
-                            ->dehydrated()
-                            // ->required()
-                            ->reactive()
-                            ->columnSpan(2),
+                            ->columnSpanFull()
+                            ->disabled(),
                         Select::make('customer_type')
                             ->label('Tipe Customer')
                             ->options([
@@ -62,7 +54,10 @@ class PenawaranResource extends Resource
                                 'App\Models\Perorangan' => 'Perorangan',
                             ])
                             ->required()
-                            ->columnSpan(2),
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $set) {
+                                $set('customer_id', null);
+                            }),
                         Forms\Components\Select::make('customer_id')
                             ->label('ID Customer')
                             ->required()
@@ -76,12 +71,7 @@ class PenawaranResource extends Resource
                                 return [];
                             })
                             ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(function (callable $set, callable $get) {
-                                $type = $get('customer_type');
-                                $id = $get('customer_id');
-                            })
-                            ->columnSpan(2),
+                            ->reactive(),
                         Select::make('status')
                             ->label('Status Penawaran')
                             ->options([
@@ -90,48 +80,48 @@ class PenawaranResource extends Resource
                                 'Diterima' => 'Diterima',
                                 'Ditolak' => 'Ditolak',
                             ])
-                            ->required()
-                            ->columnSpan(2),
+                            ->required(),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Penawaran')
-                            ->required()
-                            ->columnSpan(2),
-                    ])
-                    ->columnSpan(2),
-                Repeater::make('detailPenawarans')
-                    ->label('Detail Penawaran')
-                    ->relationship()
+                            ->required(),
+                    ]),
+                Section::make('Detail Penawaran')
                     ->schema([
-                        Forms\Components\RichEditor::make('nama')
-                            ->label('Deskripsi')
-                            ->required()
-                            ->disableToolbarButtons([
-                                'attachFiles',
-                                'blockquote',
-                                'codeBlock',
-                                'h2',
-                                'h3',
-                                'link',
-                                'strike',
-                                'underline',
+                        Repeater::make('detailPenawarans')
+                            ->label('Detail Penawaran')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\RichEditor::make('nama')
+                                    ->label('Deskripsi')
+                                    ->required()
+                                    ->disableToolbarButtons([
+                                        'attachFiles',
+                                        'blockquote',
+                                        'codeBlock',
+                                        'h2',
+                                        'h3',
+                                        'link',
+                                        'strike',
+                                        'underline',
+                                    ])
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('jumlah')
+                                    ->label('Jumlah')
+                                    ->numeric()
+                                    ->required(),
+                                Forms\Components\TextInput::make('harga')
+                                    ->label('Harga Satuan')
+                                    ->numeric()
+                                    ->required(),
+                                Forms\Components\TextInput::make('satuan')
+                                    ->label('Satuan')
+                                    ->required(),
                             ])
-                            ->columnSpan(4),
-                        Forms\Components\TextInput::make('jumlah')
-                            ->label('Jumlah')
-                            ->numeric()
-                            ->required(),
-                        Forms\Components\TextInput::make('harga')
-                            ->label('Harga Satuan')
-                            ->numeric()
-                            ->required(),
-                        Forms\Components\TextInput::make('satuan')
-                            ->label('Satuan')
-                            ->required(),
-                    ])
-                    ->columns(4)
-                    ->required()
-                    ->columnSpan(12)
-                    ->createItemButtonLabel('Tambah Rincian'),
+                            ->columns(3)
+                            ->required()
+                            // ->columnSpan(12)
+                            ->createItemButtonLabel('Tambah Rincian'),
+                    ]),
                 Hidden::make('company_id')
                     ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
                 // ->default(fn() => session('company_id')),
