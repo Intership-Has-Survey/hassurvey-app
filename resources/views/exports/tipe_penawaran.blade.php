@@ -128,12 +128,15 @@
         </div>
         {{-- <img src="/path/logo.png"> --}}
         <div style= "flex:2; padding-right:40px;">
-            {{-- <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br> --}}
             <strong>{{ $penawaranSetting->nama_perusahaan }}</strong><br>
+            {{ $penawaranSetting->alamat }}<br>
+            Phone: {{ $penawaranSetting->phone }}, Mobile: {{ $penawaranSetting->mobile }}<br>
+            e-mail: {{ $penawaranSetting->email }}<br>
+            {{-- <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br>
             Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai
             Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat<br>
             Phone: 0251-8423039, Mobile: 0821-2441-1160<br>
-            e-mail: corporate@has-surveying.com<br>
+            e-mail: corporate@has-surveying.com<br> --}}
             web: https://www.has-surveying.com
         </div>
         <div class="invoice-title" style="flex:1;">PENAWARAN</div>

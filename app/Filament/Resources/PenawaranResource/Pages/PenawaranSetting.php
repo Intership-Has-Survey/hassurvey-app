@@ -3,13 +3,15 @@
 namespace App\Filament\Resources\PenawaranResource\Pages;
 
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Actions;;
+
+use Filament\Forms\Form;
 
 use Filament\Actions\Action;
 use Filament\Resources\Pages\Page;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 // use App\Models\PenawaranSetting;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\PenawaranResource;
 use App\Models\PenawaranSetting as PenawaranSettingModel;
@@ -59,6 +61,11 @@ class PenawaranSetting extends Page implements Forms\Contracts\HasForms
                     ->label('Nama Penandatangan'),
                 TextInput::make('jabatan')
                     ->label('Jabatan Penandatangan'),
+                TextInput::make('company_id')
+                    ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey())
+                    ->reactive()
+                    ->helperText('Akan otomatis terisi dengan Company ID dari tenant yang sedang aktif'),
+                // ->default('haaha'),
             ])
             ->statePath('data');
     }

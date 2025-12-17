@@ -9,5 +9,5 @@ class PenawaranSetting extends Model
 {
     //
     use HasUuids;
-    protected $guarded = ['nama_perusahaan'];
+    protected $guarded = [];
 }

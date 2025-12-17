@@ -176,7 +176,7 @@ class PenawaranResource extends Resource
             'index' => Pages\ListPenawarans::route('/'),
             'create' => Pages\CreatePenawaran::route('/create'),
             'edit' => Pages\EditPenawaran::route('/{record}/edit'),
-            // 'custom' => Pages\PenawaranSetting::route('/penawaran-setting'),
+            'custom' => Pages\PenawaranSetting::route('/penawaran-setting'),
         ];
     }
 }
