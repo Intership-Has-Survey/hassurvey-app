@@ -1,126 +1,173 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
-    <title>Penawaran</title>
+    <title>Invoice</title>
+
     <style>
+        /* untuk menetapkan ukuran */
         @page {
             size: A4;
-            margin: 20mm;
+            /* margin: 20mm; */
         }
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 14px;
-        }
-
-        .header {
-            text-align: left;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            font-size: 12px;
         }
 
         .header img {
             width: 120px;
-            float: left;
-            margin-right: 15px;
         }
 
-        .header .title {
-            font-size: 26px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 3px solid #22AA44;
+            padding-bottom: 10px;
+            /* margin-bottom: 10px; */
+            align-items: center;
+        }
+
+        .invoice-title {
+            font-size: 28px;
             font-weight: bold;
-            color: #0b8c25;
+            color: #28a745;
             text-align: right;
         }
 
-        .info-table {
-            width: 100%;
-            margin-top: 20px;
+        .info-invoice {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 20px;
+        }
+
+        .info-invoice * {
+            flex: 1;
         }
 
         .info-table td {
             padding: 3px 0;
+            vertical-align: top;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 1px;
         }
 
-        .table th, .table td {
+        .table th,
+        .table td {
             border: 1px solid black;
             padding: 8px;
             vertical-align: top;
         }
 
         .table th {
-            background: #009e2f;
+            background: #0a9239;
             color: white;
             text-align: center;
         }
 
-        .grand-total {
+        .section-title {
+            font-weight: bold;
+            background: #e6e6e6;
+        }
+
+        .terbilang {
+            background: #009e2f;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .totals {
+            margin-top: 10px;
+            width: 40%;
+            float: right;
+            border-collapse: collapse;
+        }
+
+        .totals td {
+            padding: 6px;
+            border: 1px solid black;
+        }
+
+        .totals .green {
             background: #009e2f;
             color: white;
             font-weight: bold;
         }
 
-        .notes {
-            margin-top: 15px;
-            font-size: 13px;
+        .bank-info {
+            margin-top: 30px;
         }
 
         .signature {
-            margin-top: 40px;
-            text-align: left;
+            margin-top: 60px;
+            text-align: right;
         }
 
         .signature img {
-            width: 140px;
+            width: 150px;
         }
-
     </style>
 </head>
+
 <body>
 
     {{-- HEADER --}}
     <div class="header">
-        <img src="/path/logo.png" alt="Logo"> 
-        <div>
-            <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br>
-            Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai<br>
-            Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat<br>
-            Phone: 0251-8423039, Mobile: 081221535292<br>
-            e-mail : corporate@has-surveying.com
+        <div style="flex:1; align-items: center;">
+            <img src="{{ asset('logo_pthas.jpg') }}" alt="Logo PTHAS" style="flex: 1;">
+
         </div>
-        <div class="title">PENAWARAN</div>
-        <div style="clear: both"></div>
+        {{-- <img src="/path/logo.png"> --}}
+        <div style= "flex:2; padding-right:40px;">
+            <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br>
+            Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai
+            Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat<br>
+            Phone: 0251-8423039, Mobile: 0821-2441-1160<br>
+            e-mail: corporate@has-surveying.com<br>
+            web: https://www.has-surveying.com
+        </div>
+        <div class="invoice-title" style="flex:1;">PENAWARAN</div>
     </div>
 
-    {{-- INFORMASI PENERIMA --}}
-    <table class="info-table">
-        <tr>
-            <td><strong>Kepada</strong></td>
-            <td>: Marcell</td>
-            <td><strong>Nomor</strong></td>
-            <td>: HSGI-QTN-M-XI-29-001</td>
-        </tr>
-        <tr>
-            <td><strong>Alamat</strong></td>
-            <td>: </td>
-            <td><strong>Tanggal</strong></td>
-            <td>: 29 November 2025</td>
-        </tr>
-    </table>
+    {{-- INFORMASI INVOICE --}}
+    <div class="info-invoice">
+        <div class="tujuan">
+            <strong>Kepada :</strong><br>
+            MARCEL
+            {{-- {{ $invoice->invoiceable->corporate?->nama ?? $invoice->invoiceable->perorangan?->first()->nama }}<br> --}}
+            {{-- {{ $invoice->invoiceable->corporate?->detail_alamat ?? $invoice->invoiceable->perorangan?->first()->detail_alamat }}<br> --}}
+            <br>
+        </div>
+        <div class="nomor">
+            <table>
+                <tr>
+                    <td><strong>Nomor Invoice</strong></td>
+                    {{-- <td>: {{ $invoice->kode_invoice }}</td> --}}
+                    <td>: QTN-M-XI-29-001</td>
+                </tr>
+                <tr>
+                    <td><strong>Tanggal Invoice</strong></td>
+                    <td>17 Desember 2025</td>
+                    <td>:{{ \Carbon\Carbon::parse($penawaran->tanggal)->format('d F Y') }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 
-    {{-- TABEL PENAWARAN --}}
+    {{-- TABEL ITEM --}}
     <table class="table">
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
+                <th style="width: 40px;">No</th>
                 <th>Deskripsi</th>
                 <th style="width: 60px;">Satuan</th>
                 <th style="width: 40px;">Qty</th>
@@ -129,57 +176,99 @@
             </tr>
         </thead>
         <tbody>
+            @foreach ($penawaran->detailPenawarans as $i => $row)
+                <tr>
+                    <td style="text-align:center; vertical-align:top;">{{ $i + 1 }}</td>
 
-            <tr>
-                <td>1</td>
-                <td>
-                    <strong>Pengukuran Topografi Gianyar</strong><br>
-                    Rincian : <br>
-                    - Peta Batas dan Situasi<br>
-                    - Peta Topografi<br>
-                    - Gambar Potongan<br>
-                    - Gambar Orthophoto (Drone)
-                </td>
-                <td>Ls</td>
-                <td>1</td>
-                <td>Rp 4,500,000</td>
-                <td>Rp 4,500,000</td>
-            </tr>
+                    <td>{!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($row->nama)) !!}</td>
+                    <td style="text-align:center;">
+                        {{ $row->satuan }}
+                    </td>
 
-            <tr>
-                <td>2</td>
-                <td><strong>Biaya Akomodasi dan Transportasi</strong></td>
-                <td>Ls</td>
-                <td>1</td>
-                <td>Rp 3,500,000</td>
-                <td>Rp 3,500,000</td>
-            </tr>
+                    <td style="text-align:center;">
+                        {{ $row->jumlah }}
+                    </td>
 
+                    <td>
+                        Rp {{ number_format($row->harga, 0, ',', '.') }}
+                    </td>
+
+                    <td>
+                        Rp {{ number_format($row->harga * $row->jumlah, 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endforeach
             <tr>
                 <td colspan="5" class="grand-total" style="text-align:right;">Grand Total</td>
                 <td class="grand-total">Rp 8,000,000</td>
             </tr>
-
         </tbody>
     </table>
 
-    {{-- CATATAN --}}
-    <div class="notes">
-        <strong>Catatan :</strong><br>
-        - Harga belum termasuk PPN 11% <br>
-        - Pembayaran Termin 1 sebesar 50% (<i>Down Payment</i>) <br>
-        - Pembayaran Termin 2 sebesar 50% ketika pekerjaan selesai. <br>
-        - Pembayaran melalui rekening BCA. 8721427811 an. HAS SURVEY GEOSPASIAL INDONESIA <br><br>
-        Demikian informasi harga ini kami sampaikan dan atas perhatian dan kerjasamanya kami ucapkan terima kasih.
+    {{-- TERBILANG --}}
+
+    @php
+        $subtotal = $penawaran->detailPenawarans->sum(function ($i) {
+            return $i->harga * $i->jumlah;
+        });
+
+        $dp = $subtotal / 2;
+        $pelunasan = $subtotal - $dp;
+    @endphp
+
+    {{-- TOTAL --}}
+    <table class="totals">
+        <tr>
+            <td style="background-color: #d9ede1">Sub Total</td>
+            <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+        </tr>
+
+        <tr>
+            {{-- <td style="background-color: #d9ede1">{{ $invoice->jenis }} ({{ $invoice->jumlah_pembayaran }}%)</td> --}}
+            {{-- <td>Rp {{ number_format($subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
+        </tr>
+
+        <tr>
+            <td style="background-color: #d9ede1">PPN</td>
+            <td>
+                {{-- {{ $invoice->ppn == 0 ? 'Tidak ada' : $invoice->ppn . '%' }} --}}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="green">Total Tagihan</td>
+            <td class="green">Rp
+                {{-- {{ number_format($subtotal * (1 + $invoice->ppn / 100) * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }} --}}
+                {{-- {{ number_format($subtotal - $subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
+        </tr>
+    </table>
+
+    {{-- baris baru --}}
+
+    <div style="clear:both;"></div>
+
+    {{-- BANK TRANSFER INFO --}}
+    <div class="bank-info">
+        <strong>Pembayaran melalui Transfer Bank:</strong><br>
+        Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
+        Nomor Rekening : 8721427811 <br>
+        Nama Bank : BANK CENTRAL ASIA (BCA) <br><br>
+
+        <strong>Catatan:</strong><br>
+        - Invoice ini berlaku sebagai bukti penagihan <br>
+        - Harap konfirmasi setelah melakukan pembayaran <br>
     </div>
 
-    {{-- TANDA TANGAN --}}
+    {{-- SIGNATURE --}}
     <div class="signature">
-        Hormat Kami,<br><br>
-        <img src="/path/ttd.png" alt="Tanda Tangan"><br>
-        <strong>Ahmad Fauji Rifai</strong><br>
+        Hormat kami,
+        <br><br><br>
+        <br><br><br>
+        <br>
+        <strong>Ahmad Fauji Rifai, S.T</strong><br>
         Direktur Utama
     </div>
 
 </body>
+
 </html>
