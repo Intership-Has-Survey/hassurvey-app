@@ -38,6 +38,9 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 Forms\Components\DatePicker::make('tgl_keluar')->label('Tanggal Alat Keluar')->disabled()->dehydrated(),
                 Forms\Components\DatePicker::make('tgl_masuk')->label('Tanggal Masuk')->minDate(fn(Get $get) => $get('tgl_keluar'))->required()
                     ->default(now())
+                    ->validationMessages([
+                        'required' => 'Tanggal masuk tidak boleh kosong',
+                    ])
                     ->native(false),
 
                 Forms\Components\TextInput::make('harga_perhari')
@@ -61,14 +64,16 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                 FileUpload::make('foto_bukti_path')
                     ->label('Bukti Pengembalian')
                     ->image()
-                    ->maxSize(1024)
+                    // ->maxSize(1024)
                     ->required()
                     ->disk('public')
                     ->directory('bukti-pengembalian')
                     ->validationMessages([
                         'required' => 'Bukti pengembalian harus diisi',
-                        'max_size' => 'File tidak boleh lebih dari 1 MB'
+                        'max_size' => 'File tidak boleh lebih dari 10 MB'
                     ])
+                    ->imageResizeTargetHeight('1080')
+                    ->imageResizeMode('contain')
                     ->columnSpanFull(),
                 Hidden::make('company_id')->default(request()->segment(2)),
             ])
