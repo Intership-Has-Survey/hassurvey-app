@@ -142,9 +142,17 @@
     <div class="info-invoice">
         <div class="tujuan">
             <strong>Kepada :</strong><br>
-            MARCEL
-            {{-- {{ $invoice->invoiceable->corporate?->nama ?? $invoice->invoiceable->perorangan?->first()->nama }}<br> --}}
-            {{-- {{ $invoice->invoiceable->corporate?->detail_alamat ?? $invoice->invoiceable->perorangan?->first()->detail_alamat }}<br> --}}
+            {{-- MARCEL --}}
+            {{ $penawaran->penawaranable->nama }}<br>
+            {{ $penawaran->penawaranable->detail_alamat }}<br>
+            {{-- {{ $penawaran->corporate?->nama ?? 'Kososng' }}<br> --}}
+            {{-- {{ $penawaran->corporate?->nama ?? $penawaran->perorangan?->first()->nama }}<br> --}}
+            {{-- {{ $penawaran->corporate?->detail_alamat ?? $penawaran->perorangan?->first()->detail_alamat }}<br> --}}
+            {{-- Jl. Merpati No. 45 Bogor<br> --}}
+            {{-- 16154<br> --}}
+            {{-- Indonesia<br> --}}
+            {{-- Phone: 0251-8312345<br> --}}
+            {{-- Email: --}}
             <br>
         </div>
         <div class="nomor">
@@ -156,8 +164,7 @@
                 </tr>
                 <tr>
                     <td><strong>Tanggal Invoice</strong></td>
-                    <td>17 Desember 2025</td>
-                    <td>:{{ \Carbon\Carbon::parse($penawaran->tanggal)->format('d F Y') }}</td>
+                    <td>: {{ \Carbon\Carbon::parse($penawaran->tanggal)->format('d F Y') }}</td>
                 </tr>
             </table>
         </div>
@@ -198,52 +205,16 @@
                     </td>
                 </tr>
             @endforeach
-            <tr>
-                <td colspan="5" class="grand-total" style="text-align:right;">Grand Total</td>
-                <td class="grand-total">Rp 8,000,000</td>
+            <tr style="text-align: left">
+                <td colspan="4" style="border: none"></td>
+                <th class="grand-total" style="text-align: left">Grand Total</th>
+                <th class="grand-total" style="text-align: left">
+                    Rp
+                    {{ number_format($penawaran->detailPenawarans->sum(function ($i) {return $i->harga * $i->jumlah;}),0,',','.') }}
+                </th>
             </tr>
         </tbody>
     </table>
-
-    {{-- TERBILANG --}}
-
-    @php
-        $subtotal = $penawaran->detailPenawarans->sum(function ($i) {
-            return $i->harga * $i->jumlah;
-        });
-
-        $dp = $subtotal / 2;
-        $pelunasan = $subtotal - $dp;
-    @endphp
-
-    {{-- TOTAL --}}
-    <table class="totals">
-        <tr>
-            <td style="background-color: #d9ede1">Sub Total</td>
-            <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
-        </tr>
-
-        <tr>
-            {{-- <td style="background-color: #d9ede1">{{ $invoice->jenis }} ({{ $invoice->jumlah_pembayaran }}%)</td> --}}
-            {{-- <td>Rp {{ number_format($subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
-        </tr>
-
-        <tr>
-            <td style="background-color: #d9ede1">PPN</td>
-            <td>
-                {{-- {{ $invoice->ppn == 0 ? 'Tidak ada' : $invoice->ppn . '%' }} --}}
-            </td>
-        </tr>
-
-        <tr>
-            <td class="green">Total Tagihan</td>
-            <td class="green">Rp
-                {{-- {{ number_format($subtotal * (1 + $invoice->ppn / 100) * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }} --}}
-                {{-- {{ number_format($subtotal - $subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
-        </tr>
-    </table>
-
-    {{-- baris baru --}}
 
     <div style="clear:both;"></div>
 
