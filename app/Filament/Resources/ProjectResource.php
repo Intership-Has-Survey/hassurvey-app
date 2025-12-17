@@ -87,7 +87,7 @@ class ProjectResource extends Resource
                         ->required()
                         ->label('Nama Proyek')
                         ->placeholder('Masukkan Nama Proyek')
-                        ->columnSpan(2),
+                        ->columnSpanFull(),
                     Select::make('status')
                         ->label('Status Proyek')
                         ->options([
