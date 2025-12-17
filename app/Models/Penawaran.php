@@ -75,18 +75,21 @@ class Penawaran extends Model
         $prefix = self::getPrefixFromModel();
 
         $tahun = date('Y');
-        $bulan = date('n');
+        //leading 0, ex: 01,02,dll
+        $bulan = date('m');
+        //non-leading zero ex: 1,2,3, 
+        // $bulan = date('n');
         $bulanRomawi = self::bulanRomawi($bulan);
 
         // Cari invoice sebelumnya berdasarkan bulan + tahun + tipe invoiceable
-        $lastInvoice = self::whereYear('created_at', $tahun)
+        $lastpenawaran = self::whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if ($lastInvoice) {
-            $parts = explode('/', $lastInvoice->kode_invoice);
-            $lastNumber = intval($parts[4] ?? 0);
+        if ($lastpenawaran) {
+            $parts = explode('/', $lastpenawaran->kode_penawaran);
+            $lastNumber = intval($parts[3] ?? 0);
             $next = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         } else {
             $next = '001';

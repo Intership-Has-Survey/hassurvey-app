@@ -22,7 +22,7 @@ class PenawaranResource extends Resource
 {
     protected static ?string $model = Penawaran::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
     protected static ?string $navigationGroup = 'Keuangan';
     protected static ?string $navigationLabel = 'Penawaran';
 
@@ -46,7 +46,8 @@ class PenawaranResource extends Resource
                                 return \App\Models\Penawaran::generateKodePenawaranFromModel();
                             })
                             ->columnSpanFull()
-                            ->disabled(),
+                            ->readOnly()
+                            ->disabledOn('edit'),
                         Select::make('customer_type')
                             ->label('Tipe Customer')
                             ->options([
@@ -83,7 +84,8 @@ class PenawaranResource extends Resource
                             ->required(),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Penawaran')
-                            ->required(),
+                            ->required()
+                            ->native(false),
                     ]),
                 Section::make('Detail Penawaran')
                     ->schema([
@@ -114,7 +116,8 @@ class PenawaranResource extends Resource
                                     ->numeric()
                                     ->required(),
                                 Forms\Components\TextInput::make('satuan')
-                                    ->label('Satuan')
+                                    ->label('Jenis Satuan')
+                                    ->placeholder('contoh: pcs, unit, paket')
                                     ->required(),
                             ])
                             ->columns(3)
