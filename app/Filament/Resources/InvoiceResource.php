@@ -53,7 +53,7 @@ class InvoiceResource extends Resource
                         ->disabled()
                         ->dehydrated()
                         ->required()
-                        ->columnSpan(2),
+                        ->columnSpanFull(),
                     Select::make('jenis')
                         ->label('Jenis Pembayaran')
                         ->options([
