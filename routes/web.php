@@ -212,6 +212,6 @@ Route::get('/admin/invoice', [InvoiceController::class, 'preview'])
     ->name('invoicepreview');
 Route::get('/admin/{company}/invoice/{invoice}', [InvoiceController::class, 'preview'])
     ->name('invoice');
-Route::get('/admin/{company}/penawaran/{penawaran}', [PenawaranController::class, 'preview'])
+Route::get('/admin/{company}/penawaran/{penawaranId}', [PenawaranController::class, 'preview'])
     ->name('penawaran');
 require __DIR__ . '/auth.php';
