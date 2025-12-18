@@ -161,6 +161,14 @@ class InvoicesRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('invoicepreview')
+                    ->label('Print')
+                    ->url(fn($record) => route('invoice', [
+                        'company' => $record->company_id,
+                        'invoice' => $record->id,
+                    ]))
+                    ->icon('heroicon-o-eye')
+                    ->color('secondary'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

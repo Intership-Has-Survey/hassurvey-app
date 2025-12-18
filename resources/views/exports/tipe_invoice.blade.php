@@ -128,12 +128,13 @@
         </div>
         {{-- <img src="/path/logo.png"> --}}
         <div style= "flex:2; padding-right:40px;">
-            <strong>{{ $invoicesSetting->nama_perusahaan ?? 'PT. HAS SURVEY GEOSPASIAL INDONESIA' }}</strong><br>
-
-            Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai
-            Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat<br>
-            Phone: 0251-8423039, Mobile: 0821-2441-1160<br>
-            e-mail: corporate@has-surveying.com<br>
+            <strong>{{ $invoiceSetting->nama_perusahaan ?? 'PT. HAS SURVEY GEOSPASIAL INDONESIA' }}</strong><br>
+            {{ $invoiceSetting->alamat ??
+                'Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat' }}
+            <br>
+            Phone: {{ $invoiceSetting->telepon ?? ' 0251-8423039' }},
+            Mobile: {{ $invoiceSetting->mobile ?? ' 0821-2441-1160' }}<br>
+            Email: {{ $invoiceSetting->email ?? ' corporate@has-surveying.com' }} <br>
             web: https://www.has-surveying.com
         </div>
         <div class="invoice-title" style="flex:1;">INVOICE</div>
@@ -248,23 +249,33 @@
     {{-- BANK TRANSFER INFO --}}
     <div class="bank-info">
         <strong>Pembayaran melalui Transfer Bank:</strong><br>
-        Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
-        Nomor Rekening : 8721427811 <br>
-        Nama Bank : BANK CENTRAL ASIA (BCA) <br><br>
+        @if (!empty($invoiceSetting->penutup))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($invoiceSetting->penutup)) !!}
+        @else
+            Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
+            Nomor Rekening : 8721427811 <br>
+            Nama Bank : BANK CENTRAL ASIA (BCA) <br>
+        @endif
+        <br>
+        <br>
 
         <strong>Catatan:</strong><br>
-        - Invoice ini berlaku sebagai bukti penagihan <br>
-        - Harap konfirmasi setelah melakukan pembayaran <br>
+        @if (!empty($invoiceSetting->catatan))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($invoiceSetting->catatan)) !!}
+        @else
+            - Invoice ini berlaku sebagai bukti penagihan <br>
+            - Harap konfirmasi setelah melakukan pembayaran <br>
+        @endif
     </div>
 
     {{-- SIGNATURE --}}
     <div class="signature">
-        Hormat kami,
+        {{ $invoiceSetting->signature_name ?? 'Hormat Kami, ' }}
         <br><br><br>
         <br><br><br>
         <br>
-        <strong>Ahmad Fauji Rifai, S.T</strong><br>
-        Direktur Utama
+        <strong>{{ $invoiceSetting->nama ?? 'Ahmad Fauji Rifai, S.T' }}</strong><br>
+        {{ $invoiceSetting->jabatan ?? 'Direktur Utama' }}
     </div>
 
 </body>
