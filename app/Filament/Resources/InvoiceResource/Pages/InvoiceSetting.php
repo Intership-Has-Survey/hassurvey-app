@@ -77,6 +77,7 @@ class InvoiceSetting extends Page
                     ]),
                 TextInput::make('signature_name')
                     ->label('Signature')
+                    ->helperText('Teks di atas nama penandatangan contoh: Hormat Kami, Dengan Hormat, dll')
                     ->default('Nama Penandatangan'),
                 TextInput::make('nama')
                     ->label('Nama Penandatangan'),

@@ -36,7 +36,7 @@ class InvoicesRelationManager extends RelationManager
                         ->disabled()
                         ->dehydrated()
                         ->required()
-                        ->columnSpan(2),
+                        ->columnSpanFull(),
                     Select::make('jenis')
                         ->label('Jenis Pembayaran')
                         ->options([
@@ -98,7 +98,7 @@ class InvoicesRelationManager extends RelationManager
                             'strike',
                             'underline',
                         ])
-                        ->columnSpan(4),
+                        ->columnSpanFull(),
                     TextInput::make('satuan')
                         ->label('Satuan')
                         ->dehydrated(true)
@@ -119,7 +119,7 @@ class InvoicesRelationManager extends RelationManager
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
-                ->columns(4),
+                ->columns(3),
             Hidden::make('company_id')
                 ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
         ]);

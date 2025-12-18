@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Filament\Facades\Filament;
+use Illuminate\Support\Str;
 
 class Penawaran extends Model
 {
@@ -42,7 +44,23 @@ class Penawaran extends Model
     //start generate code
     public static function getPrefixFromModel()
     {
-        return 'HSGI-QTN';
+        $company = Filament::getTenant();
+
+        if (! $company || ! $company->name) {
+            return 'QTN';
+        }
+
+        $name = strtoupper(trim($company->name));
+
+        if (Str::startsWith($name, 'PT')) {
+            return 'HSGI-QTN';
+        }
+
+        if (Str::startsWith($name, 'CV')) {
+            return 'CVHS-QTN';
+        }
+
+        return 'QTN'; // fallback jika format aneh
     }
 
     public static function bulanRomawi($bulan)
@@ -74,9 +92,11 @@ class Penawaran extends Model
         //non-leading zero ex: 1,2,3, 
         // $bulan = date('n');
         $bulanRomawi = self::bulanRomawi($bulan);
+        $companyId = Filament::getTenant()->getKey();
 
         // Cari invoice sebelumnya berdasarkan bulan + tahun + tipe invoiceable
-        $lastpenawaran = self::whereYear('created_at', $tahun)
+        $lastpenawaran = self::where('company_id', $companyId)
+            ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->orderBy('created_at', 'desc')
             ->first();
