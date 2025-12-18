@@ -3,14 +3,17 @@
 namespace App\Filament\Resources\InvoiceResource\Pages;
 
 use Filament\Forms;
+use App\Models\Invoice;
 use Filament\Forms\Form;
-use App\Filament\Resources\InvoiceResource;
-use Filament\Resources\Pages\Page;
-use App\Models\InvoicesSetting;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TextArea;
-use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
+use App\Models\InvoicesSetting;
+use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Route;
+use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\RichEditor;
+use App\Filament\Resources\InvoiceResource;
 
 
 class InvoiceSetting extends Page
@@ -48,12 +51,30 @@ class InvoiceSetting extends Page
                     ->label('Nomor Mobile'),
                 TextInput::make('email')
                     ->label('Email Perusahaan'),
-                Textarea::make('catatan')
+                RichEditor::make('catatan')
                     ->label('Catatan')
-                    ->rows(4),
-                Textarea::make('penutup')
-                    ->label('Penutup')
-                    ->rows(4),
+                    ->disableToolbarButtons([
+                        'attachFiles',
+                        'blockquote',
+                        'codeBlock',
+                        'h2',
+                        'h3',
+                        'link',
+                        'strike',
+                        'underline',
+                    ]),
+                RichEditor::make('penutup')
+                    ->label('Data Pembayaran')
+                    ->disableToolbarButtons([
+                        'attachFiles',
+                        'blockquote',
+                        'codeBlock',
+                        'h2',
+                        'h3',
+                        'link',
+                        'strike',
+                        'underline',
+                    ]),
                 TextInput::make('signature_name')
                     ->label('Signature')
                     ->default('Nama Penandatangan'),
@@ -93,5 +114,27 @@ class InvoiceSetting extends Page
                 ->danger()
                 ->send();
         }
+    }
+
+    public function getPreviewUrl(): string
+    {
+        $companyId = Filament::getTenant()->getKey();
+
+        // Coba ambil invoice contoh untuk preview
+        $sampleInvoice = InvoicesSetting::where('company_id', $companyId)
+            ->latest()
+            ->first();
+
+        if ($sampleInvoice) {
+            // Jika ada invoice, gunakan invoice terbaru
+            return route('invoicepreview', [
+                'company' => $companyId
+            ]);
+        }
+
+        // Jika tidak ada invoice, buat URL untuk preview template
+        return route('invoicepreview', [
+            'company' => $companyId
+        ]);
     }
 }

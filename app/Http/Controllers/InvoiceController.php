@@ -23,4 +23,13 @@ class InvoiceController extends Controller
         $invoiceSetting = InvoicesSetting::where('company_id', $company)->firstOrFail();
         return view('exports.tipe_invoice', compact('invoice', 'invoiceSetting'));
     }
+
+    public function test($company)
+    {
+
+        $invoiceSetting = InvoicesSetting::where('company_id', $company)->firstOrFail();
+        // dd($invoiceSetting);
+
+        return view('exports.tipe_invoice_preview', compact('invoiceSetting'));
+    }
 }
