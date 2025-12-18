@@ -208,7 +208,7 @@ Route::get('/admin/{company}/investorupdate/select/{investor}', [PdfController::
     ->name('pdf.select');
 Route::get('/admin/{company}/berita-acara/{project}', [AcaraController::class, 'preview'])
     ->name('acara');
-Route::get('/admin/invoice', [InvoiceController::class, 'preview'])
+Route::get('/admin/{company}/invoice-preview', [InvoiceController::class, 'test'])
     ->name('invoicepreview');
 Route::get('/admin/{company}/invoice/{invoice}', [InvoiceController::class, 'preview'])
     ->name('invoice');

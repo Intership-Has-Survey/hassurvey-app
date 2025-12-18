@@ -128,12 +128,13 @@
         </div>
         {{-- <img src="/path/logo.png"> --}}
         <div style= "flex:2; padding-right:40px;">
-            <strong>{{ $invoicesSetting->nama_perusahaan ?? 'PT. HAS SURVEY GEOSPASIAL INDONESIA' }}</strong><br>
-
-            Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai
-            Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat<br>
-            Phone: 0251-8423039, Mobile: 0821-2441-1160<br>
-            e-mail: corporate@has-surveying.com<br>
+            <strong>{{ $invoiceSetting->nama_perusahaan ?? 'PT. HAS SURVEY GEOSPASIAL INDONESIA' }}</strong><br>
+            {{ $invoiceSetting->alamat ??
+                'Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai Kecamatan Tanah Sareal Kota Bogor Provinsi Jawa Barat' }}
+            <br>
+            Phone: {{ $invoiceSetting->telepon ?? ' 0251-8423039' }},
+            Mobile: {{ $invoiceSetting->mobile ?? ' 0821-2441-1160' }}<br>
+            Email: {{ $invoiceSetting->email ?? ' corporate@has-surveying.com' }} <br>
             web: https://www.has-surveying.com
         </div>
         <div class="invoice-title" style="flex:1;">INVOICE</div>
@@ -143,19 +144,19 @@
     <div class="info-invoice">
         <div class="tujuan">
             <strong>Kepada :</strong><br>
-            {{ $invoice->invoiceable->corporate?->nama ?? $invoice->invoiceable->perorangan?->first()->nama }}<br>
-            {{ $invoice->invoiceable->corporate?->detail_alamat ?? $invoice->invoiceable->perorangan?->first()->detail_alamat }}<br>
-            <br>
+            PT. CORPORATE CLIENT<br>
+            Jl. Contoh Alamat No.123
+            Kota Contoh, Provinsi Contoh, Indonesia <br>
         </div>
         <div class="nomor">
             <table>
                 <tr>
                     <td><strong>Nomor Invoice</strong></td>
-                    <td>: {{ $invoice->kode_invoice }}</td>
+                    <td>: 092/HAS-P/MSN/XI/2025</td>
                 </tr>
                 <tr>
                     <td><strong>Tanggal Invoice</strong></td>
-                    <td>:{{ \Carbon\Carbon::parse($invoice->tanggal_mulai)->format('d F Y') }}</td>
+                    <td>: 15 November 2025</td>
                 </tr>
                 {{-- <tr>
                     <td><strong>Nomor PO</strong></td>
@@ -178,93 +179,97 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($invoice->detailInvoices as $i => $row)
-                <tr>
-                    <td style="text-align:center; vertical-align:top;">{{ $i + 1 }}</td>
+            {{-- @foreach ($invoice->detailInvoices as $i => $row) --}}
+            <tr>
+                <td style="text-align:center; vertical-align:top;">1</td>
 
-                    <td>{!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($row->nama)) !!}</td>
-                    <td style="text-align:center;">
-                        {{ $row->satuan }}
-                    </td>
+                <td><strong>Contoh Jasa Survey Geospasial</strong>
+                    <br>
+                    rincian sebagai berikut:
+                    <br>
+                    - Pemetaan topografi <br>
+                    - Pengukuran elevasi <br>
+                    - Pengumpulan data lapangan
 
-                    <td style="text-align:center;">
-                        {{ $row->jumlah }}
-                    </td>
+                </td>
 
-                    <td>
-                        Rp {{ number_format($row->harga, 0, ',', '.') }}
-                    </td>
+                <td style="text-align:center;">
+                    Ls
+                </td>
 
-                    <td>
-                        Rp {{ number_format($row->harga * $row->jumlah, 0, ',', '.') }}
-                    </td>
-                </tr>
-            @endforeach
+                <td style="text-align:center;">
+                    2
+                </td>
+
+                <td>
+                    Rp 5.000.000
+                </td>
+
+                <td>
+                    Rp 10.000.000
+                </td>
+            </tr>
+            {{-- @endforeach --}}
         </tbody>
     </table>
-
-    {{-- TERBILANG --}}
-
-    @php
-        $subtotal = $invoice->detailInvoices->sum(function ($i) {
-            return $i->harga * $i->jumlah;
-        });
-
-        $dp = $subtotal / 2;
-        $pelunasan = $subtotal - $dp;
-    @endphp
 
     {{-- TOTAL --}}
     <table class="totals">
         <tr>
             <td style="background-color: #d9ede1">Sub Total</td>
-            <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+            <td>Rp 10.000.000</td>
         </tr>
 
         <tr>
-            <td style="background-color: #d9ede1">{{ $invoice->jenis }} ({{ $invoice->jumlah_pembayaran }}%)</td>
-            <td>Rp {{ number_format($subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td>
+            <td style="background-color: #d9ede1">DP 25%</td>
+            <td>Rp 2.500.000</td>
         </tr>
 
         <tr>
             <td style="background-color: #d9ede1">PPN</td>
             <td>
-                {{ $invoice->ppn == 0 ? 'Tidak ada' : $invoice->ppn . '%' }}
+                Tidak ada
             </td>
         </tr>
 
         <tr>
             <td class="green">Total Tagihan</td>
-            <td class="green">Rp
-                {{ number_format($subtotal * (1 + $invoice->ppn / 100) * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}
-                {{-- {{ number_format($subtotal - $subtotal * ($invoice->jumlah_pembayaran / 100), 0, ',', '.') }}</td> --}}
+            <td class="green">Rp 2.500.000</td>
         </tr>
     </table>
-
-    {{-- baris baru --}}
 
     <div style="clear:both;"></div>
 
     {{-- BANK TRANSFER INFO --}}
     <div class="bank-info">
         <strong>Pembayaran melalui Transfer Bank:</strong><br>
-        Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
-        Nomor Rekening : 8721427811 <br>
-        Nama Bank : BANK CENTRAL ASIA (BCA) <br><br>
+        @if (!empty($invoiceSetting->penutup))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($invoiceSetting->penutup)) !!}
+        @else
+            Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
+            Nomor Rekening : 8721427811 <br>
+            Nama Bank : BANK CENTRAL ASIA (BCA) <br>
+        @endif
+        <br>
+        <br>
 
         <strong>Catatan:</strong><br>
-        - Invoice ini berlaku sebagai bukti penagihan <br>
-        - Harap konfirmasi setelah melakukan pembayaran <br>
+        @if (!empty($invoiceSetting->catatan))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($invoiceSetting->catatan)) !!}
+        @else
+            - Invoice ini berlaku sebagai bukti penagihan <br>
+            - Harap konfirmasi setelah melakukan pembayaran <br>
+        @endif
     </div>
 
     {{-- SIGNATURE --}}
     <div class="signature">
-        Hormat kami,
+        {{ $invoiceSetting->signature_name ?? 'Hormat Kami, ' }}
         <br><br><br>
         <br><br><br>
         <br>
-        <strong>Ahmad Fauji Rifai, S.T</strong><br>
-        Direktur Utama
+        <strong>{{ $invoiceSetting->nama ?? 'Ahmad Fauji Rifai, S.T' }}</strong><br>
+        {{ $invoiceSetting->jabatan ?? 'Direktur Utama' }}
     </div>
 
 </body>
