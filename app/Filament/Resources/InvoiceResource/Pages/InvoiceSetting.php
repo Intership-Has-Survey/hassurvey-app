@@ -42,7 +42,7 @@ class InvoiceSetting extends Page
             ->schema([
                 TextInput::make('nama_perusahaan')
                     ->label('Nama Perusahaan'),
-                TextArea::make('alamat')
+                Forms\Components\Textarea::make('alamat')
                     ->label('Alamat Lengkap')
                     ->rows(4),
                 TextInput::make('telepon')
