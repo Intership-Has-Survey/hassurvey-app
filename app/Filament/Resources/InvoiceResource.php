@@ -113,7 +113,7 @@ class InvoiceResource extends Resource
                             'strike',
                             'underline',
                         ])
-                        ->columnSpan(4),
+                        ->columnSpanFull(),
                     TextInput::make('satuan')
                         ->label('Satuan')
                         ->dehydrated(true)
@@ -134,7 +134,7 @@ class InvoiceResource extends Resource
                 ])
                 ->defaultItems(1)
                 ->createItemButtonLabel('Tambah Rincian')
-                ->columns(4),
+                ->columns(3),
             Hidden::make('company_id')
                 ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey()),
         ]);
