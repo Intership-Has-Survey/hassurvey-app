@@ -14,6 +14,11 @@ class ListPenawarans extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('penawaran-setting')
+                ->label('Pengaturan Penawaran')
+                ->url(self::getResource()::getUrl('custom'))
+                ->color('info'),
+
         ];
     }
 }

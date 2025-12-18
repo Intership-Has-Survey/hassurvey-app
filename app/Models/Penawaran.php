@@ -16,17 +16,11 @@ class Penawaran extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function corporate()
+    public function customer()
     {
-        return $this->belongsTo(Corporate::class, 'corporate_id');
+        return $this->belongsTo(Corporate::class, 'customer_id');
     }
 
-    public function perorangan()
-    {
-        return $this->belongsToMany(Perorangan::class)
-            ->withPivot('perorangan_id', 'sewa_id', 'peran')
-            ->withTimestamps();
-    }
 
     public function detailPenawarans()
     {

@@ -150,8 +150,9 @@ class PenawaranResource extends Resource
                     ->label('Print')
                     ->url(fn($record) => route('penawaran', [
                         'company' => $record->company_id,
-                        'penawaran' => $record->id,
+                        'penawaranId' => $record->id,
                     ]))
+                    ->openUrlInNewTab()
                     ->icon('heroicon-o-eye')
                     ->color('secondary'),
             ])
@@ -175,6 +176,7 @@ class PenawaranResource extends Resource
             'index' => Pages\ListPenawarans::route('/'),
             'create' => Pages\CreatePenawaran::route('/create'),
             'edit' => Pages\EditPenawaran::route('/{record}/edit'),
+            'custom' => Pages\PenawaranSetting::route('/penawaran-setting'),
         ];
     }
 }
