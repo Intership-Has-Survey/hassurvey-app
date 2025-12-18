@@ -14,6 +14,11 @@ class ListInvoices extends ListRecords
     {
         return [
             // Actions\CreateAction::make(),
+            Actions\Action::make('invoices-setting')
+                ->label('Pengaturan Invoices')
+                ->url(self::getResource()::getUrl('custom'))
+                ->color('info'),
+
         ];
     }
 }
