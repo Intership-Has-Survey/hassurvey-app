@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Penawaran PDF</title>
+    <title>Preview Penawaran</title>
 
     <style>
         /* untuk menetapkan ukuran */
@@ -130,7 +130,7 @@
         <div style= "flex:2; padding-right:40px;">
             <strong>{{ $penawaranSetting->nama_perusahaan }}</strong><br>
             {{ $penawaranSetting->alamat }}<br>
-            Phone: {{ $penawaranSetting->telepon }}, Mobile: {{ $penawaranSetting->mobile }}<br>
+            Phone: {{ $penawaranSetting->phone }}, Mobile: {{ $penawaranSetting->mobile }}<br>
             e-mail: {{ $penawaranSetting->email }}<br>
             {{-- <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br>
             Jl. Bakau Blok B No 1 RT.01/RW.05 Kel. Sukadamai
@@ -146,28 +146,20 @@
     <div class="info-invoice">
         <div class="tujuan">
             <strong>Kepada :</strong><br>
-            {{-- MARCEL --}}
-            {{ $penawaran->penawaranable->nama }}<br>
-            {{ $penawaran->penawaranable->detail_alamat }}<br>
-            {{-- {{ $penawaran->corporate?->nama ?? 'Kososng' }}<br> --}}
-            {{-- {{ $penawaran->corporate?->nama ?? $penawaran->perorangan?->first()->nama }}<br> --}}
-            {{-- {{ $penawaran->corporate?->detail_alamat ?? $penawaran->perorangan?->first()->detail_alamat }}<br> --}}
-            {{-- Jl. Merpati No. 45 Bogor<br> --}}
-            {{-- 16154<br> --}}
-            {{-- Indonesia<br> --}}
-            {{-- Phone: 0251-8312345<br> --}}
-            {{-- Email: --}}
+            CONTOH KLIEN <br>
+            Contoh Alamat 1213<br>
             <br>
         </div>
         <div class="nomor">
             <table>
                 <tr>
-                    <td><strong>Nomor </strong></td>
-                    <td>: {{ $penawaran->kode_penawaran }}</td>
+                    <td><strong>Nomor Invoice</strong></td>
+                    {{-- <td>: {{ $invoice->kode_invoice }}</td> --}}
+                    <td>: QTN-M-XI-29-001</td>
                 </tr>
                 <tr>
-                    <td><strong>Tanggal </strong></td>
-                    <td>: {{ \Carbon\Carbon::parse($penawaran->tanggal)->format('d F Y') }}</td>
+                    <td><strong>Tanggal Invoice</strong></td>
+                    <td>: 17 Desember 2026</td>
                 </tr>
             </table>
         </div>
@@ -186,35 +178,27 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($penawaran->detailPenawarans as $i => $row)
-                <tr>
-                    <td style="text-align:center; vertical-align:top;">{{ $i + 1 }}</td>
+            {{-- @foreach ($penawaran->detailPenawarans as $i => $row) --}}
+            <tr>
+                <td style="text-align:center; vertical-align:top;">1</td>
+                <td><strong>Pengukuran</strong><br>
+                    Rincian <br>
+                    - Kegiatan Pembangunan Perumahan di Desa Sukamaju,<br>
+                    - Kecamatan Sukamakmur, Kabupaten Bogor, Jawa Barat <br>
+                </td>
+                {{-- <td>{!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($row->nama)) !!}</td> --}}
+                <td style="text-align:center;">Unit</td>
 
-                    <td>{!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($row->nama)) !!}</td>
-                    <td style="text-align:center;">
-                        {{ $row->satuan }}
-                    </td>
+                <td style="text-align:center;">2</td>
 
-                    <td style="text-align:center;">
-                        {{ $row->jumlah }}
-                    </td>
-
-                    <td>
-                        Rp {{ number_format($row->harga, 0, ',', '.') }}
-                    </td>
-
-                    <td>
-                        Rp {{ number_format($row->harga * $row->jumlah, 0, ',', '.') }}
-                    </td>
-                </tr>
-            @endforeach
+                <td> Rp 25.000,00 </td>
+                <td> Rp 50.000,00 </td>
+            </tr>
+            {{-- @endforeach --}}
             <tr style="text-align: left">
                 <td colspan="4" style="border: none"></td>
                 <th class="grand-total" style="text-align: left">Grand Total</th>
-                <th class="grand-total" style="text-align: left">
-                    Rp
-                    {{ number_format($penawaran->detailPenawarans->sum(function ($i) {return $i->harga * $i->jumlah;}),0,',','.') }}
-                </th>
+                <th class="grand-total" style="text-align: left">Rp 50.000,00</th>
             </tr>
         </tbody>
     </table>
@@ -223,39 +207,24 @@
 
     {{-- BANK TRANSFER INFO --}}
     <div class="bank-info">
+        <strong>Pembayaran melalui Transfer Bank:</strong><br>
+        Nama Pemilik Rekening : HAS SURVEY GEOSPASIAL INDONESIA <br>
+        Nomor Rekening : 8721427811 <br>
+        Nama Bank : BANK CENTRAL ASIA (BCA) <br><br>
+
         <strong>Catatan:</strong><br>
-        @if (!empty($penawaranSetting->catatan))
-            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($penawaranSetting->catatan)) !!}
-        @else
-            -Harga belum termasuk PPN 11% <br>
-            -Pembayaran Termin 1 sebesar 50% (Down Payment) <br>
-            -Pembayaran Termin 2 sebesar 50% ketika pekerjaan selesai <br>
-            -Pembayaran melalui rekening BCA. 8721427811 an. HAS SURVEY GEOSPASIAL INDONESIA
-        @endif
-        <br>
-        <br>
-
-        @if (!empty($penawaranSetting->penutup))
-            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($penawaranSetting->penutup)) !!}
-        @else
-            <p>Demikian informasi harga ini kami sampaikan dan atas perhatian dan kerjasamanya kami ucapkan terima
-                kasih.
-            </p>
-        @endif
-
-
-
-
+        - Invoice ini berlaku sebagai bukti penagihan <br>
+        - Harap konfirmasi setelah melakukan pembayaran <br>
     </div>
 
     {{-- SIGNATURE --}}
     <div class="signature">
-        {{ $penawaranSetting->signature_name ?? 'Hormat Kami, ' }}
+        Hormat kami,
         <br><br><br>
         <br><br><br>
         <br>
-        <strong>{{ $penawaranSetting->nama ?? 'Ahmad Fauji Rifai, S.T' }}</strong><br>
-        {{ $penawaranSetting->jabatan ?? 'Direktur Utama' }}
+        <strong>Ahmad Fauji Rifai, S.T</strong><br>
+        Direktur Utama
     </div>
 
 </body>

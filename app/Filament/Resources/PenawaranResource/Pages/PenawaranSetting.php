@@ -15,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\PenawaranResource;
 use App\Models\PenawaranSetting as PenawaranSettingModel;
+use Filament\Facades\Filament;
 
 class PenawaranSetting extends Page implements Forms\Contracts\HasForms
 {
@@ -23,10 +24,12 @@ class PenawaranSetting extends Page implements Forms\Contracts\HasForms
 
     public function mount(): void
     {
-        // $this->form->fill();
-        $this->form->fill(
-            PenawaranSettingModel::first()?->toArray() ?? []
-        );
+        $setting = PenawaranSettingModel::where(
+            'company_id',
+            Filament::getTenant()->getKey()
+        )->first();
+
+        $this->form->fill($setting?->toArray() ?? []);
     }
     use Forms\Concerns\InteractsWithForms;
 
@@ -56,12 +59,13 @@ class PenawaranSetting extends Page implements Forms\Contracts\HasForms
                     ->label('Penutup')
                     ->rows(4),
                 TextInput::make('signature_name')
+                    ->helperText('Teks di atas nama penandatangan contoh: Hormat Kami, Dengan Hormat, dll')
                     ->label('Signature'),
                 TextInput::make('nama')
                     ->label('Nama Penandatangan'),
                 TextInput::make('jabatan')
                     ->label('Jabatan Penandatangan'),
-                TextInput::make('company_id')
+                Hidden::make('company_id')
                     ->default(fn() => \Filament\Facades\Filament::getTenant()?->getKey())
                     ->reactive()
                     ->helperText('Akan otomatis terisi dengan Company ID dari tenant yang sedang aktif'),
@@ -97,13 +101,15 @@ class PenawaranSetting extends Page implements Forms\Contracts\HasForms
     {
         try {
 
-            $setting = PenawaranSettingModel::first();
+            $data = $this->form->getState();
 
-            if ($setting) {
-                $setting->update($this->data);
-            } else {
-                PenawaranSettingModel::create($this->data);
-            }
+            // 🔐 Inject tenant DI SINI (SATU-SATUNYA TEMPAT)
+            $data['company_id'] = Filament::getTenant()->getKey();
+
+            PenawaranSettingModel::updateOrCreate(
+                ['company_id' => $data['company_id']],
+                $data
+            );
             // $data = $this->form->getState();
 
             // $this->notify('success', 'Setting berhasil disimpan');
@@ -120,21 +126,25 @@ class PenawaranSetting extends Page implements Forms\Contracts\HasForms
             ->send();
     }
 
-    // protected function getHeaderActions(): array
-    // {
-    //     return [
-    //         Action::make(),
-    //         Actions\EditAction::make('hasllo')
-    //     ];
-    // }
+    public function getPreviewUrl(): string
+    {
+        $companyId = Filament::getTenant()->getKey();
 
-    // public function getFormAction()
-    // {
-    //     return [
-    //         Action::make()
-    //             ->submit('save')
-    //             ->label('HAHA')
-    //         // ->action('save')
-    //     ];
-    // }
+        // Coba ambil invoice contoh untuk preview
+        $sampleInvoice = PenawaranSettingModel::where('company_id', $companyId)
+            ->latest()
+            ->first();
+
+        if ($sampleInvoice) {
+            // Jika ada invoice, gunakan invoice terbaru
+            return route('penawaranpreview', [
+                'company' => $companyId
+            ]);
+        }
+
+        // Jika tidak ada invoice, buat URL untuk preview template
+        return route('penawaranpreview', [
+            'company' => $companyId
+        ]);
+    }
 }

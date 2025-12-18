@@ -16,4 +16,13 @@ class PenawaranController extends Controller
         $penawaranSetting = PenawaranSetting::where('company_id', $company)->firstOrFail();
         return view('exports.tipe_penawaran', compact('penawaran', 'penawaranSetting'));
     }
+
+    public function test($company)
+    {
+
+        $penawaranSetting = PenawaranSetting::where('company_id', $company)->firstOrFail();
+        // dd($invoiceSetting);
+
+        return view('exports.tipe_penawaran_preview', compact('penawaranSetting'));
+    }
 }

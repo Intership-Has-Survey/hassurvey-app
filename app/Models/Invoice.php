@@ -100,7 +100,8 @@ class Invoice extends Model
         $bulanRomawi = self::bulanRomawi($bulan);
 
         // Cari invoice sebelumnya berdasarkan bulan + tahun + tipe invoiceable
-        $lastInvoice = self::where('customer_type', get_class($invoiceable))
+        $lastInvoice = self::where('company_id', \Filament\Facades\Filament::getTenant()->getKey())
+            ->where('customer_type', get_class($invoiceable))
             ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->orderBy('created_at', 'desc')

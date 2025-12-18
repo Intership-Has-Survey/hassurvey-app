@@ -7,4 +7,9 @@
     <x-filament::button wire:click="save">
         Simpan
     </x-filament::button>
+
+    <x-filament::button tag="a" href="{{ $this->getPreviewUrl() }}" target="_blank" icon="heroicon-o-eye"
+        color="success">
+        Preview PDF Template
+    </x-filament::button>
 </x-filament-panels::page>
