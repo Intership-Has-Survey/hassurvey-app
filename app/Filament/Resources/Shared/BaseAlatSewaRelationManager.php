@@ -166,7 +166,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
             ->headerActions([
                 AttachAction::make()
                     ->label('Tambah Alat Sewa')
-                    ->visible(fn(): bool => $this->getSewaRecord()->canAddTools() && !$this->getSewaRecord()->is_locked)
+                    ->visible(fn(): bool => $this->getSewaRecord()->canAddTools() || !$this->getSewaRecord()->is_locked)
                     ->preloadRecordSelect()
                     ->using(function (array $data, RelationManager $livewire): void {
                         $sewa = $livewire->getSewaRecord();
@@ -196,7 +196,7 @@ abstract class BaseAlatSewaRelationManager extends RelationManager
                                 if (!$jenisAlatId) {
                                     return [];
                                 }
-                                $query = DaftarAlat::query()->where('status', true)->where('kondisi', true)->whereNotIn('id', $alreadyAttachedAlatIds);
+                                $query = DaftarAlat::query()->where('kondisi', true)->whereDoesntHave('penggunaanAktif')->whereNotIn('id', $alreadyAttachedAlatIds);
                                 if ($jenisAlatId) {
                                     $query->where('jenis_alat_id', $jenisAlatId);
                                 }

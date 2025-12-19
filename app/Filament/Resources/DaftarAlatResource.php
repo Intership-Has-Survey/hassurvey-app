@@ -208,15 +208,27 @@ class DaftarAlatResource extends Resource
                         false => 'danger',
                     }),
 
-                Tables\Columns\TextColumn::make('status_text')
+                // Tables\Columns\TextColumn::make('status_text')
+                //     ->label('Status')
+                //     ->badge()
+                //     ->color(fn(string $state): string => match ($state) {
+                //         'Tersedia' => 'success',
+                //         'Dipakai' => 'warning',
+                //         'Terjual' => 'danger',
+                //         default => 'gray',
+                //     }),
+                BadgeColumn::make('cek')
                     ->label('Status')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Tersedia' => 'success',
-                        'Dipakai' => 'warning',
-                        'Terjual' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record->penggunaanAktif()->exists()
+                            ? 'Dipakai'
+                            : 'Tersedia'
+                    )
+                    ->colors([
+                        'success' => 'Tersedia',
+                        'warning' => 'Dipakai',
+                    ]),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('d-m-Y')
