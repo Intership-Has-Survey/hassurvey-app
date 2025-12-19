@@ -178,4 +178,10 @@ class Project extends Model
     {
         return $this->morphMany(Invoice::class, 'invoiceable', 'customer_type', 'customer_id');
     }
+
+
+    public function acara()
+    {
+        return $this->hasOne(Acara::class);
+    }
 }
