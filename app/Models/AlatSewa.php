@@ -48,6 +48,8 @@ class AlatSewa extends Pivot
         });
     }
 
+
+
     public function daftarAlat()
     {
         return $this->belongsTo(DaftarAlat::class, 'daftar_alat_id');

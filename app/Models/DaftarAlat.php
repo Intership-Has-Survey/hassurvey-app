@@ -105,8 +105,15 @@ class DaftarAlat extends Model
                 0 => 'Dipakai',
                 1 => 'Tersedia',
                 2 => 'Terjual',
+                default => 'Unknown',
             },
         );
+    }
+
+    public function penggunaanAktif()
+    {
+        return $this->hasMany(AlatSewa::class)
+            ->whereNull('tgl_masuk');
     }
 
     public function company()
