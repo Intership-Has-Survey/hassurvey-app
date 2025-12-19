@@ -14,6 +14,10 @@ class ListKategoriPengajuans extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('bast-setting')
+                ->label('Pengaturan Berita Acara')
+                ->url(self::getResource()::getUrl('custom'))
+                ->color('info'),
         ];
     }
 }

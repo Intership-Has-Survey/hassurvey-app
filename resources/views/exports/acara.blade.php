@@ -132,6 +132,7 @@
 
 <body>
     <div class="container">
+        {{-- @dd([$acara, $acaraSetting]); --}}
 
         <!-- HEADER -->
         <header>
@@ -139,10 +140,15 @@
                 <img src="{{ asset('logo_pthas.jpg') }}" alt="Logo PTHAS">
             </div>
             <div class="company">
-                <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br />
-                Jl. Bakau Blok B No 1-2, RT.001/RW.005, Sukadamai, Tanah Sereal,<br />
-                Kota Bogor, Jawa Barat 16164 <br />
-                Tel: +62 821-2441-1160 • Email: corporate@has-surveying.com
+                <strong>{{ $acaraSetting?->nama_perusahaan ?? 'PT. HAS SURVEY GEOSPASIAL INDONESIA' }}</strong><br />
+                {{-- <strong>PT. HAS SURVEY GEOSPASIAL INDONESIA</strong><br /> --}}
+                {{ $acaraSetting->alamat ??
+                    'Jl. Bakau Blok B No 1-2, RT.001/RW.005, Sukadamai, Tanah Sereal, Kota Bogor, Jawa Barat 16164' }}
+                <br>
+                {{-- Jl. Bakau Blok B No 1-2, RT.001/RW.005, Sukadamai, Tanah Sereal,<br /> --}}
+                {{-- Kota Bogor, Jawa Barat 16164 <br /> --}}
+                {{ $acaraSetting->kontak ?? 'Tel: +62 821-2441-1160, Email: corporate@has-surveying.com' }}
+                {{-- Tel: +62 821-2441-1160 • Email: corporate@has-surveying.com --}}
             </div>
         </header>
 
@@ -156,12 +162,15 @@
         </div>
 
         <!-- DESCRIPTION -->
-        <p>Pada hari ini,
-            <strong>{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</strong>
-            {{-- bertempat di kantor {{ $project->corporate?->nama }}, --}}
-            telah dilaksanakan pemeriksaan hasil pekerjaan oleh Pihak Pertama dan Pihak Kedua. Berikut disampaikan
-            rincian pekerjaan yang menjadi bagian dari Berita Acara ini:
-        </p>
+        @if (!empty($acaraSetting->header))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($acaraSetting->header)) !!}
+        @else
+            <p>Pada hari ini,
+                <strong>{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</strong>
+                telah dilaksanakan pemeriksaan hasil pekerjaan oleh Pihak Pertama dan Pihak Kedua. Berikut disampaikan
+                rincian pekerjaan yang menjadi bagian dari Berita Acara ini:
+            </p>
+        @endif
 
         {{-- @dd($acara) --}}
 
@@ -176,7 +185,7 @@
             </tr>
             <tr>
                 <th>Penyedia Jasa (Pihak Kedua)</th>
-                <td>: PT. HAS Survey Geo Spasial</td>
+                <td>: {{ $acaraSetting?->nama_perusahaan ?? 'PT. HAS Survey Geospacial Indonesia' }}</td>
             </tr>
             {{-- <tr>
                 <th>Nomor Kontrak / SPK</th>
@@ -196,18 +205,23 @@
         {{-- <p>{{ $project->ruang_lingkup ?? 'Pekerjaan dilaksanakan sesuai ruang lingkup yang tercantum dalam kontrak/SPK.' }}
         </p> --}}
 
-        <p>Berdasarkan hasil pemeriksaan bersama yang dilakukan oleh Pihak Pertama dan Pihak Kedua, dapat disimpulkan
-            bahwa seluruh rangkaian pekerjaan telah diselesaikan oleh Pihak Kedua secara menyeluruh dan memenuhi
-            ketentuan kontrak. Pihak Pertama menyatakan bahwa pekerjaan telah:</p>
-        <ul>
-            <li>Diselesaikan 100% sesuai spesifikasi teknis,</li>
-            <li>Memenuhi standar mutu pekerjaan,</li>
-            <li>Dapat diterima tanpa catatan / dengan catatan seperlunya (jika ada).</li>
-        </ul>
+        @if (!empty($acaraSetting->footer))
+            {!! nl2br(\App\Helpers\StringHelper::htmlToTextWithNewlines($acaraSetting->footer)) !!}
+        @else
+            <p>Berdasarkan hasil pemeriksaan bersama yang dilakukan oleh Pihak Pertama dan Pihak Kedua, dapat
+                disimpulkan
+                bahwa seluruh rangkaian pekerjaan telah diselesaikan oleh Pihak Kedua secara menyeluruh dan memenuhi
+                ketentuan kontrak. Pihak Pertama menyatakan bahwa pekerjaan telah:</p>
+            <ul>
+                <li>Diselesaikan 100% sesuai spesifikasi teknis,</li>
+                <li>Memenuhi standar mutu pekerjaan,</li>
+                <li>Dapat diterima tanpa catatan / dengan catatan seperlunya (jika ada).</li>
+            </ul>
 
-        <p>Dengan demikian, pekerjaan dinyatakan selesai dan dapat diserahterimakan dari Pihak Kedua kepada Pihak
-            Pertama. Berita Acara ini dibuat untuk
-            digunakan sebagaimana mestinya sebagai dokumen resmi penyelesaian pekerjaan.</p>
+            <p>Dengan demikian, pekerjaan dinyatakan selesai dan dapat diserahterimakan dari Pihak Kedua kepada Pihak
+                Pertama. Berita Acara ini dibuat untuk
+                digunakan sebagaimana mestinya sebagai dokumen resmi penyelesaian pekerjaan.</p>
+        @endif
 
         <!-- SIGNATURES -->
         <div class="signatures">
@@ -220,14 +234,15 @@
 
             <div class="sig">
                 <div><strong>Pihak Kedua</strong></div>
-                <div class="role">PT. HAS Survey Geo Spasial</div>
+                <div class="role">{{ $acaraSetting?->nama_perusahaan ?? 'PT. HAS Survey Geospasial Indonesia' }}
+                </div>
                 <div class="name">{{ $acara->project->picInternal?->nama ?? '__________' }}</div>
             </div>
         </div>
 
-        <div class="foot">
+        {{-- <div class="foot">
             Dokumen ini sah setelah ditandatangani oleh para pihak dan disimpan sebagai arsip administrasi proyek.
-        </div>
+        </div> --}}
 
     </div>
 </body>

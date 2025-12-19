@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('kontak')->nullable();
             $table->text('header')->nullable();
             $table->text('footer')->nullable();
+            $table->string('company_id')->nullable();
 
             $table->timestamps();
         });

@@ -17,8 +17,9 @@ class AcaraController extends Controller
         $acara = Acara::with('project')
             ->where('id', $acaraId)
             ->firstOrFail();
+        $acaraSetting = AcaraSetting::where('company_id', $company)->firstOrFail();
 
-        return view('exports.acara', compact('acara'));
+        return view('exports.acara', compact('acara', 'acaraSetting'));
     }
 
     public function test($company)
