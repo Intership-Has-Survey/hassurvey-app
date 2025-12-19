@@ -22,6 +22,8 @@ class KategoriPengajuanResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     //agar tidak terpengaruh tenant
     protected static bool $isScopedToTenant = false;
+    protected static ?string $navigationLabel = 'Kategori Pengajuan/Berita Acara';
+
 
     public static function form(Form $form): Form
     {
@@ -175,6 +177,7 @@ class KategoriPengajuanResource extends Resource
             'index' => Pages\ListKategoriPengajuans::route('/'),
             'create' => Pages\CreateKategoriPengajuan::route('/create'),
             'edit' => Pages\EditKategoriPengajuan::route('/{record}/edit'),
+            'custom' => Pages\CobaPage::route('/kategori-pengajuan-setting'),
         ];
     }
 }

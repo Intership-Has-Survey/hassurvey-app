@@ -343,17 +343,17 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                Action::make('acara')
-                    ->label('Berita Acara')
-                    ->url(fn($record) => route('acara', [
-                        'company' => $record->company_id, // atau field company yg benar
-                        'project' => $record->id,
-                    ]))
-                    // ->url(fn($record) => route('acara', $record->id))
-                    // ->url(fn(Project $record): string => EditProject::getUrl('edit', ['record' => $record]))
-                    ->icon('heroicon-o-pencil')
+                // Action::make('acara')
+                //     ->label('Berita Acara')
+                //     ->url(fn($record) => route('acara', [
+                //         'company' => $record->company_id, // atau field company yg benar
+                //         'project' => $record->id,
+                //     ]))
+                //     // ->url(fn($record) => route('acara', $record->id))
+                //     // ->url(fn(Project $record): string => EditProject::getUrl('edit', ['record' => $record]))
+                //     ->icon('heroicon-o-pencil')
 
-                    ->color('primary'),
+                //     ->color('primary'),
                 // EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),

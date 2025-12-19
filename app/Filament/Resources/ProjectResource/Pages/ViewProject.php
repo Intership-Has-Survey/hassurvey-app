@@ -19,11 +19,44 @@ class ViewProject extends ViewRecord
         return [
             Actions\EditAction::make(),
             Actions\DeleteAction::make(),
-            // ExportAction::make()->exports([
-            //     ExcelExport::make('project')
-            //         ->fromModel($this->record) // hanya 1 baris ini
-            //         ->withFilename('Project-' . $this->record->kode_project . '.xlsx'),
-            // ]),
+            Actions\Action::make('Acara')
+                ->label(
+                    fn() =>
+                    $this->record->acara
+                        ? 'Print Berita Acara'
+                        : 'Buat Berita Acara'
+                )
+                ->url(
+                    fn() =>
+                    $this->record->acara
+                        ? route('acara', [
+                            'company' => $this->record->company_id, // atau field company yg benar
+                            'id' => $this->record->acara->id,
+                        ])
+                        : null
+                )
+                ->openUrlInNewTab()
+                ->icon('heroicon-o-document-text')
+                ->color(
+                    fn() =>
+                    $this->record->acara
+                        ? 'gray'   // 🔵 biru → sudah ada
+                        : 'info'   // 🟠 orange → belum ada
+                )
+                ->action(function (array $data) {
+                    \App\Models\Acara::updateOrCreate(
+                        ['project_id' => $this->record->id],
+                        []
+                    );
+                }),
+            // ->form($this->beritaAcaraForm())
+            // ->mountUsing(function (Forms\ComponentContainer $form) {
+            //     if ($this->record->beritaAcara) {
+            //         $form->fill(
+            //             $this->record->beritaAcara->toArray()
+            //         );
+            //     }
+            // })
         ];
     }
 

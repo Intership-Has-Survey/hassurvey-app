@@ -206,8 +206,10 @@ Route::get('/admin/{company}/investorupdate/preview/{investor}', [PdfController:
 
 Route::get('/admin/{company}/investorupdate/select/{investor}', [PdfController::class, 'selectPeriod'])
     ->name('pdf.select');
-Route::get('/admin/{company}/berita-acara/{project}', [AcaraController::class, 'preview'])
+Route::get('/admin/{company}/berita-acara/{id}', [AcaraController::class, 'preview'])
     ->name('acara');
+Route::get('/admin/{company}/berita-acara', [AcaraController::class, 'test'])
+    ->name('acarapreview');
 Route::get('/admin/{company}/invoice-preview', [InvoiceController::class, 'test'])
     ->name('invoicepreview');
 Route::get('/admin/{company}/invoice/{invoice}', [InvoiceController::class, 'preview'])
